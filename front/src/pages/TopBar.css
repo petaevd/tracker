@@ -1,0 +1,100 @@
+/* Стили для верхней панели */
+.top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding: 10px 10px 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  }
+  
+  .search-container {
+    flex-grow: 1;
+    max-width: 500px;
+  }
+  
+  .search-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    padding: 8px 15px;
+  }
+  
+  .search-icon {
+    color: rgba(255, 255, 255, 0.5);
+    margin-right: 10px;
+  }
+  
+  .search-input {
+    background: transparent;
+    border: none;
+    color: white;
+    flex-grow: 1;
+    outline: none;
+    font-size: 1rem;
+  }
+  
+  .search-input::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+  }
+  
+  .shortcut-box {
+    display: flex;
+    gap: 2px;
+    margin-left: 10px;
+  }
+  
+  .shortcut-key {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #9A48EA;
+    padding: 2px 5px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+  }
+  
+  .top-bar-actions {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+  }
+  
+  .share-button, 
+  .logout-button {
+    background-color: rgba(255, 255, 255, 0.18);
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  
+  .share-button:hover, 
+  .logout-button:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+  }
+  
+  .user-menu {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  
+  .user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: #9A48EA;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    font-size: 1.2rem;
+  }
