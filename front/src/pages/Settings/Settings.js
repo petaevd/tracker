@@ -264,10 +264,17 @@ const Settings = () => {
                 <h2 className="section-title">Настройки профиля</h2>
                 <div className="avatar-upload">
                   <div className="avatar-preview">
+                    {console.log('profileData.avatar:', profileData.avatar)}
                     {profileData.avatar ? (
-                      <img src={profileData.avatar} alt="Avatar" className="avatar-image" />
+                      <img
+                        src={profileData.avatar}
+                        alt="Avatar"
+                        className="avatar-image"
+                        onError={() => console.error('Failed to load avatar image:', profileData.avatar)}
+                      />
                     ) : (
                       <div className="avatar-placeholder">
+                        {console.log('Rendering placeholder, username:', user?.username, 'email:', user?.email)}
                         {getAvatarLetter(user?.username, user?.email) || '?'}
                       </div>
                     )}

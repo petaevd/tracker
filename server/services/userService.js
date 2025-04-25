@@ -1,4 +1,5 @@
 import User from '../models/User.js';
+import bcrypt from 'bcrypt';
 
 const changePassword = async (id, { currentPassword, newPassword }, requestingUser) => {
   const user = await User.findByPk(id);

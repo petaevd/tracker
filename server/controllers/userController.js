@@ -50,7 +50,7 @@ const uploadAvatar = async (req, res, next) => {
       await fs.unlink(oldAvatarPath).catch(() => {}); // Игнорируем ошибку, если файл не существует
     }
 
-    res.json({ message: 'Аватар успешно загружен', avatar_url: avatarUrl });
+    res.json({ message: 'Аватар успешно загружен', avatar_url: `${process.env.API_BASE_URL || 'http://localhost:8080'}${avatarUrl}` });
   } catch (err) {
     if (req.file) {
       const filePath = path.join(__dirname, '../public/avatars', req.file.filename);
