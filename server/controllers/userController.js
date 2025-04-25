@@ -79,4 +79,13 @@ const deleteAvatar = async (req, res, next) => {
   }
 };
 
-export default { getUserById, getUserTeams, updateProfile, uploadAvatar, deleteAvatar };
+const changePassword = async (req, res, next) => {
+  try {
+    await userService.changePassword(req.params.id, req.body, req.user);
+    res.json({ message: 'Пароль успешно изменён' });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export default { getUserById, getUserTeams, updateProfile, uploadAvatar, deleteAvatar, changePassword };

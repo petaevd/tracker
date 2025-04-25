@@ -27,4 +27,13 @@ const updateProject = async (req, res, next) => {
   }
 };
 
-export default { getAllProjects, createProject, updateProject };
+const deleteProject = async (req, res, next) => {
+  try {
+    await projectService.deleteProject(req.params.id, req.user);
+    res.status(204).json({ message: 'Проект успешно удалён' });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export default { getAllProjects, createProject, updateProject, deleteProject };

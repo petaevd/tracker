@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FaSearch, FaShareAlt, FaUser, FaSignOutAlt, FaBookmark, FaTrash, FaFilter } from 'react-icons/fa';
+import { FaSearch, FaShareAlt, FaUser, FaSignOutAlt, FaBookmark, FaTrash } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import './Favorites.css';
 

@@ -19,9 +19,12 @@ const register = async ({ username, email, password, role }) => {
 
   const password_hash = await hashPassword(password);
   const user = await User.create({ username, email, password_hash, role });
-
   const token = generateToken({ userId: user.id, role: user.role });
-  return { user, token };
+
+  return {
+    user: { id: user.id, username: user.username, email: user.email, role: user.role },
+    token,
+  };
 };
 
 const login = async ({ email, password }) => {
@@ -40,7 +43,10 @@ const login = async ({ email, password }) => {
   }
 
   const token = generateToken({ userId: user.id, role: user.role });
-  return { user, token };
+  return {
+    user: { id: user.id, username: user.username, email: user.email, role: user.role },
+    token,
+  };
 };
 
 export default { register, login };

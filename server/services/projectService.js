@@ -97,4 +97,30 @@ const updateProject = async (id, { name, team_id, status, description, deadline 
   return project;
 };
 
-export default { getAllProjects, createProject, updateProject };
+const deleteProject = async (id, user) => {
+  const project = await Project.findByPk(id, {
+    include: [{ model: Team, as: 'team' }],
+  });
+  if (!project) {
+    const err = new Error('Проект не найден');
+    err.status = 404;
+    throw err;
+  }
+
+  if (user.role === 'manager' && project.team.created_by !== user.id) {
+    const err = new Error('Вы можете удалять проекты только своих команд');
+    err.status = 403;
+    throw err;
+  }
+
+  const taskCount = await Task.count({ where: { project_id: id } });
+  if (taskCount > 0) {
+    const err = new Error('Нельзя удалить проект, у которого есть задачи');
+    err.status = 400;
+    throw err;
+  }
+
+  await project.destroy();
+};
+
+export default { getAllProjects, createProject, updateProject, deleteProject };

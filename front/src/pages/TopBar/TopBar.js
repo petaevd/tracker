@@ -1,14 +1,16 @@
 import React from 'react';
-import { 
-  FaSearch, 
-  FaShareAlt,
-  FaSignOutAlt
-} from 'react-icons/fa';
-import { useAuth } from './AuthContext';
+import { FaSearch, FaShareAlt, FaSignOutAlt } from 'react-icons/fa';
+import { useSelector, useDispatch } from 'react-redux';
+import { logout } from '../../store/slices/authSlice';
 import './TopBar.css';
 
 const TopBar = () => {
-  const { user, logout } = useAuth();
+  const dispatch = useDispatch();
+  const { user } = useSelector((state) => state.auth);
+
+  const handleLogout = () => {
+    dispatch(logout());
+  };
 
   return (
     <div className="top-bar">
@@ -36,7 +38,7 @@ const TopBar = () => {
             <div className="user-avatar">
               {user.avatarLetter || (user.email ? user.email.charAt(0).toUpperCase() : 'U')}
             </div>
-            <button onClick={logout} className="logout-button">
+            <button onClick={handleLogout} className="logout-button">
               <FaSignOutAlt />
             </button>
           </div>

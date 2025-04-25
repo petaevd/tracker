@@ -2,9 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { FaSearch, FaShareAlt, FaUser, FaChevronDown, FaSignOutAlt } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import { FiClock } from 'react-icons/fi';
+import { useSelector, useDispatch } from 'react-redux';
+import { getEvents } from '../../store/slices/eventSlice';
 import './Home.css';
 
-const Home = ({ sharedEvents = [], user, onLogout }) => {
+const Home = ({ user, onLogout }) => {
+  const dispatch = useDispatch();
+  const { events, loading, error } = useSelector((state) => state.events);
+
   const getAvatarLetter = () => {
     if (user?.username) return user.username.charAt(0).toUpperCase();
     if (user?.email) return user.email.charAt(0).toUpperCase();
@@ -13,6 +18,11 @@ const Home = ({ sharedEvents = [], user, onLogout }) => {
 
   const navigate = useNavigate();
   
+  // Загрузка событий при монтировании компонента
+  useEffect(() => {
+    dispatch(getEvents());
+  }, [dispatch]);
+
   // Обработчик горячей клавиши Command+F
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -38,17 +48,23 @@ const Home = ({ sharedEvents = [], user, onLogout }) => {
 
   // Получение событий для дня
   const getEventsForDay = (day, month, year) => {
-    if (!sharedEvents?.length) return [];
+    if (!events?.length) return [];
     
-    return sharedEvents.filter(event => {
-      if (!event.dateTime) return false;
-      const eventDate = new Date(event.dateTime);
+    return events.filter(event => {
+      if (!event.event_date) return false;
+      const eventDate = new Date(event.event_date);
       return (
         eventDate.getDate() === day &&
         eventDate.getMonth() === month &&
         eventDate.getFullYear() === year
       );
-    });
+    }).map(event => ({
+      ...event,
+      dateTime: `${event.event_date}T${event.event_time}`,
+      color: event.color,
+      title: event.title,
+      description: event.description,
+    }));
   };
 
   // Генерация данных календаря
@@ -165,6 +181,9 @@ const Home = ({ sharedEvents = [], user, onLogout }) => {
         <div className="breadcrumb">Домашняя</div>
         <h1 className="dashboard-title">Панель просмотра проекта</h1>
         
+        {error && <div className="error-message">{error}</div>}
+        {loading && <div className="loading-message">Загрузка событий...</div>}
+        
         {/* Первая строка карточек */}
         <div className="cards-row">
           <div className="dashboard-card">
@@ -278,10 +297,10 @@ const Home = ({ sharedEvents = [], user, onLogout }) => {
           </div>
           <div className="event-time">
             <FiClock size={14} />
-            {hoveredDate.events[0].dateTime.split('T')[1].substring(0, 5)}
+            {hoveredDate.events[0].event_time}
           </div>
           <div className="event-date">
-            {new Date(hoveredDate.events[0].dateTime).toLocaleDateString('ru-RU', {
+            {new Date(hoveredDate.events[0].event_date).toLocaleDateString('ru-RU', {
               day: 'numeric', 
               month: 'long', 
               weekday: 'long'

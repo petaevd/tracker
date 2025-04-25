@@ -10,6 +10,11 @@ const userSchema = {
   id: [
     param('id').isInt().withMessage('ID должен быть целым числом'),
   ],
+  changePassword: [
+    param('id').isInt().withMessage('ID пользователя должен быть целым числом'),
+    body('currentPassword').isString().notEmpty().withMessage('Текущий пароль обязателен'),
+    body('newPassword').isString().isLength({ min: 6 }).withMessage('Новый пароль должен содержать минимум 6 символов'),
+  ],
 };
 
 const teamSchema = {
@@ -55,6 +60,9 @@ const projectSchema = {
     body('status').optional().isIn(['active', 'archived']).withMessage('Статус должен быть "active" или "archived"'),
     body('description').optional().isString().withMessage('Описание должно быть строкой'),
     body('deadline').optional().isISO8601().withMessage('Дедлайн должен быть в формате ISO8601'),
+  ],
+  id: [
+    param('id').isInt().withMessage('ID проекта должен быть целым числом'),
   ],
 };
 
@@ -112,7 +120,7 @@ const taskTagSchema = {
 
 const eventSchema = {
   query: [
-    query('userId').isInt().withMessage('ID пользователя должен быть целым числом'),
+    query('userId').optional().isInt().withMessage('ID пользователя должен быть целым числом'),
   ],
   create: [
     body('userId').isInt().withMessage('ID пользователя должен быть целым числом'),

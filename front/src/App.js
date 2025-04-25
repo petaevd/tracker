@@ -1,79 +1,83 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import Home from './pages/Home';
-import Calendar from './pages/Calendar';
-import Dashboard from './pages/Dashboard';
-import Project from './pages/Project';
-import Favorites from './pages/Favorites'; // Новая страница
-import Settings from './pages/Settings'; // Новая страница
-import Help from './pages/Help'; // Новая страница
-import Navbar from './pages/Navbar';
+import { useSelector, useDispatch } from 'react-redux';
+import { setUser, logout } from './store/slices/authSlice';
+import Home from './pages/Home/Home';
+import Calendar from './pages/Calendar/Calendar';
+import Dashboard from './pages/Dashboard/Dashboard';
+import Project from './pages/Project/Project';
+import Favorites from './pages/Favorites/Favorites';
+import Settings from './pages/Settings/Settings';
+import Help from './pages/Help/Help';
+import Navbar from './pages/NavBar/Navbar';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import ProtectedRoute from './components/shared/ProtectedRoute';
 
 const App = () => {
-  const [events, setEvents] = useState([]);
-  const [user, setUser] = useState(null);
+  const dispatch = useDispatch();
+  const { user } = useSelector((state) => state.auth);
 
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
     const token = localStorage.getItem('token');
-    
+
     if (storedUser && token) {
       try {
         const parsedUser = JSON.parse(storedUser);
-        setUser(parsedUser);
+        dispatch(setUser(parsedUser));
       } catch (e) {
         console.error('Ошибка при загрузке пользователя:', e);
-        handleLogout();
+        dispatch(logout());
       }
     }
-  }, []);
-
-  const handleLogin = (userData, token) => {
-    const userWithAvatar = {
-      ...userData,
-      avatarLetter: userData.username?.charAt(0).toUpperCase() || 
-                   userData.email?.charAt(0).toUpperCase() || 'U'
-    };
-    
-    localStorage.setItem('token', token);
-    localStorage.setItem('user', JSON.stringify(userWithAvatar));
-    setUser(userWithAvatar);
-  };
+  }, [dispatch]);
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    setUser(null);
-    setEvents([]);
+    dispatch(logout());
   };
 
   return (
     <Router>
       <Navbar user={user} onLogout={handleLogout} />
       <Routes>
-        <Route path="/" element={<Home user={user} onLogout={handleLogout} />} />
-        <Route path="/home" element={<Home user={user} onLogout={handleLogout} />} />
+        <Route path="/" element={
+          <ProtectedRoute>
+            <Home user={user} onLogout={handleLogout} />
+          </ProtectedRoute>
+        } />
         <Route path="/calendar" element={
-          <Calendar 
-            user={user} 
-            events={events} 
-            setEvents={setEvents} 
-            onLogout={handleLogout}
-          />
+          <ProtectedRoute>
+            <Calendar user={user} onLogout={handleLogout} />
+          </ProtectedRoute>
         } />
-        <Route path="/dashboard" element={<Dashboard user={user} onLogout={handleLogout} />} />
-        <Route path="/project" element={<Project user={user} onLogout={handleLogout} />} />
-        <Route path="/favorites" element={<Favorites user={user} onLogout={handleLogout} />} />
-        <Route path="/settings" element={<Settings user={user} onLogout={handleLogout} />} />
-        <Route path="/help" element={<Help user={user} onLogout={handleLogout} />} />
-        <Route path="/login" element={
-          user ? <Home user={user} /> : <Login onLogin={handleLogin} />
+        <Route path="/dashboard" element={
+          <ProtectedRoute>
+            <Dashboard user={user} onLogout={handleLogout} />
+          </ProtectedRoute>
         } />
-        <Route path="/register" element={
-          user ? <Home user={user} /> : <Register onLogin={handleLogin} />
+        <Route path="/project" element={
+          <ProtectedRoute>
+            <Project user={user} onLogout={handleLogout} />
+          </ProtectedRoute>
         } />
+        <Route path="/favorites" element={
+          <ProtectedRoute>
+            <Favorites user={user} onLogout={handleLogout} />
+          </ProtectedRoute>
+        } />
+        <Route path="/settings" element={
+          <ProtectedRoute>
+            <Settings user={user} onLogout={handleLogout} />
+          </ProtectedRoute>
+        } />
+        <Route path="/help" element={
+          <ProtectedRoute>
+            <Help user={user} onLogout={handleLogout} />
+          </ProtectedRoute>
+        } />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
       </Routes>
     </Router>
   );

@@ -1,37 +1,35 @@
 import React, { useState, useEffect } from 'react';
 import { FaSearch, FaShareAlt, FaUser, FaSignOutAlt, FaPlus, FaUsers, FaColumns, FaEllipsisH } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import { useSelector, useDispatch } from 'react-redux';
+import { getProjects, addProject, addBoard, addUser } from '../../store/slices/projectSlice';
+import { logout } from '../../store/slices/authSlice';
 import './Project.css';
-import { fetchProjects } from '../api/projectApi';
 
-const Project = ({ user, onLogout }) => {
-  const [projects, setProjects] = useState([]);
+const Project = () => {
+  const dispatch = useDispatch();
+  const { user } = useSelector((state) => state.auth);
+  const { projects, loading, error } = useSelector((state) => state.projects);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showAddBoardModal, setShowAddBoardModal] = useState(false);
   const [showAddUserModal, setShowAddUserModal] = useState(false);
   const [projectName, setProjectName] = useState('');
   const [boardName, setBoardName] = useState('');
   const [userEmail, setUserEmail] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedProjectId, setSelectedProjectId] = useState(null);
   const navigate = useNavigate();
 
+  // Проверка авторизации и загрузка проектов
   useEffect(() => {
-    const loadProjects = async () => {
-      try {
-        const data = await fetchProjects();
-        setProjects(data);
-      } catch (err) {
-        console.error('Ошибка загрузки проектов:', err);
-        setError('Не удалось загрузить проекты. Проверьте подключение к серверу.');
-      }
-    };
-    loadProjects();
-  }, []);
+    if (!user) {
+      navigate('/login');
+      return;
+    }
+    dispatch(getProjects());
+  }, [dispatch, user, navigate]);
 
-  // Обработчик нажатия Command+F
+  // Обработчик Command+F
   useEffect(() => {
     const handleKeyDown = (e) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 'f') {
@@ -47,96 +45,75 @@ const Project = ({ user, onLogout }) => {
   // Создание проекта
   const handleCreateProject = async () => {
     if (!projectName.trim()) {
-      setError('Название проекта не может быть пустым');
+      dispatch({ type: 'projects/setError', payload: 'Название проекта не может быть пустым' });
       return;
     }
 
-    setLoading(true);
-    setError('');
-
     try {
-      const response = await axios.post('/api/projects', {
-        name: projectName,
-        description: 'Новый проект'
-      });
-
-      setProjects([...projects, response.data]);
+      const response = await dispatch(
+        addProject({ name: projectName, description: 'Новый проект' })
+      ).unwrap();
       setProjectName('');
       setShowCreateModal(false);
-      navigate(`/project/${response.data.id}`);
+      navigate(`/project/${response.id}`);
     } catch (err) {
       console.error('Ошибка создания проекта:', err);
-      setError(err.response?.data?.message || 'Ошибка при создании проекта');
-    } finally {
-      setLoading(false);
+      dispatch({ type: 'projects/setError', payload: err.message || 'Ошибка создания проекта' });
     }
   };
 
-  // Добавление доски
-  const handleAddBoard = async (projectId) => {
+  // Добавление доски (заглушка)
+  const handleAddBoard = async () => {
     if (!boardName.trim()) {
-      setError('Название доски не может быть пустым');
+      dispatch({ type: 'projects/setError', payload: 'Название доски не может быть пустым' });
       return;
     }
 
-    setLoading(true);
-    setError('');
+    if (!selectedProjectId) {
+      dispatch({ type: 'projects/setError', payload: 'Выберите проект' });
+      return;
+    }
 
     try {
-      const response = await axios.post(`/api/projects/${projectId}/boards`, {
-        name: boardName
-      });
-
-      const updatedProjects = projects.map(project => {
-        if (project.id === projectId) {
-          return {
-            ...project,
-            boards: [...(project.boards || []), response.data]
-          };
-        }
-        return project;
-      });
-
-      setProjects(updatedProjects);
+      await dispatch(
+        addBoard({ projectId: selectedProjectId, boardData: { name: boardName } })
+      ).unwrap();
       setBoardName('');
       setShowAddBoardModal(false);
+      alert('Доска добавлена (заглушка, данные не сохраняются на сервере)');
     } catch (err) {
       console.error('Ошибка создания доски:', err);
-      setError(err.response?.data?.message || 'Ошибка при создании доски');
-    } finally {
-      setLoading(false);
+      dispatch({ type: 'projects/setError', payload: err.message || 'Ошибка добавления доски' });
     }
   };
 
-  // Добавление пользователя
-  const handleAddUser = async (projectId) => {
+  // Добавление пользователя (заглушка)
+  const handleAddUser = async () => {
     if (!userEmail.trim()) {
-      setError('Введите email пользователя');
+      dispatch({ type: 'projects/setError', payload: 'Введите email пользователя' });
       return;
     }
 
-    setLoading(true);
-    setError('');
+    if (!selectedProjectId) {
+      dispatch({ type: 'projects/setError', payload: 'Выберите проект' });
+      return;
+    }
 
     try {
-      await axios.post(`/api/projects/${projectId}/members`, {
-        email: userEmail
-      });
-
+      await dispatch(
+        addUser({ projectId: selectedProjectId, userData: { email: userEmail } })
+      ).unwrap();
       setUserEmail('');
       setShowAddUserModal(false);
-      // Можно обновить список проектов или показать уведомление
-      alert(`Пользователь ${userEmail} добавлен в проект`);
+      alert(`Пользователь ${userEmail} добавлен (заглушка, данные не сохраняются на сервере)`);
     } catch (err) {
       console.error('Ошибка добавления пользователя:', err);
-      setError(err.response?.data?.message || 'Ошибка при добавлении пользователя');
-    } finally {
-      setLoading(false);
+      dispatch({ type: 'projects/setError', payload: err.message || 'Ошибка добавления пользователя' });
     }
   };
 
-  // Фильтрация проектов по поиску
-  const filteredProjects = projects.filter(project =>
+  // Фильтрация проектов по поиску (на клиенте)
+  const filteredProjects = projects.filter((project) =>
     project.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -157,10 +134,11 @@ const Project = ({ user, onLogout }) => {
             <input
               id="search-input"
               type="text"
-              placeholder="Поиск"
+              placeholder="Поиск проектов"
               className="search-input"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
+              disabled={loading}
             />
             <div className="shortcut-box">
               <span className="shortcut-key">⌘</span>
@@ -169,25 +147,23 @@ const Project = ({ user, onLogout }) => {
           </div>
         </div>
         <div className="top-bar-actions">
-          <button className="share-button"><FaShareAlt /></button>
+          <button className="share-button" disabled={loading}>
+            <FaShareAlt />
+          </button>
           {user ? (
             <div className="user-controls">
-              <div className="user-avatar">
-                {getAvatarLetter()}
-              </div>
+              <div className="user-avatar">{getAvatarLetter()}</div>
               <button
                 className="logout-btn"
-                onClick={onLogout}
+                onClick={() => dispatch(logout())}
                 title="Выйти"
+                disabled={loading}
               >
                 <FaSignOutAlt />
               </button>
             </div>
           ) : (
-            <button
-              className="login-btn"
-              onClick={() => navigate('/login')}
-            >
+            <button className="login-btn" onClick={() => navigate('/login')}>
               <FaUser />
             </button>
           )}
@@ -200,25 +176,29 @@ const Project = ({ user, onLogout }) => {
         <h1 className="project-title">Проект</h1>
         <p className="project-subtitle">Управление и мониторинг вашего проекта</p>
 
+        {/* Ошибка */}
+        {error && <div className="error-message">{error}</div>}
+
         {/* Кнопки действий */}
         <div className="action-buttons">
           <button
             className="action-btn purple"
             onClick={() => setShowCreateModal(true)}
+            disabled={loading}
           >
             <FaPlus /> Создать проект
           </button>
           <button
             className="action-btn purple"
             onClick={() => setShowAddBoardModal(true)}
-            disabled={projects.length === 0}
+            disabled={projects.length === 0 || loading}
           >
             <FaColumns /> Добавить доску
           </button>
           <button
             className="action-btn purple"
             onClick={() => setShowAddUserModal(true)}
-            disabled={projects.length === 0}
+            disabled={projects.length === 0 || loading}
           >
             <FaUsers /> Добавить пользователя
           </button>
@@ -227,12 +207,10 @@ const Project = ({ user, onLogout }) => {
         {/* Список проектов */}
         {filteredProjects.length > 0 ? (
           <div className="projects-grid">
-            {filteredProjects.map(project => (
+            {filteredProjects.map((project) => (
               <div key={project.id} className="project-card">
                 <div className="project-card-header">
-                  <h3 onClick={() => navigate(`/project/${project.id}`)}>
-                    {project.name}
-                  </h3>
+                  <h3 onClick={() => navigate(`/project/${project.id}`)}>{project.name}</h3>
                   <div className="project-actions">
                     <button className="project-action-btn">
                       <FaEllipsisH />
@@ -276,7 +254,7 @@ const Project = ({ user, onLogout }) => {
                   className="modal-btn cancel"
                   onClick={() => {
                     setShowCreateModal(false);
-                    setError('');
+                    dispatch({ type: 'projects/setError', payload: '' });
                   }}
                   disabled={loading}
                 >
@@ -299,8 +277,16 @@ const Project = ({ user, onLogout }) => {
           <div className="modal-overlay">
             <div className="modal">
               <h3>Добавить новую доску</h3>
-              <select className="modal-input">
-                {projects.map(project => (
+              <select
+                className="modal-input"
+                onChange={(e) => setSelectedProjectId(e.target.value)}
+                defaultValue=""
+                disabled={loading}
+              >
+                <option value="" disabled>
+                  Выберите проект
+                </option>
+                {projects.map((project) => (
                   <option key={project.id} value={project.id}>
                     {project.name}
                   </option>
@@ -320,7 +306,7 @@ const Project = ({ user, onLogout }) => {
                   className="modal-btn cancel"
                   onClick={() => {
                     setShowAddBoardModal(false);
-                    setError('');
+                    dispatch({ type: 'projects/setError', payload: '' });
                   }}
                   disabled={loading}
                 >
@@ -328,7 +314,7 @@ const Project = ({ user, onLogout }) => {
                 </button>
                 <button
                   className="modal-btn confirm"
-                  onClick={() => handleAddBoard(projects[0].id)} // В реальном приложении нужно выбрать проект
+                  onClick={handleAddBoard}
                   disabled={loading}
                 >
                   {loading ? 'Добавление...' : 'Добавить'}
@@ -343,8 +329,16 @@ const Project = ({ user, onLogout }) => {
           <div className="modal-overlay">
             <div className="modal">
               <h3>Добавить пользователя в проект</h3>
-              <select className="modal-input">
-                {projects.map(project => (
+              <select
+                className="modal-input"
+                onChange={(e) => setSelectedProjectId(e.target.value)}
+                defaultValue=""
+                disabled={loading}
+              >
+                <option value="" disabled>
+                  Выберите проект
+                </option>
+                {projects.map((project) => (
                   <option key={project.id} value={project.id}>
                     {project.name}
                   </option>
@@ -364,7 +358,7 @@ const Project = ({ user, onLogout }) => {
                   className="modal-btn cancel"
                   onClick={() => {
                     setShowAddUserModal(false);
-                    setError('');
+                    dispatch({ type: 'projects/setError', payload: '' });
                   }}
                   disabled={loading}
                 >
@@ -372,7 +366,7 @@ const Project = ({ user, onLogout }) => {
                 </button>
                 <button
                   className="modal-btn confirm"
-                  onClick={() => handleAddUser(projects[0].id)} // В реальном приложении нужно выбрать проект
+                  onClick={handleAddUser}
                   disabled={loading}
                 >
                   {loading ? 'Добавление...' : 'Добавить'}

@@ -21,5 +21,6 @@ router.get('/:id/teams', authMiddleware, validate(userSchema.id), checkUserAcces
 router.put('/:id/profile', authMiddleware, validate(userSchema.id), checkUserAccess, userController.updateProfile);
 router.post('/:id/avatar', authMiddleware, validate(userSchema.id), checkUserAccess, upload.single('avatar'), userController.uploadAvatar);
 router.delete('/:id/avatar', authMiddleware, validate(userSchema.id), checkUserAccess, userController.deleteAvatar);
+router.post('/:id/change-password', authMiddleware, validate(userSchema.changePassword), userController.changePassword);
 
 export default router;

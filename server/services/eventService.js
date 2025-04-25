@@ -2,18 +2,12 @@ import Event from '../models/Event.js';
 import User from '../models/User.js';
 
 const getAllEvents = async (userId) => {
-  if (!userId) {
-    const err = new Error('ID пользователя обязателен');
-    err.status = 400;
-    throw err;
-  }
-
+  const where = userId ? { user_id: userId } : {};
   const events = await Event.findAll({
-    where: { user_id: userId },
+    where,
     order: [['event_date', 'ASC'], ['event_time', 'ASC']],
     include: [{ model: User, as: 'user', attributes: ['username'] }],
   });
-
   return events;
 };
 

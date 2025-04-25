@@ -10,5 +10,6 @@ const router = Router();
 router.get('/', authMiddleware, projectController.getAllProjects);
 router.post('/', authMiddleware, roleMiddleware(['manager', 'admin']), validate(projectSchema.create), projectController.createProject);
 router.put('/:id', authMiddleware, roleMiddleware(['manager', 'admin']), validate(projectSchema.update), projectController.updateProject);
+router.delete('/:id', authMiddleware, roleMiddleware(['manager', 'admin']), validate(projectSchema.id), projectController.deleteProject);
 
 export default router;

@@ -1,5 +1,30 @@
 import User from '../models/User.js';
 
+const changePassword = async (id, { currentPassword, newPassword }, requestingUser) => {
+  const user = await User.findByPk(id);
+  if (!user) {
+    const err = new Error('Пользователь не найден');
+    err.status = 404;
+    throw err;
+  }
+
+  if (requestingUser.id !== parseInt(id) && requestingUser.role !== 'admin') {
+    const err = new Error('Доступ запрещён');
+    err.status = 403;
+    throw err;
+  }
+
+  const isValid = await bcrypt.compare(currentPassword, user.password_hash);
+  if (!isValid) {
+    const err = new Error('Неверный текущий пароль');
+    err.status = 400;
+    throw err;
+  }
+
+  const newHash = await bcrypt.hash(newPassword, 10);
+  await user.update({ password_hash: newHash });
+};
+
 const getUserById = async (id) => {
   const user = await User.findByPk(id, {
     attributes: { exclude: ['password_hash'] },
@@ -81,4 +106,4 @@ const updateAvatar = async (id, avatarUrl) => {
   return user;
 };
 
-export default { getUserById, getUserTeams, updateProfile, updateAvatar };
+export default { getUserById, getUserTeams, updateProfile, updateAvatar, changePassword };

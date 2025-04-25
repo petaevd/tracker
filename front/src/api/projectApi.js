@@ -1,18 +1,21 @@
-// src/api/projectApi.js (создайте новый файл)
-import axios from 'axios';
-
-const API_BASE_URL = 'http://localhost:3000'; // Или ваш базовый URL
+import api from './api';
 
 export const fetchProjects = async () => {
-  try {
-    const response = await axios.get(`${API_BASE_URL}/api/projects`, {
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}` // Если используете JWT
-      }
-    });
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching projects:', error);
-    throw error;
-  }
+  const response = await api.get('/projects');
+  return response.data;
+};
+
+export const createProject = async (projectData) => {
+  const response = await api.post('/projects', projectData);
+  return response.data.project;
+};
+
+export const updateProject = async (projectId, projectData) => {
+  const response = await api.put(`/projects/${projectId}`, projectData);
+  return response.data.project;
+};
+
+export const deleteProject = async (projectId) => {
+  const response = await api.delete(`/projects/${projectId}`);
+  return response.data;
 };

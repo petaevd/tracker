@@ -1,69 +1,67 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import axios from 'axios';
+import { useDispatch } from 'react-redux';
+import { login } from '../store/slices/authSlice';
+import { registerUser, loginUser } from '../api/authApi';
 import './auth.css';
 
-const Register = ({ onLogin = () => {} }) => {
+const Register = () => {
   const [formData, setFormData] = useState({
     username: '',
     email: '',
     password: '',
-    role: 'employee'
+    role: 'employee',
   });
-  
+
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMessage('');
-    
+    setSuccessMessage('');
+
     try {
-      // 1. Регистрация
-      const registerResponse = await axios.post('http://localhost:3000/api/users', formData);
-      
-      if (registerResponse.data.success) {
-        setSuccessMessage('Регистрация прошла успешно!');
-        
-        // 2. Автоматический вход
-        const loginResponse = await axios.post('http://localhost:3000/api/auth/login', {
-          email: formData.email,
-          password: formData.password
-        });
-        
-        if (loginResponse.data.token) {
-          if (typeof onLogin === 'function') {
-            onLogin(loginResponse.data.user, loginResponse.data.token);
-          }
-          navigate('/');
-        }
-      }
+      await registerUser(formData);
+      setSuccessMessage('Регистрация прошла успешно!');
+  
+      const loginResponse = await loginUser({
+        email: formData.email,
+        password: formData.password,
+      });
+  
+      dispatch(login({
+        userId: loginResponse.userId,
+        token: loginResponse.token,
+        email: formData.email,
+        username: formData.username,
+        role: formData.role,
+      }));
+      navigate('/');
     } catch (error) {
       console.error('Ошибка регистрации:', error);
-      
+
       if (error.response) {
         if (error.response.data.errors) {
           const validationErrors = error.response.data.errors
-            .map(err => err.msg)
+            .map((err) => err.msg)
             .join(', ');
           setErrorMessage(`Ошибки: ${validationErrors}`);
-        } 
-        else if (error.response.data.error === "Пользователь уже существует") {
+        } else if (error.response.data.error === 'Пользователь уже существует') {
           const conflicts = error.response.data.conflicts;
           let conflictMsg = 'Пользователь с такими данными уже существует: ';
-          
           if (conflicts.username) conflictMsg += 'имя пользователя, ';
           if (conflicts.email) conflictMsg += 'email';
-          
           setErrorMessage(conflictMsg);
         } else {
           setErrorMessage(error.response.data.error || 'Ошибка регистрации');
@@ -73,14 +71,14 @@ const Register = ({ onLogin = () => {} }) => {
       }
     }
   };
-  
+
   return (
     <div className="auth-bg">
       <div className="auth-container">
         <h2>Регистрация</h2>
         {errorMessage && <div className="error-message">{errorMessage}</div>}
         {successMessage && <div className="success-message">{successMessage}</div>}
-        
+
         <form onSubmit={handleSubmit}>
           <div className="form-group">
             <label>Имя пользователя (обязательно):</label>
@@ -93,7 +91,7 @@ const Register = ({ onLogin = () => {} }) => {
               minLength="3"
             />
           </div>
-          
+
           <div className="form-group">
             <label>Email:</label>
             <input
@@ -104,7 +102,7 @@ const Register = ({ onLogin = () => {} }) => {
               required
             />
           </div>
-          
+
           <div className="form-group">
             <label>Пароль (минимум 6 символов):</label>
             <input
@@ -116,24 +114,20 @@ const Register = ({ onLogin = () => {} }) => {
               minLength="6"
             />
           </div>
-          
+
           <div className="form-group">
             <label>Роль:</label>
-            <select 
-              name="role"
-              value={formData.role} 
-              onChange={handleChange}
-            >
+            <select name="role" value={formData.role} onChange={handleChange}>
               <option value="employee">Сотрудник</option>
               <option value="manager">Менеджер</option>
             </select>
           </div>
-          
+
           <button type="submit" className="submit-btn">
             Зарегистрироваться
           </button>
         </form>
-        
+
         <p className="auth-link">
           Уже есть аккаунт? <Link to="/login">Войти</Link>
         </p>

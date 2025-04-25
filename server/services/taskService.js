@@ -8,9 +8,9 @@ const getAllTasks = async () => {
   return await Task.findAll({
     include: [
       { model: Project, as: 'project', attributes: ['name'] },
-      { model: TaskStatus, as: 'status', attributes: ['name', 'color'] },
+      { model: TaskStatus, as: 'status', attributes: ['name'] },
       { model: User, as: 'creator', attributes: ['username'] },
-      { model: Tag, as: 'tags', attributes: ['name', 'color'] },
+      { model: Tag, as: 'tags', attributes: ['name'] },
     ],
   });
 };
