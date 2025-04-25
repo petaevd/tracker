@@ -4,8 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { setUser, logout } from '../../store/slices/authSlice';
 import { getUserById, updateUser, uploadAvatar, changePassword } from '../../api/userApi';
-import './Settings.css';
 import { getAvatarLetter } from '../../utils';
+import './Settings.css';
 
 const Settings = () => {
   const dispatch = useDispatch();
@@ -112,23 +112,42 @@ const Settings = () => {
     }
   };
 
+  // Валидация email
+  const validateEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
   // Обновление профиля
   const updateProfile = async () => {
     if (profileData.name.length < 3) {
       setError('Имя пользователя должно быть не короче 3 символов');
       return;
     }
+    if (!/^[a-zA-Z0-9_-]+$/.test(profileData.name)) {
+      setError('Имя пользователя может содержать только буквы, цифры, подчеркивания и дефисы');
+      return;
+    }
+    if (!validateEmail(profileData.email)) {
+      setError('Некорректный формат email');
+      return;
+    }
 
     setIsLoading(true);
     setError('');
     try {
-      const response = await updateUser(user.id, { username: profileData.name });
+      const response = await updateUser(user.id, {
+        username: profileData.name,
+        email: profileData.email,
+      });
       dispatch(setUser(response.user));
       alert('Профиль успешно обновлён!');
     } catch (error) {
       console.error('Ошибка обновления профиля:', error);
       if (error.response?.data?.conflicts?.username) {
         setError('Пользователь с таким именем уже существует');
+      } else if (error.response?.data?.conflicts?.email) {
+        setError('Пользователь с таким email уже существует');
       } else {
         setError(error.response?.data?.message || 'Ошибка при обновлении профиля');
       }
@@ -151,11 +170,13 @@ const Settings = () => {
     setError('');
     try {
       const response = await uploadAvatar(user.id, file);
+      const avatarUrl = response.avatar_url;
+      console.log('Avatar URL:', avatarUrl); // Для отладки
       setProfileData((prev) => ({
         ...prev,
-        avatar: response.avatar_url,
+        avatar: avatarUrl,
       }));
-      dispatch(setUser({ ...user, avatar_url: response.avatar_url }));
+      dispatch(setUser({ ...user, avatar_url: avatarUrl }));
       alert('Аватар успешно обновлён!');
     } catch (error) {
       console.error('Ошибка обновления аватара:', error);
@@ -247,7 +268,7 @@ const Settings = () => {
                       <img src={profileData.avatar} alt="Avatar" className="avatar-image" />
                     ) : (
                       <div className="avatar-placeholder">
-                        {getAvatarLetter}
+                        {getAvatarLetter(user?.username, user?.email) || '?'}
                       </div>
                     )}
                   </div>
@@ -279,8 +300,9 @@ const Settings = () => {
                   <input
                     type="email"
                     value={profileData.email}
+                    onChange={(e) => setProfileData({ ...profileData, email: e.target.value })}
                     className="settings-input"
-                    disabled
+                    disabled={isLoading}
                   />
                 </div>
 
