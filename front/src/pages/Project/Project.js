@@ -1,133 +1,134 @@
 import React, { useState, useEffect } from 'react';
-import { FaPlus, FaUsers, FaColumns, FaEllipsisH } from 'react-icons/fa';
+import { FaPlus, FaEdit, FaTrash } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { getProjects, addProject, addBoard, addUser } from '../../store/slices/projectSlice';
+import { getProjects, addProject, editProject, removeProject } from '../../store/slices/projectSlice';
+import { fetchTeams } from '../../api/teamApi';
+import { toast } from 'react-toastify';
 import './Project.css';
 
-const Project = ({ user }) => {
+const Project = () => {
   const dispatch = useDispatch();
   const { projects, loading, error } = useSelector((state) => state.projects);
+  const user = useSelector((state) => state.auth.user); // Получаем user из Redux
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [showAddBoardModal, setShowAddBoardModal] = useState(false);
-  const [showAddUserModal, setShowAddUserModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
   const [projectName, setProjectName] = useState('');
-  const [boardName, setBoardName] = useState('');
-  const [userEmail, setUserEmail] = useState('');
+  const [projectDescription, setProjectDescription] = useState('');
+  const [teamId, setTeamId] = useState('');
   const [selectedProjectId, setSelectedProjectId] = useState(null);
+  const [teams, setTeams] = useState([]);
   const navigate = useNavigate();
 
   useEffect(() => {
+    // Проверяем, есть ли пользователь
+    if (!user) {
+      navigate('/login'); // Перенаправляем на логин, если пользователь не авторизован
+      return;
+    }
+
     dispatch(getProjects());
+    if (user.role !== 'employee') {
+      fetchTeams()
+        .then((data) => setTeams(data))
+        .catch(() => toast.error('Ошибка загрузки команд'));
+    }
   }, [dispatch, user, navigate]);
 
   const handleCreateProject = async () => {
-    if (!projectName.trim()) {
-      dispatch({ type: 'projects/setError', payload: 'Название проекта не может быть пустым' });
+    if (!projectName.trim() || !teamId) {
+      toast.error('Заполните название и выберите команду');
       return;
     }
 
     try {
       const response = await dispatch(
-        addProject({ name: projectName, description: 'Новый проект' })
+        addProject({ name: projectName, description: projectDescription, team_id: teamId })
       ).unwrap();
       setProjectName('');
+      setProjectDescription('');
+      setTeamId('');
       setShowCreateModal(false);
+      toast.success('Проект успешно создан');
       navigate(`/project/${response.id}/dashboard`);
     } catch (err) {
-      console.error('Ошибка создания проекта:', err);
-      dispatch({ type: 'projects/setError', payload: err.message || 'Ошибка создания проекта' });
+      toast.error(err || 'Ошибка создания проекта');
     }
   };
 
-  const handleAddBoard = async () => {
-    if (!boardName.trim()) {
-      dispatch({ type: 'projects/setError', payload: 'Название доски не может быть пустым' });
-      return;
-    }
-
-    if (!selectedProjectId) {
-      dispatch({ type: 'projects/setError', payload: 'Выберите проект' });
+  const handleEditProject = async () => {
+    if (!projectName.trim() || !teamId) {
+      toast.error('Заполните название и выберите команду');
       return;
     }
 
     try {
       await dispatch(
-        addBoard({ projectId: selectedProjectId, boardData: { name: boardName } })
+        editProject({ id: selectedProjectId, projectData: { name: projectName, description: projectDescription, team_id: teamId } })
       ).unwrap();
-      setBoardName('');
-      setShowAddBoardModal(false);
-      alert('Доска добавлена (заглушка, данные не сохраняются на сервере)');
+      setProjectName('');
+      setProjectDescription('');
+      setTeamId('');
+      setShowEditModal(false);
+      setSelectedProjectId(null);
+      toast.success('Проект успешно обновлён');
     } catch (err) {
-      console.error('Ошибка создания доски:', err);
-      dispatch({ type: 'projects/setError', payload: err.message || 'Ошибка добавления доски' });
+      toast.error(err || 'Ошибка редактирования проекта');
     }
   };
 
-  const handleAddUser = async () => {
-    if (!userEmail.trim()) {
-      dispatch({ type: 'projects/setError', payload: 'Введите email пользователя' });
-      return;
-    }
-
-    if (!selectedProjectId) {
-      dispatch({ type: 'projects/setError', payload: 'Выберите проект' });
-      return;
-    }
-
-    try {
-      await dispatch(
-        addUser({ projectId: selectedProjectId, userData: { email: userEmail } })
-      ).unwrap();
-      setUserEmail('');
-      setShowAddUserModal(false);
-      alert(`Пользователь ${userEmail} добавлен (заглушка, данные не сохраняются на сервере)`);
-    } catch (err) {
-      console.error('Ошибка добавления пользователя:', err);
-      dispatch({ type: 'projects/setError', payload: err.message || 'Ошибка добавления пользователя' });
+  const handleDeleteProject = async (projectId) => {
+    if (window.confirm('Вы уверены, что хотите удалить проект?')) {
+      try {
+        await dispatch(removeProject(projectId)).unwrap();
+        toast.success('Проект успешно удалён');
+      } catch (err) {
+        toast.error(err || 'Ошибка удаления проекта');
+      }
     }
   };
 
   const handleProjectClick = (projectId) => {
     if (projectId) {
       navigate(`/project/${projectId}/dashboard`);
-    } else {
-      console.error('Project ID is undefined');
     }
   };
+
+  const openEditModal = (project) => {
+    setSelectedProjectId(project.id);
+    setProjectName(project.name);
+    setProjectDescription(project.description || '');
+    setTeamId(project.team_id);
+    setShowEditModal(true);
+  };
+
+  // Если пользователь не загружен, показываем лоадер или ничего
+  if (!user) {
+    return <div className="loading-message">Загрузка...</div>;
+  }
 
   return (
     <div className="project-container">
       <div className="main-content">
-        <div className="breadcrumb">Домашняя / Проект</div>
-        <h1 className="project-title">Проект</h1>
-        <p className="project-subtitle">Управление и мониторинг вашего проекта</p>
+        <div className="breadcrumb">Домашняя / Проекты</div>
+        <h1 className="project-title">Проекты</h1>
+        <p className="project-subtitle">Управление и мониторинг ваших проектов</p>
 
         {error && <div className="error-message">{error}</div>}
 
         <div className="action-buttons">
-          <button
-            className="action-btn purple"
-            onClick={() => setShowCreateModal(true)}
-            disabled={loading}
-          >
-            <FaPlus /> Создать проект
-          </button>
-          <button
-            className="action-btn purple"
-            onClick={() => setShowAddBoardModal(true)}
-            disabled={projects.length === 0 || loading}
-          >
-            <FaColumns /> Добавить доску
-          </button>
-          <button
-            className="action-btn purple"
-            onClick={() => setShowAddUserModal(true)}
-            disabled={projects.length === 0 || loading}
-          >
-            <FaUsers /> Добавить пользователя
-          </button>
+          {user.role !== 'employee' && (
+            <button
+              className="action-btn purple"
+              onClick={() => setShowCreateModal(true)}
+              disabled={loading}
+            >
+              <FaPlus /> Создать проект
+            </button>
+          )}
         </div>
+
+        {loading && <div className="loading-message">Загрузка...</div>}
 
         {projects.length > 0 ? (
           <div className="projects-grid">
@@ -135,24 +136,30 @@ const Project = ({ user }) => {
               <div key={project.id} className="project-card">
                 <div className="project-card-header">
                   <h3 onClick={() => handleProjectClick(project.id)}>{project.name}</h3>
-                  <div className="project-actions">
-                    <button className="project-action-btn">
-                      <FaEllipsisH />
-                    </button>
-                  </div>
+                  {user.role !== 'employee' && (
+                    <div className="project-actions">
+                      <button className="project-action-btn" onClick={() => openEditModal(project)}>
+                        <FaEdit />
+                      </button>
+                      <button className="project-action-btn" onClick={() => handleDeleteProject(project.id)}>
+                        <FaTrash />
+                      </button>
+                    </div>
+                  )}
                 </div>
                 <p>{project.description || 'Описание отсутствует'}</p>
                 <div className="project-meta">
-                  <span>Досок: {project.boards?.length || 0}</span>
-                  <span>Участников: {project.members_count || 1}</span>
+                  <span>Команда: {project.team?.name || 'Не указана'}</span>
                 </div>
               </div>
             ))}
           </div>
         ) : (
-          <div className="empty-state">
-            <p>У вас пока нет проектов. Создайте свой первый проект!</p>
-          </div>
+          !loading && (
+            <div className="empty-state">
+              <p>У вас пока нет проектов. {user.role !== 'employee' ? 'Создайте свой первый проект!' : ''}</p>
+            </div>
+          )
         )}
 
         {showCreateModal && (
@@ -167,14 +174,29 @@ const Project = ({ user }) => {
                 className="modal-input"
                 disabled={loading}
               />
-              {error && <div className="error-message">{error}</div>}
+              <input
+                type="text"
+                value={projectDescription}
+                onChange={(e) => setProjectDescription(e.target.value)}
+                placeholder="Описание проекта"
+                className="modal-input"
+                disabled={loading}
+              />
+              <select
+                className="modal-input"
+                value={teamId}
+                onChange={(e) => setTeamId(e.target.value)}
+                disabled={loading}
+              >
+                <option value="" disabled>Выберите команду</option>
+                {teams.map((team) => (
+                  <option key={team.id} value={team.id}>{team.name}</option>
+                ))}
+              </select>
               <div className="modal-actions">
                 <button
                   className="modal-btn cancel"
-                  onClick={() => {
-                    setShowCreateModal(false);
-                    dispatch({ type: 'projects/setError', payload: '' });
-                  }}
+                  onClick={() => setShowCreateModal(false)}
                   disabled={loading}
                 >
                   Отмена
@@ -191,91 +213,43 @@ const Project = ({ user }) => {
           </div>
         )}
 
-        {showAddBoardModal && (
+        {showEditModal && (
           <div className="modal-overlay">
             <div className="modal">
-              <h3>Добавить новую доску</h3>
-              <select
-                className="modal-input"
-                onChange={(e) => setSelectedProjectId(e.target.value)}
-                defaultValue=""
-                disabled={loading}
-              >
-                <option value="" disabled>
-                  Выберите проект
-                </option>
-                {projects.map((project) => (
-                  <option key={project.id} value={project.id}>
-                    {project.name}
-                  </option>
-                ))}
-              </select>
+              <h3>Редактировать проект</h3>
               <input
                 type="text"
-                value={boardName}
-                onChange={(e) => setBoardName(e.target.value)}
-                placeholder="Название доски"
+                value={projectName}
+                onChange={(e) => setProjectName(e.target.value)}
+                placeholder="Название проекта"
                 className="modal-input"
                 disabled={loading}
               />
-              {error && <div className="error-message">{error}</div>}
-              <div className="modal-actions">
-                <button
-                  className="modal-btn cancel"
-                  onClick={() => {
-                    setShowAddBoardModal(false);
-                    dispatch({ type: 'projects/setError', payload: '' });
-                  }}
-                  disabled={loading}
-                >
-                  Отмена
-                </button>
-                <button
-                  className="modal-btn confirm"
-                  onClick={handleAddBoard}
-                  disabled={loading}
-                >
-                  {loading ? 'Добавление...' : 'Добавить'}
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {showAddUserModal && (
-          <div className="modal-overlay">
-            <div className="modal">
-              <h3>Добавить пользователя в проект</h3>
+              <input
+                type="text"
+                value={projectDescription}
+                onChange={(e) => setProjectDescription(e.target.value)}
+                placeholder="Описание проекта"
+                className="modal-input"
+                disabled={loading}
+              />
               <select
                 className="modal-input"
-                onChange={(e) => setSelectedProjectId(e.target.value)}
-                defaultValue=""
+                value={teamId}
+                onChange={(e) => setTeamId(e.target.value)}
                 disabled={loading}
               >
-                <option value="" disabled>
-                  Выберите проект
-                </option>
-                {projects.map((project) => (
-                  <option key={project.id} value={project.id}>
-                    {project.name}
-                  </option>
+                <option value="" disabled>Выберите команду</option>
+                {teams.map((team) => (
+                  <option key={team.id} value={team.id}>{team.name}</option>
                 ))}
               </select>
-              <input
-                type="email"
-                value={userEmail}
-                onChange={(e) => setUserEmail(e.target.value)}
-                placeholder="Email пользователя"
-                className="modal-input"
-                disabled={loading}
-              />
-              {error && <div className="error-message">{error}</div>}
               <div className="modal-actions">
                 <button
                   className="modal-btn cancel"
                   onClick={() => {
-                    setShowAddUserModal(false);
-                    dispatch({ type: 'projects/setError', payload: '' });
+                    setShowEditModal(false);
+                    setSelectedProjectId(null);
                   }}
                   disabled={loading}
                 >
@@ -283,10 +257,10 @@ const Project = ({ user }) => {
                 </button>
                 <button
                   className="modal-btn confirm"
-                  onClick={handleAddUser}
+                  onClick={handleEditProject}
                   disabled={loading}
                 >
-                  {loading ? 'Добавление...' : 'Добавить'}
+                  {loading ? 'Сохранение...' : 'Сохранить'}
                 </button>
               </div>
             </div>

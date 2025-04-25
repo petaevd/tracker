@@ -1,12 +1,13 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { fetchProjects, createProject } from '../../api/projectApi';
+import { fetchProjects, createProject, updateProject, deleteProject } from '../../api/projectApi';
+import { addTeamMember } from '../../api/teamApi';
 
 export const getProjects = createAsyncThunk('projects/fetchProjects', async (_, { rejectWithValue }) => {
   try {
     const response = await fetchProjects();
     return response;
   } catch (error) {
-    return rejectWithValue(error.response?.data?.message || 'Failed to fetch projects');
+    return rejectWithValue(error.response?.data?.message || 'Не удалось загрузить проекты');
   }
 });
 
@@ -15,26 +16,34 @@ export const addProject = createAsyncThunk('projects/createProject', async (proj
     const response = await createProject(projectData);
     return response;
   } catch (error) {
-    return rejectWithValue(error.response?.data?.message || 'Failed to create project');
+    return rejectWithValue(error.response?.data?.message || 'Не удалось создать проект');
   }
 });
 
-// Заглушки для addBoard и addUser
-export const addBoard = createAsyncThunk('projects/addBoard', async ({ projectId, boardData }, { rejectWithValue }) => {
+export const editProject = createAsyncThunk('projects/updateProject', async ({ id, projectData }, { rejectWithValue }) => {
   try {
-    // Заглушка: пока ничего не делаем, возвращаем моковые данные
-    return { projectId, board: { id: Date.now(), name: boardData.name } };
+    const response = await updateProject(id, projectData);
+    return response;
   } catch (error) {
-    return rejectWithValue('Функция добавления досок не реализована');
+    return rejectWithValue(error.response?.data?.message || 'Не удалось обновить проект');
   }
 });
 
-export const addUser = createAsyncThunk('projects/addUser', async ({ projectId, userData }, { rejectWithValue }) => {
+export const removeProject = createAsyncThunk('projects/deleteProject', async (projectId, { rejectWithValue }) => {
   try {
-    // Заглушка: пока ничего не делаем, возвращаем моковые данные
-    return { projectId, user: { email: userData.email } };
+    await deleteProject(projectId);
+    return projectId;
   } catch (error) {
-    return rejectWithValue('Функция добавления пользователей не реализована');
+    return rejectWithValue(error.response?.data?.message || 'Не удалось удалить проект');
+  }
+});
+
+export const addUser = createAsyncThunk('projects/addUser', async ({ teamId, userId }, { rejectWithValue }) => {
+  try {
+    await addTeamMember(teamId, userId);
+    return { teamId, userId };
+  } catch (error) {
+    return rejectWithValue(error.response?.data?.message || 'Не удалось добавить пользователя');
   }
 });
 
@@ -45,7 +54,11 @@ const projectSlice = createSlice({
     loading: false,
     error: null,
   },
-  reducers: {},
+  reducers: {
+    setError: (state, action) => {
+      state.error = action.payload;
+    },
+  },
   extraReducers: (builder) => {
     builder
       // Fetch Projects
@@ -74,20 +87,32 @@ const projectSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       })
-      // Add Board
-      .addCase(addBoard.pending, (state) => {
+      // Update Project
+      .addCase(editProject.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(addBoard.fulfilled, (state, action) => {
+      .addCase(editProject.fulfilled, (state, action) => {
         state.loading = false;
-        const { projectId, board } = action.payload;
-        const project = state.projects.find((p) => p.id === projectId);
-        if (project) {
-          project.boards = [...(project.boards || []), board];
+        const index = state.projects.findIndex((p) => p.id === action.payload.id);
+        if (index !== -1) {
+          state.projects[index] = action.payload;
         }
       })
-      .addCase(addBoard.rejected, (state, action) => {
+      .addCase(editProject.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      // Delete Project
+      .addCase(removeProject.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(removeProject.fulfilled, (state, action) => {
+        state.loading = false;
+        state.projects = state.projects.filter((p) => p.id !== action.payload);
+      })
+      .addCase(removeProject.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })
@@ -98,8 +123,7 @@ const projectSlice = createSlice({
       })
       .addCase(addUser.fulfilled, (state, action) => {
         state.loading = false;
-        const { projectId } = action.payload;
-        const project = state.projects.find((p) => p.id === projectId);
+        const project = state.projects.find((p) => p.team_id === action.payload.teamId);
         if (project) {
           project.members_count = (project.members_count || 1) + 1;
         }
@@ -111,4 +135,5 @@ const projectSlice = createSlice({
   },
 });
 
+export const { setError } = projectSlice.actions;
 export default projectSlice.reducer;

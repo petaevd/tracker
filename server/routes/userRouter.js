@@ -16,6 +16,7 @@ const checkUserAccess = (req, res, next) => {
 
 const router = Router();
 
+router.get('/', authMiddleware, userController.getAllUsers);
 router.get('/:id', authMiddleware, validate(userSchema.id), checkUserAccess, userController.getUserById);
 router.get('/:id/teams', authMiddleware, validate(userSchema.id), checkUserAccess, userController.getUserTeams);
 router.put('/:id/profile', authMiddleware, validate(userSchema.id), checkUserAccess, userController.updateProfile);

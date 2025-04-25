@@ -28,3 +28,13 @@ export const changePassword = async (userId, passwordData) => {
   const response = await api.post(`/users/${userId}/change-password`, passwordData);
   return response.data;
 };
+
+export const fetchUsers = async () => {
+  const response = await api.get('/users');
+  return response.data;
+};
+
+export const searchUsersByEmail = async (email) => {
+  const response = await api.get(`/users/search?email=${email}`);
+  return response.data;
+};

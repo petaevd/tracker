@@ -107,4 +107,11 @@ const updateAvatar = async (id, avatarUrl) => {
   return user;
 };
 
-export default { getUserById, getUserTeams, updateProfile, updateAvatar, changePassword };
+const getAllUsers = async () => {
+  const users = await User.findAll({
+    attributes: ['id', 'username', 'email'],
+  });
+  return users;
+};
+
+export default { getUserById, getUserTeams, updateProfile, updateAvatar, changePassword, getAllUsers };

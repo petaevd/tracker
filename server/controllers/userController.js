@@ -6,6 +6,15 @@ import fs from 'fs/promises';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+const getAllUsers = async (req, res, next) => {
+  try {
+    const users = await userService.getAllUsers();
+    res.json(users);
+  } catch (err) {
+    next(err);
+  }
+};
+
 const getUserById = async (req, res, next) => {
   try {
     const user = await userService.getUserById(req.params.id);
@@ -88,4 +97,4 @@ const changePassword = async (req, res, next) => {
   }
 };
 
-export default { getUserById, getUserTeams, updateProfile, uploadAvatar, deleteAvatar, changePassword };
+export default { getAllUsers, getUserById, getUserTeams, updateProfile, uploadAvatar, deleteAvatar, changePassword };
