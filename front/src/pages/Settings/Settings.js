@@ -1,10 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { FaEye, FaEyeSlash, FaPalette } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import { useSelector, useDispatch } from 'react-redux';
+import { setUser, logout } from '../../store/slices/authSlice';
+import { getUserById, updateUser, uploadAvatar, changePassword } from '../../api/userApi';
 import './Settings.css';
+import { getAvatarLetter } from '../../utils';
 
-const Settings = ({ user, onLogout }) => {
+const Settings = () => {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const user = useSelector((state) => state.auth.user);
+
   const [activeTab, setActiveTab] = useState('profile');
   const [settings, setSettings] = useState({
     darkMode: true,
@@ -15,7 +22,6 @@ const Settings = ({ user, onLogout }) => {
     accentColor: '#9A48EA',
     dateFormat: 'DD.MM.YYYY',
     timezone: 'Москва (UTC+3)',
-    twoFactorAuth: false,
   });
   const [profileData, setProfileData] = useState({
     name: '',
@@ -34,26 +40,29 @@ const Settings = ({ user, onLogout }) => {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-  const navigate = useNavigate();
 
   // Загрузка профиля и настроек
   useEffect(() => {
+    if (!user) {
+      navigate('/login');
+      return;
+    }
+
     const loadProfile = async () => {
       setIsLoading(true);
       try {
-        const response = await axios.get(`/api/users/${user.id}`, {
-          headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` },
-        });
+        const response = await getUserById(user.id);
         setProfileData({
-          name: response.data.username,
-          email: response.data.email,
-          avatar: response.data.avatar_url || null,
+          name: response.username,
+          email: response.email,
+          avatar: response.avatar_url || null,
         });
       } catch (error) {
         console.error('Ошибка загрузки профиля:', error);
         setError('Не удалось загрузить профиль');
         if (error.response?.status === 401) {
-          onLogout();
+          dispatch(logout());
+          navigate('/login');
         }
       } finally {
         setIsLoading(false);
@@ -73,7 +82,7 @@ const Settings = ({ user, onLogout }) => {
 
     loadProfile();
     loadSettings();
-  }, [user, navigate, onLogout]);
+  }, [user, navigate, dispatch]);
 
   // Сохранение настроек
   const saveSettings = async (newSettings) => {
@@ -105,22 +114,24 @@ const Settings = ({ user, onLogout }) => {
 
   // Обновление профиля
   const updateProfile = async () => {
+    if (profileData.name.length < 3) {
+      setError('Имя пользователя должно быть не короче 3 символов');
+      return;
+    }
+
     setIsLoading(true);
     setError('');
     try {
-      const response = await axios.put(
-        `/api/users/${user.id}/profile`,
-        { username: profileData.name },
-        { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } }
-      );
-      setProfileData((prev) => ({
-        ...prev,
-        name: response.data.username,
-      }));
+      const response = await updateUser(user.id, { username: profileData.name });
+      dispatch(setUser(response.user));
       alert('Профиль успешно обновлён!');
     } catch (error) {
       console.error('Ошибка обновления профиля:', error);
-      setError(error.response?.data?.message || 'Ошибка при обновлении профиля');
+      if (error.response?.data?.conflicts?.username) {
+        setError('Пользователь с таким именем уже существует');
+      } else {
+        setError(error.response?.data?.message || 'Ошибка при обновлении профиля');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -139,20 +150,12 @@ const Settings = ({ user, onLogout }) => {
     setIsLoading(true);
     setError('');
     try {
-      const formData = new FormData();
-      formData.append('avatar', file);
-
-      const response = await axios.post(`/api/users/${user.id}/avatar`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        },
-      });
-
+      const response = await uploadAvatar(user.id, file);
       setProfileData((prev) => ({
         ...prev,
-        avatar: response.data.avatar_url,
+        avatar: response.avatar_url,
       }));
+      dispatch(setUser({ ...user, avatar_url: response.avatar_url }));
       alert('Аватар успешно обновлён!');
     } catch (error) {
       console.error('Ошибка обновления аватара:', error);
@@ -163,7 +166,11 @@ const Settings = ({ user, onLogout }) => {
   };
 
   // Смена пароля
-  const changePassword = async () => {
+  const handleChangePassword = async () => {
+    if (passwordData.newPassword.length < 6) {
+      setError('Новый пароль должен быть не короче 6 символов');
+      return;
+    }
     if (passwordData.newPassword !== passwordData.confirmPassword) {
       setError('Новые пароли не совпадают');
       return;
@@ -172,14 +179,10 @@ const Settings = ({ user, onLogout }) => {
     setIsLoading(true);
     setError('');
     try {
-      await axios.post(
-        `/api/users/${user.id}/change-password`,
-        {
-          currentPassword: passwordData.currentPassword,
-          newPassword: passwordData.newPassword,
-        },
-        { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } }
-      );
+      await changePassword(user.id, {
+        currentPassword: passwordData.currentPassword,
+        newPassword: passwordData.newPassword,
+      });
       alert('Пароль успешно изменён!');
       setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
     } catch (error) {
@@ -192,7 +195,6 @@ const Settings = ({ user, onLogout }) => {
 
   return (
     <div className="dashboard-container">
-      {/* Основной контент */}
       <div className="main-content">
         <div className="breadcrumb">Домашняя/Настройки</div>
         <h1 className="dashboard-title">Настройки</h1>
@@ -244,12 +246,20 @@ const Settings = ({ user, onLogout }) => {
                     {profileData.avatar ? (
                       <img src={profileData.avatar} alt="Avatar" className="avatar-image" />
                     ) : (
-                      <div className="avatar-placeholder">{user?.username?.charAt(0).toUpperCase() || user?.email?.charAt(0).toUpperCase() || '?'}</div>
+                      <div className="avatar-placeholder">
+                        {getAvatarLetter}
+                      </div>
                     )}
                   </div>
                   <label className="upload-button">
                     Изменить фото
-                    <input type="file" accept="image/*" onChange={handleAvatarChange} hidden disabled={isLoading} />
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleAvatarChange}
+                      hidden
+                      disabled={isLoading}
+                    />
                   </label>
                 </div>
 
@@ -269,7 +279,6 @@ const Settings = ({ user, onLogout }) => {
                   <input
                     type="email"
                     value={profileData.email}
-                    onChange={(e) => setProfileData({ ...profileData, email: e.target.value })}
                     className="settings-input"
                     disabled
                   />
@@ -284,7 +293,6 @@ const Settings = ({ user, onLogout }) => {
             {activeTab === 'security' && (
               <div className="settings-section">
                 <h2 className="section-title">Безопасность</h2>
-
                 <div className="security-item">
                   <h3>Смена пароля</h3>
                   <div className="form-group">
@@ -301,7 +309,9 @@ const Settings = ({ user, onLogout }) => {
                       />
                       <button
                         className="password-toggle"
-                        onClick={() => setShowPassword({ ...showPassword, current: !showPassword.current })}
+                        onClick={() =>
+                          setShowPassword({ ...showPassword, current: !showPassword.current })
+                        }
                         disabled={isLoading}
                       >
                         {showPassword.current ? <FaEye /> : <FaEyeSlash />}
@@ -323,7 +333,9 @@ const Settings = ({ user, onLogout }) => {
                       />
                       <button
                         className="password-toggle"
-                        onClick={() => setShowPassword({ ...showPassword, new: !showPassword.new })}
+                        onClick={() =>
+                          setShowPassword({ ...showPassword, new: !showPassword.new })
+                        }
                         disabled={isLoading}
                       >
                         {showPassword.new ? <FaEye /> : <FaEyeSlash />}
@@ -345,7 +357,9 @@ const Settings = ({ user, onLogout }) => {
                       />
                       <button
                         className="password-toggle"
-                        onClick={() => setShowPassword({ ...showPassword, confirm: !showPassword.confirm })}
+                        onClick={() =>
+                          setShowPassword({ ...showPassword, confirm: !showPassword.confirm })
+                        }
                         disabled={isLoading}
                       >
                         {showPassword.confirm ? <FaEye /> : <FaEyeSlash />}
@@ -353,26 +367,9 @@ const Settings = ({ user, onLogout }) => {
                     </div>
                   </div>
 
-                  <button className="save-button" onClick={changePassword} disabled={isLoading}>
+                  <button className="save-button" onClick={handleChangePassword} disabled={isLoading}>
                     {isLoading ? 'Изменение...' : 'Изменить пароль'}
                   </button>
-                </div>
-
-                <div className="security-item">
-                  <h3>Двухфакторная аутентификация</h3>
-                  <div className="toggle-switch">
-                    <input
-                      type="checkbox"
-                      id="2fa-toggle"
-                      className="toggle-input"
-                      checked={settings.twoFactorAuth}
-                      onChange={(e) => handleSettingChange('twoFactorAuth', e.target.checked)}
-                      disabled={isLoading}
-                    />
-                    <label htmlFor="2fa-toggle" className="toggle-label"></label>
-                    <span>{settings.twoFactorAuth ? 'Включено' : 'Выключено'}</span>
-                  </div>
-                  <p className="hint-text">Добавьте дополнительный уровень безопасности к вашему аккаунту</p>
                 </div>
               </div>
             )}

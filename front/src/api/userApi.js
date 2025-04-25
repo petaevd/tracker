@@ -14,3 +14,17 @@ export const getUserTeams = async (userId) => {
   const response = await api.get(`/users/${userId}/teams`);
   return response.data;
 };
+
+export const uploadAvatar = async (userId, file) => {
+  const formData = new FormData();
+  formData.append('avatar', file);
+  const response = await api.post(`/users/${userId}/avatar`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return response.data;
+};
+
+export const changePassword = async (userId, passwordData) => {
+  const response = await api.post(`/users/${userId}/change-password`, passwordData);
+  return response.data;
+};
