@@ -1,42 +1,17 @@
-//
 import React, { useState, useEffect, useMemo } from 'react';
 import { 
   FaSearch, 
-  FaShareAlt, 
-  FaUser, 
   FaCaretDown,
   FaPlus,
   FaTimes,
   FaEdit,
   FaTrash,
-  FaSignOutAlt,
 } from 'react-icons/fa';
-import { useNavigate } from 'react-router-dom';
 import './Calendar.css';
 
-const Calendar = ({ events = [], user, setEvents, onLogout  }) => {
-  const getAvatarLetter = () => {
-    if (user?.username) {
-      return user.username.charAt(0).toUpperCase();
-    }
-    if (user?.email) {
-      return user.email.charAt(0).toUpperCase();
-    }
-    return '?'; // Fallback символ
-  };
-  const navigate = useNavigate();
-  // Цвета для событий
-  const eventColors = [
-    { name: 'Green', value: '#59b25c' },
-    { name: 'white', value: '#E0C1FF' },
-    { name: 'Blue', value: '#1b8df7' },
-    { name: 'Purple', value: '#9A48EA' },
-  ];
-
-  // Состояние поиска
+const Calendar = ({ events = [], user, setEvents }) => {
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Обработчик нажатия Command+F
   useEffect(() => {
     const handleKeyDown = (e) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 'f') {
@@ -49,43 +24,33 @@ const Calendar = ({ events = [], user, setEvents, onLogout  }) => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  // Текущая дата
   const [currentDate, setCurrentDate] = useState(new Date());
   const [showMonthDropdown, setShowMonthDropdown] = useState(false);
   
-  // Названия месяцев
   const monthNames = ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь",
-    "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"
-  ];
-  
-  // Дни недели
+    "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"];
   const days = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
   
-  // Получаем первый день месяца
   const firstDayOfMonth = new Date(
     currentDate.getFullYear(), 
     currentDate.getMonth(), 
     1
   ).getDay();
   
-  // Получаем количество дней в месяце
   const daysInMonth = new Date(
     currentDate.getFullYear(), 
     currentDate.getMonth() + 1, 
     0
   ).getDate();
   
-  // Получаем количество дней в предыдущем месяце
   const daysInPrevMonth = new Date(
     currentDate.getFullYear(), 
     currentDate.getMonth(), 
     0
   ).getDate();
   
-  // Создаем массив дат для отображения
   const dates = [];
   
-  // Добавляем дни предыдущего месяца
   for (let i = firstDayOfMonth - 1; i >= 0; i--) {
     dates.push({
       day: daysInPrevMonth - i,
@@ -94,7 +59,6 @@ const Calendar = ({ events = [], user, setEvents, onLogout  }) => {
     });
   }
   
-  // Добавляем дни текущего месяца
   const today = new Date();
   for (let i = 1; i <= daysInMonth; i++) {
     dates.push({
@@ -106,7 +70,6 @@ const Calendar = ({ events = [], user, setEvents, onLogout  }) => {
     });
   }
   
-  // Добавляем дни следующего месяца
   const totalCells = Math.ceil(dates.length / 7) * 7;
   for (let i = dates.length; i < totalCells; i++) {
     dates.push({
@@ -116,7 +79,6 @@ const Calendar = ({ events = [], user, setEvents, onLogout  }) => {
     });
   }
   
-  // Переключение месяцев
   const changeMonth = (monthIndex) => {
     setCurrentDate(new Date(
       currentDate.getFullYear(), 
@@ -126,18 +88,22 @@ const Calendar = ({ events = [], user, setEvents, onLogout  }) => {
     setShowMonthDropdown(false);
   };
 
-  // Форматирование даты: "March 29, Friday"
   const formatDate = (date) => {
     const options = { month: 'long', day: 'numeric', weekday: 'long' };
     return date.toLocaleDateString('ru-RU', options);
   };
 
-  // Состояния для модальных окон
   const [showEventModal, setShowEventModal] = useState(false);
   const [showEventDetailsModal, setShowEventDetailsModal] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState(null);
   
-  // Новое событие
+  const eventColors = [
+    { name: 'Green', value: '#59b25c' },
+    { name: 'white', value: '#E0C1FF' },
+    { name: 'Blue', value: '#1b8df7' },
+    { name: 'Purple', value: '#9A48EA' },
+  ];
+
   const [newEvent, setNewEvent] = useState({
     title: '',
     date: new Date().toISOString().split('T')[0],
@@ -146,7 +112,6 @@ const Calendar = ({ events = [], user, setEvents, onLogout  }) => {
     color: eventColors[0].value
   });
 
-  // Фильтрация событий по поисковому запросу
   const filteredEvents = useMemo(() => {
     if (!searchQuery.trim()) return [];
     
@@ -160,7 +125,6 @@ const Calendar = ({ events = [], user, setEvents, onLogout  }) => {
     });
   }, [events, searchQuery]);
 
-  // Обработчик добавления события
   const handleAddEvent = () => {
     if (newEvent.title.trim() === '') return;
     
@@ -176,7 +140,6 @@ const Calendar = ({ events = [], user, setEvents, onLogout  }) => {
     resetNewEvent();
   };
 
-  // Обработчик обновления события
   const handleUpdateEvent = () => {
     if (!selectedEvent || selectedEvent.title.trim() === '') return;
     
@@ -189,13 +152,11 @@ const Calendar = ({ events = [], user, setEvents, onLogout  }) => {
     setShowEventDetailsModal(false);
   };
 
-  // Обработчик удаления события
   const handleDeleteEvent = (id) => {
     setEvents(events.filter(event => event.id !== id));
     setShowEventDetailsModal(false);
   };
 
-  // Сброс формы нового события
   const resetNewEvent = () => {
     setNewEvent({
       title: '',
@@ -206,7 +167,6 @@ const Calendar = ({ events = [], user, setEvents, onLogout  }) => {
     });
   };
 
-  // Открытие события для просмотра/редактирования
   const openEventDetails = (event) => {
     setSelectedEvent({
       ...event,
@@ -216,7 +176,6 @@ const Calendar = ({ events = [], user, setEvents, onLogout  }) => {
     setShowEventDetailsModal(true);
   };
 
-  // Проверка, есть ли события для конкретного дня
   const getEventsForDay = (day) => {
     if (!day.isCurrentMonth) return null;
     
@@ -250,54 +209,9 @@ const Calendar = ({ events = [], user, setEvents, onLogout  }) => {
 
   return (
     <div className="calendar-page">
-      {/* Верхняя панель с поиском */}
-      <div className="top-bar">
-  <div className="search-container">
-    <div className="search-wrapper">
-      <FaSearch className="search-icon" />
-      <input
-        id="search-input"
-        type="text"
-        placeholder="Поиск"
-        className="search-input"
-      />
-      <div className="shortcut-box">
-        <span className="shortcut-key">⌘</span>
-        <span className="shortcut-key">F</span>
-      </div>
-    </div>
-  </div>
-  <div className="top-bar-actions">
-    <button className="share-button"><FaShareAlt /></button>
-    {user ? (
-      <div className="user-controls">
-        <div className="user-avatar">
-          {getAvatarLetter()}
-        </div>
-        <button 
-          className="logout-btn"
-          onClick={onLogout}
-          title="Выйти"
-        >
-          <FaSignOutAlt />
-        </button>
-      </div>
-    ) : (
-      <button 
-        className="login-btn"
-        onClick={() => navigate('/login')}
-      >
-        <FaUser />
-      </button>
-    )}
-  </div>
-</div>
-
-      {/* Основной контент */}
       <div className="calendar-main-content">
         <div className="calendar-breadcrumb">Домашняя/Календарь</div>
         
-        {/* Заголовок с поиском дат */}
         <div className="calendar-header-with-search">
           <h1 className="calendar-title">Календарь</h1>
           <div className="calendar-date-search">
@@ -313,9 +227,7 @@ const Calendar = ({ events = [], user, setEvents, onLogout  }) => {
           </div>
         </div>
         
-        {/* Обертка с ободкой */}
         <div className="calendar-wrapper">
-          {/* Панель управления календарем */}
           <div className="calendar-header">
             <div className="calendar-date-info">
               <h2 className="calendar-month-year">
@@ -358,15 +270,12 @@ const Calendar = ({ events = [], user, setEvents, onLogout  }) => {
             </div>
           </div>
           
-          {/* Календарь */}
           <div className="calendar-container">
             <div className="calendar-grid">
-              {/* Заголовки дней недели */}
               {days.map(day => (
                 <div key={day} className="calendar-header-day">{day}</div>
               ))}
               
-              {/* Ячейки календаря */}
               {dates.map((date, index) => (
                 <div 
                   key={index} 
@@ -381,7 +290,6 @@ const Calendar = ({ events = [], user, setEvents, onLogout  }) => {
         </div>
       </div>
 
-      {/* Модальное окно добавления события */}
       {showEventModal && (
         <div className="event-modal-overlay">
           <div className="event-modal">
@@ -461,7 +369,6 @@ const Calendar = ({ events = [], user, setEvents, onLogout  }) => {
         </div>
       )}
 
-      {/* Модальное окно просмотра/редактирования события */}
       {showEventDetailsModal && selectedEvent && (
         <div className="event-modal-overlay">
           <div className="event-modal">

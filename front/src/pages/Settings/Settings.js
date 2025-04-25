@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FaSearch, FaShareAlt, FaUser, FaSignOutAlt, FaEye, FaEyeSlash, FaPalette } from 'react-icons/fa';
+import { FaEye, FaEyeSlash, FaPalette } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './Settings.css';
@@ -108,13 +108,6 @@ const Settings = ({ user, onLogout }) => {
     }
   };
 
-  // Получение буквы для аватара
-  const getAvatarLetter = () => {
-    if (user?.username) return user.username.charAt(0).toUpperCase();
-    if (user?.email) return user.email.charAt(0).toUpperCase();
-    return '?';
-  };
-
   // Обновление профиля
   const updateProfile = async () => {
     setIsLoading(true);
@@ -204,37 +197,6 @@ const Settings = ({ user, onLogout }) => {
 
   return (
     <div className="dashboard-container">
-      {/* Верхняя панель с поиском */}
-      <div className="top-bar">
-        <div className="search-container">
-          <div className="search-wrapper">
-            <FaSearch className="search-icon" />
-            <input id="search-input" type="text" placeholder="Поиск" className="search-input" disabled={isLoading} />
-            <div className="shortcut-box">
-              <span className="shortcut-key">⌘</span>
-              <span className="shortcut-key">F</span>
-            </div>
-          </div>
-        </div>
-        <div className="top-bar-actions">
-          <button className="share-button" disabled={isLoading}>
-            <FaShareAlt />
-          </button>
-          {user ? (
-            <div className="user-controls">
-              <div className="user-avatar">{getAvatarLetter()}</div>
-              <button className="logout-btn" onClick={onLogout} title="Выйти" disabled={isLoading}>
-                <FaSignOutAlt />
-              </button>
-            </div>
-          ) : (
-            <button className="login-btn" onClick={() => navigate('/login')}>
-              <FaUser />
-            </button>
-          )}
-        </div>
-      </div>
-
       {/* Основной контент */}
       <div className="main-content">
         <div className="breadcrumb">Домашняя/Настройки</div>
@@ -287,7 +249,7 @@ const Settings = ({ user, onLogout }) => {
                     {profileData.avatar ? (
                       <img src={profileData.avatar} alt="Avatar" className="avatar-image" />
                     ) : (
-                      <div className="avatar-placeholder">{getAvatarLetter()}</div>
+                      <div className="avatar-placeholder">{user?.username?.charAt(0).toUpperCase() || user?.email?.charAt(0).toUpperCase() || '?'}</div>
                     )}
                   </div>
                   <label className="upload-button">

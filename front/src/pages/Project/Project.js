@@ -1,14 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { FaSearch, FaShareAlt, FaUser, FaSignOutAlt, FaPlus, FaUsers, FaColumns, FaEllipsisH } from 'react-icons/fa';
+import { FaPlus, FaUsers, FaColumns, FaEllipsisH } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { getProjects, addProject, addBoard, addUser } from '../../store/slices/projectSlice';
-import { logout } from '../../store/slices/authSlice';
 import './Project.css';
 
-const Project = () => {
+const Project = ({ user }) => {
   const dispatch = useDispatch();
-  const { user } = useSelector((state) => state.auth);
   const { projects, loading, error } = useSelector((state) => state.projects);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showAddBoardModal, setShowAddBoardModal] = useState(false);
@@ -16,11 +14,9 @@ const Project = () => {
   const [projectName, setProjectName] = useState('');
   const [boardName, setBoardName] = useState('');
   const [userEmail, setUserEmail] = useState('');
-  const [searchQuery, setSearchQuery] = useState('');
   const [selectedProjectId, setSelectedProjectId] = useState(null);
   const navigate = useNavigate();
 
-  // Проверка авторизации и загрузка проектов
   useEffect(() => {
     if (!user) {
       navigate('/login');
@@ -29,20 +25,6 @@ const Project = () => {
     dispatch(getProjects());
   }, [dispatch, user, navigate]);
 
-  // Обработчик Command+F
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'f') {
-        e.preventDefault();
-        document.getElementById('search-input').focus();
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
-
-  // Создание проекта
   const handleCreateProject = async () => {
     if (!projectName.trim()) {
       dispatch({ type: 'projects/setError', payload: 'Название проекта не может быть пустым' });
@@ -62,7 +44,6 @@ const Project = () => {
     }
   };
 
-  // Добавление доски
   const handleAddBoard = async () => {
     if (!boardName.trim()) {
       dispatch({ type: 'projects/setError', payload: 'Название доски не может быть пустым' });
@@ -87,7 +68,6 @@ const Project = () => {
     }
   };
 
-  // Добавление пользователя
   const handleAddUser = async () => {
     if (!userEmail.trim()) {
       dispatch({ type: 'projects/setError', payload: 'Введите email пользователя' });
@@ -112,63 +92,16 @@ const Project = () => {
     }
   };
 
-  // Фильтрация проектов по поиску
-  const filteredProjects = projects.filter((project) =>
-    project.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  // Получение первой буквы для аватара
-  const getAvatarLetter = () => {
-    if (user?.username) return user.username.charAt(0).toUpperCase();
-    if (user?.email) return user.email.charAt(0).toUpperCase();
-    return '?';
+  const handleProjectClick = (projectId) => {
+    if (projectId) {
+      navigate(`/project/${projectId}/dashboard`);
+    } else {
+      console.error('Project ID is undefined');
+    }
   };
 
   return (
     <div className="project-container">
-      <div className="top-bar">
-        <div className="search-container">
-          <div className="search-wrapper">
-            <FaSearch className="search-icon" />
-            <input
-              id="search-input"
-              type="text"
-              placeholder="Поиск проектов"
-              className="search-input"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              disabled={loading}
-            />
-            <div className="shortcut-box">
-              <span className="shortcut-key">⌘</span>
-              <span className="shortcut-key">F</span>
-            </div>
-          </div>
-        </div>
-        <div className="top-bar-actions">
-          <button className="share-button" disabled={loading}>
-            <FaShareAlt />
-          </button>
-          {user ? (
-            <div className="user-controls">
-              <div className="user-avatar">{getAvatarLetter()}</div>
-              <button
-                className="logout-btn"
-                onClick={() => dispatch(logout())}
-                title="Выйти"
-                disabled={loading}
-              >
-                <FaSignOutAlt />
-              </button>
-            </div>
-          ) : (
-            <button className="login-btn" onClick={() => navigate('/login')}>
-              <FaUser />
-            </button>
-          )}
-        </div>
-      </div>
-
       <div className="main-content">
         <div className="breadcrumb">Домашняя / Проект</div>
         <h1 className="project-title">Проект</h1>
@@ -200,12 +133,12 @@ const Project = () => {
           </button>
         </div>
 
-        {filteredProjects.length > 0 ? (
+        {projects.length > 0 ? (
           <div className="projects-grid">
-            {filteredProjects.map((project) => (
+            {projects.map((project) => (
               <div key={project.id} className="project-card">
                 <div className="project-card-header">
-                  <h3 onClick={() => navigate(`/project/${project.id}/dashboard`)}>{project.name}</h3>
+                  <h3 onClick={() => handleProjectClick(project.id)}>{project.name}</h3>
                   <div className="project-actions">
                     <button className="project-action-btn">
                       <FaEllipsisH />
@@ -222,11 +155,7 @@ const Project = () => {
           </div>
         ) : (
           <div className="empty-state">
-            {searchQuery ? (
-              <p>Проекты по запросу "{searchQuery}" не найдены</p>
-            ) : (
-              <p>У вас пока нет проектов. Создайте свой первый проект!</p>
-            )}
+            <p>У вас пока нет проектов. Создайте свой первый проект!</p>
           </div>
         )}
 

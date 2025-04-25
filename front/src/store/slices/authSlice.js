@@ -1,4 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit';
+import { getAvatarLetter } from '../../utils';
 
 const initialState = {
   user: null,
@@ -17,7 +18,7 @@ const authSlice = createSlice({
         email,
         username,
         role,
-        avatarLetter: username?.charAt(0).toUpperCase() || email?.charAt(0).toUpperCase() || 'U',
+        avatarLetter: getAvatarLetter(username, email),
       };
       state.token = token;
       state.isAuthenticated = true;

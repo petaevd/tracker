@@ -1,6 +1,6 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import { useSelector, useDispatch } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { setUser, logout } from './store/slices/authSlice';
 import Home from './pages/Home/Home';
 import Calendar from './pages/Calendar/Calendar';
@@ -9,14 +9,14 @@ import Project from './pages/Project/Project';
 import Favorites from './pages/Favorites/Favorites';
 import Settings from './pages/Settings/Settings';
 import Help from './pages/Help/Help';
-import Navbar from './pages/NavBar/Navbar';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import ProtectedRoute from './components/shared/ProtectedRoute';
+import Layout from './components/Layout/Layout';
 
 const App = () => {
   const dispatch = useDispatch();
-  const { user } = useSelector((state) => state.auth);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
@@ -31,53 +31,88 @@ const App = () => {
         dispatch(logout());
       }
     }
+    setIsLoading(false);
   }, [dispatch]);
 
-  const handleLogout = () => {
-    dispatch(logout());
-  };
+  if (isLoading) {
+    return <div>Загрузка...</div>;
+  }
 
   return (
     <Router>
-      <Navbar user={user} onLogout={handleLogout} />
       <Routes>
-        <Route path="/" element={
-          <ProtectedRoute>
-            <Home user={user} onLogout={handleLogout} />
-          </ProtectedRoute>
-        } />
-        <Route path="/calendar" element={
-          <ProtectedRoute>
-            <Calendar user={user} onLogout={handleLogout} />
-          </ProtectedRoute>
-        } />
-        <Route path="/project" element={
-          <ProtectedRoute>
-            <Project user={user} onLogout={handleLogout} />
-          </ProtectedRoute>
-        } />
-        <Route path="/project/:projectId/dashboard" element={
-          <ProtectedRoute>
-            <Dashboard user={user} onLogout={handleLogout} />
-          </ProtectedRoute>
-        } />
-        <Route path="/favorites" element={
-          <ProtectedRoute>
-            <Favorites user={user} onLogout={handleLogout} />
-          </ProtectedRoute>
-        } />
-        <Route path="/settings" element={
-          <ProtectedRoute>
-            <Settings user={user} onLogout={handleLogout} />
-          </ProtectedRoute>
-        } />
-        <Route path="/help" element={
-          <ProtectedRoute>
-            <Help user={user} onLogout={handleLogout} />
-          </ProtectedRoute>
-        } />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route
+          path="/"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <Home />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/calendar"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <Calendar />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/project"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <Project />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/project/:projectId/dashboard"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <Dashboard />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/favorites"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <Favorites />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/settings"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <Settings />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/help"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <Help />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
       </Routes>
     </Router>
   );

@@ -1,0 +1,17 @@
+.app-layout {
+  display: flex;
+  min-height: 100vh; /* Полная высота экрана */
+}
+
+.content-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background-color: #000000; /* Синхронизировал с --bg-color */
+}
+
+main {
+  flex: 1;
+  padding: 20px;
+  padding-top: 60px; /* Отступ для фиксированного TopBar (50px + запас) */
+}
