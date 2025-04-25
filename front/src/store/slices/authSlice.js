@@ -35,7 +35,7 @@ const authSlice = createSlice({
     setUser: (state, action) => {
       state.user = {
         ...action.payload,
-        avatarLetter: action.payload.username?.charAt(0).toUpperCase() || action.payload.email?.charAt(0).toUpperCase() || 'U',
+        avatarLetter: getAvatarLetter(action.payload.username, action.payload.email),
       };
       state.isAuthenticated = true;
     },

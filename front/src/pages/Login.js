@@ -18,26 +18,24 @@ const Login = () => {
     e.preventDefault();
     setErrorMessage('');
     setIsLoading(true);
-
+  
     try {
       const response = await loginUser({ email, password });
-      dispatch(login({ userId: response.userId, token: response.token, email }));
+      dispatch(login({
+        userId: response.user.id,
+        token: response.token,
+        email: response.user.email,
+        username: response.user.username,
+        role: response.user.role,
+      }));
+      localStorage.setItem('user', JSON.stringify(response.user));
+      localStorage.setItem('token', response.token);
       navigate('/');
     } catch (error) {
-      console.error('Детали ошибки:', error);
-
-      let errorMsg = 'Ошибка при входе в систему';
-      if (error.response) {
-        errorMsg = error.response.data?.message ||
-                   error.response.data?.error ||
-                   error.response.statusText ||
-                   `Ошибка сервера (${error.response.status})`;
-      } else if (error.request) {
-        errorMsg = 'Сервер не отвечает. Проверьте подключение к интернету';
-      } else {
-        errorMsg = error.message || 'Неизвестная ошибка';
-      }
-
+      const errorMsg = error.response?.data?.message ||
+                       error.response?.statusText ||
+                       error.message ||
+                       'Неизвестная ошибка';
       setErrorMessage(errorMsg);
     } finally {
       setIsLoading(false);

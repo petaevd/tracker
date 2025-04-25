@@ -5,7 +5,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { getEvents } from '../../store/slices/eventSlice';
 import './Home.css';
 
-const Home = ({ user, onLogout }) => {
+const Home = () => {
   const dispatch = useDispatch();
   const { events, loading, error } = useSelector((state) => state.events);
   
