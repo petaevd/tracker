@@ -18,10 +18,6 @@ const Project = ({ user }) => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!user) {
-      navigate('/login');
-      return;
-    }
     dispatch(getProjects());
   }, [dispatch, user, navigate]);
 

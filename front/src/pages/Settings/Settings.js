@@ -38,11 +38,6 @@ const Settings = ({ user, onLogout }) => {
 
   // Загрузка профиля и настроек
   useEffect(() => {
-    if (!user) {
-      navigate('/login');
-      return;
-    }
-
     const loadProfile = async () => {
       setIsLoading(true);
       try {
