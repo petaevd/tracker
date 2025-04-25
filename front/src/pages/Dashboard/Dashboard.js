@@ -1,23 +1,40 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { FaSearch, FaShareAlt, FaUser, FaSignOutAlt } from 'react-icons/fa';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
+import { useSelector, useDispatch } from 'react-redux';
+import { getProjects } from '../../store/slices/projectSlice';
 import './Dashboard.css';
 
+const Dashboard = ({ user, onLogout }) => {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const { projectId } = useParams();
+  const { projects, loading, error } = useSelector((state) => state.projects);
 
-const Dashboard = ({ sharedEvents = [], user, onLogout }) => {
-    // Обработчик нажатия Command+F
-    useEffect(() => {
-      const handleKeyDown = (e) => {
-        if ((e.metaKey || e.ctrlKey) && e.key === 'f') {
-          e.preventDefault();
-          document.getElementById('search-input').focus();
-        }
-      };
-  
-      window.addEventListener('keydown', handleKeyDown);
-      return () => window.removeEventListener('keydown', handleKeyDown);
-    }, []);
-  // Функция для получения первой буквы (из username или email)
+  // Загрузка проектов, если они еще не загружены
+  useEffect(() => {
+    if (!projects.length) {
+      dispatch(getProjects());
+    }
+  }, [dispatch, projects.length]);
+
+  // Находим проект по ID
+  const project = projects.find((p) => p.id === projectId);
+
+  // Обработчик Command+F
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'f') {
+        e.preventDefault();
+        document.getElementById('search-input').focus();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  // Получение первой буквы для аватара
   const getAvatarLetter = () => {
     if (user?.username) {
       return user.username.charAt(0).toUpperCase();
@@ -25,12 +42,11 @@ const Dashboard = ({ sharedEvents = [], user, onLogout }) => {
     if (user?.email) {
       return user.email.charAt(0).toUpperCase();
     }
-    return '?'; // Fallback символ
+    return '?';
   };
-    const navigate = useNavigate();
+
   return (
     <div className="dashboard-container">
-      {/* Верхняя панель с поиском */}
       <div className="top-bar">
         <div className="search-container">
           <div className="search-wrapper">
@@ -68,11 +84,41 @@ const Dashboard = ({ sharedEvents = [], user, onLogout }) => {
         </div>
       </div>
 
-      {/* Основной контент */}
       <div className="main-content">
-        <div className="breadcrumb">Домашняя/Панель управления проектом</div>
-        <h1 className="dashboard-title">Панель управления проектом</h1>
-        <p className="dashboard-subtitle">Внимательно изучите показатели и управляйте своим проектом</p>
+        <div className="breadcrumb">Домашняя / Проект / {project?.name || 'Панель управления'}</div>
+        <h1 className="dashboard-title">{project?.name || 'Панель управления проектом'}</h1>
+        <p className="dashboard-subtitle">
+          {project ? `Управляйте проектом "${project.name}"` : 'Внимательно изучите показатели и управляйте своим проектом'}
+        </p>
+
+        {loading && <div className="loading-message">Загрузка...</div>}
+        {error && <div className="error-message">{error}</div>}
+        {!loading && !project && !error && (
+          <div className="error-message">Проект не найден</div>
+        )}
+
+        {project && (
+          <div className="project-details">
+            <div className="dashboard-card">
+              <h3 className="card-title">Информация о проекте</h3>
+              <p><strong>Описание:</strong> {project.description || 'Нет описания'}</p>
+              <p><strong>Досок:</strong> {project.boards?.length || 0}</p>
+              <p><strong>Участников:</strong> {project.members_count || 1}</p>
+            </div>
+            <div className="dashboard-card">
+              <h3 className="card-title">Доски проекта</h3>
+              {project.boards?.length > 0 ? (
+                <ul>
+                  {project.boards.map((board) => (
+                    <li key={board.id}>{board.name}</li>
+                  ))}
+                </ul>
+              ) : (
+                <p>Доски отсутствуют</p>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

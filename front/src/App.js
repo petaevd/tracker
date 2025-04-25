@@ -51,14 +51,14 @@ const App = () => {
             <Calendar user={user} onLogout={handleLogout} />
           </ProtectedRoute>
         } />
-        <Route path="/dashboard" element={
-          <ProtectedRoute>
-            <Dashboard user={user} onLogout={handleLogout} />
-          </ProtectedRoute>
-        } />
         <Route path="/project" element={
           <ProtectedRoute>
             <Project user={user} onLogout={handleLogout} />
+          </ProtectedRoute>
+        } />
+        <Route path="/project/:projectId/dashboard" element={
+          <ProtectedRoute>
+            <Dashboard user={user} onLogout={handleLogout} />
           </ProtectedRoute>
         } />
         <Route path="/favorites" element={

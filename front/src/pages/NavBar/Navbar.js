@@ -2,7 +2,6 @@ import React from 'react';
 import { 
   FiHome, 
   FiCheckSquare, 
-  FiPieChart,
   FiCalendar,
   FiHeart,
   FiSettings,
@@ -18,7 +17,6 @@ const Navbar = () => {
   const icons = [
     { id: 'home', icon: <FiHome size={20} />, path: '/' },
     { id: 'project', icon: <FiCheckSquare size={20} />, path: '/project' },
-    { id: 'dashboard', icon: <FiPieChart size={20} />, path: '/dashboard' },
     { id: 'calendar', icon: <FiCalendar size={20} />, path: '/calendar' },
     { id: 'favorites', icon: <FiHeart size={20} />, path: '/favorites' },
     { id: 'settings', icon: <FiSettings size={20} />, path: '/settings' },
@@ -37,19 +35,22 @@ const Navbar = () => {
   };
 
   return (
-    <div className="navbar-container">
+    <nav className="navbar-container" aria-label="Главное меню">
       <div className="navbar-icons">
         {icons.map((item) => (
           <div 
             key={item.id}
             className={`icon-circle ${getActiveIcon() === item.id ? 'active' : ''}`}
             onClick={() => handleIconClick(item.path)}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => e.key === 'Enter' && handleIconClick(item.path)}
           >
             {item.icon}
           </div>
         ))}
       </div>
-    </div>
+    </nav>
   );
 };
 

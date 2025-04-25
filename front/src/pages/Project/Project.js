@@ -55,14 +55,14 @@ const Project = () => {
       ).unwrap();
       setProjectName('');
       setShowCreateModal(false);
-      navigate(`/project/${response.id}`);
+      navigate(`/project/${response.id}/dashboard`);
     } catch (err) {
       console.error('Ошибка создания проекта:', err);
       dispatch({ type: 'projects/setError', payload: err.message || 'Ошибка создания проекта' });
     }
   };
 
-  // Добавление доски (заглушка)
+  // Добавление доски
   const handleAddBoard = async () => {
     if (!boardName.trim()) {
       dispatch({ type: 'projects/setError', payload: 'Название доски не может быть пустым' });
@@ -87,7 +87,7 @@ const Project = () => {
     }
   };
 
-  // Добавление пользователя (заглушка)
+  // Добавление пользователя
   const handleAddUser = async () => {
     if (!userEmail.trim()) {
       dispatch({ type: 'projects/setError', payload: 'Введите email пользователя' });
@@ -112,7 +112,7 @@ const Project = () => {
     }
   };
 
-  // Фильтрация проектов по поиску (на клиенте)
+  // Фильтрация проектов по поиску
   const filteredProjects = projects.filter((project) =>
     project.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -126,7 +126,6 @@ const Project = () => {
 
   return (
     <div className="project-container">
-      {/* Верхняя панель с поиском */}
       <div className="top-bar">
         <div className="search-container">
           <div className="search-wrapper">
@@ -170,16 +169,13 @@ const Project = () => {
         </div>
       </div>
 
-      {/* Основной контент */}
       <div className="main-content">
         <div className="breadcrumb">Домашняя / Проект</div>
         <h1 className="project-title">Проект</h1>
         <p className="project-subtitle">Управление и мониторинг вашего проекта</p>
 
-        {/* Ошибка */}
         {error && <div className="error-message">{error}</div>}
 
-        {/* Кнопки действий */}
         <div className="action-buttons">
           <button
             className="action-btn purple"
@@ -204,13 +200,12 @@ const Project = () => {
           </button>
         </div>
 
-        {/* Список проектов */}
         {filteredProjects.length > 0 ? (
           <div className="projects-grid">
             {filteredProjects.map((project) => (
               <div key={project.id} className="project-card">
                 <div className="project-card-header">
-                  <h3 onClick={() => navigate(`/project/${project.id}`)}>{project.name}</h3>
+                  <h3 onClick={() => navigate(`/project/${project.id}/dashboard`)}>{project.name}</h3>
                   <div className="project-actions">
                     <button className="project-action-btn">
                       <FaEllipsisH />
@@ -235,7 +230,6 @@ const Project = () => {
           </div>
         )}
 
-        {/* Модальное окно создания проекта */}
         {showCreateModal && (
           <div className="modal-overlay">
             <div className="modal">
@@ -272,7 +266,6 @@ const Project = () => {
           </div>
         )}
 
-        {/* Модальное окно добавления доски */}
         {showAddBoardModal && (
           <div className="modal-overlay">
             <div className="modal">
@@ -324,7 +317,6 @@ const Project = () => {
           </div>
         )}
 
-        {/* Модальное окно добавления пользователя */}
         {showAddUserModal && (
           <div className="modal-overlay">
             <div className="modal">
