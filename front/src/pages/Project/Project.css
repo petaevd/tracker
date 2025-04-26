@@ -57,8 +57,13 @@
   color: white;
 }
 
-.action-btn.purple:hover {
-  background-color: #8a38da;
+.action-btn.blue {
+  background-color: #007bff;
+  color: white;
+}
+
+.action-btn:hover {
+  opacity: 0.9;
 }
 
 .action-btn:disabled {
@@ -110,6 +115,48 @@
   margin-top: 15px;
 }
 
+/* Сетка команд */
+.teams-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.team-card {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 20px;
+  transition: all 0.3s ease;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.team-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+  border-color: #9A48EA;
+}
+
+.team-card h3 {
+  margin-top: 0;
+  color: #fff;
+  font-size: 1.2rem;
+}
+
+.team-card p {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.9rem;
+  margin: 10px 0;
+}
+
+.team-meta {
+  display: flex;
+  justify-content: space-between;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.8rem;
+  margin-top: 15px;
+}
+
 /* Пустое состояние */
 .empty-state {
   background-color: rgba(255, 255, 255, 0.1);
@@ -126,19 +173,22 @@
   font-size: 0.9rem;
 }
 
-/* Стили для кнопок действий в карточке проекта */
-.project-card-header {
+/* Стили для кнопок действий в карточках */
+.project-card-header,
+.team-card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
-.project-actions {
+.project-actions,
+.team-actions {
   display: flex;
   gap: 10px;
 }
 
-.project-action-btn {
+.project-action-btn,
+.team-action-btn {
   background: none;
   border: none;
   color: rgba(255, 255, 255, 0.7);
@@ -147,7 +197,8 @@
   transition: color 0.2s ease;
 }
 
-.project-action-btn:hover {
+.project-action-btn:hover,
+.team-action-btn:hover {
   color: #9A48EA;
 }
 
@@ -215,4 +266,10 @@
 .btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+.list-group-item {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }

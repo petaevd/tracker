@@ -1,7 +1,9 @@
 import api from './api';
 
-export const fetchProjects = async () => {
-  const response = await api.get('/projects');
+export const fetchProjects = async (userId = null) => {
+  const response = await api.get('/projects', {
+    params: userId ? { created_by: userId } : {},
+  });
   return response.data;
 };
 

@@ -3,7 +3,7 @@ import { FaPlus, FaEdit, FaTrash, FaUsers } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { getProjects, addProject, editProject, removeProject } from '../../store/slices/projectSlice';
-import { getTeams, addTeam, addMember, searchUsers, clearSearchResults } from '../../store/slices/teamSlice';
+import { getTeams, addTeam, addMember, removeMember, editTeam, removeTeam, searchUsers, clearSearchResults } from '../../store/slices/teamSlice';
 import { toast } from 'react-toastify';
 import './Project.css';
 
@@ -15,14 +15,17 @@ const Project = () => {
   const [modalType, setModalType] = useState(null);
   const [projectName, setProjectName] = useState('');
   const [projectDescription, setProjectDescription] = useState('');
-  const [teamId, setTeamId] = useState('');
+  const [projectTeamId, setProjectTeamId] = useState('');
   const [status, setStatus] = useState('active');
   const [deadline, setDeadline] = useState('');
   const [selectedProjectId, setSelectedProjectId] = useState(null);
+  const [teamId, setTeamId] = useState(''); // Для редактирования команды
   const [teamName, setTeamName] = useState('');
   const [teamDescription, setTeamDescription] = useState('');
-  const [userEmail, setUserEmail] = useState('');
+  const [userEmails, setUserEmails] = useState('');
   const [selectedUsers, setSelectedUsers] = useState([]);
+  const [allSearchResults, setAllSearchResults] = useState([]);
+  const [emailSuggestions, setEmailSuggestions] = useState([]);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -31,31 +34,47 @@ const Project = () => {
       return;
     }
 
-    dispatch(getProjects());
-    dispatch(getTeams(user)); // Передаём user для фильтрации команд
+    dispatch(getProjects(user.id)).catch((err) => {
+      console.error('Ошибка загрузки проектов:', err);
+      toast.error('Не удалось загрузить проекты');
+    });
+    dispatch(getTeams(user)).catch((err) => {
+      console.error('Ошибка загрузки команд:', err);
+      toast.error('Не удалось загрузить команды');
+    });
     return () => {
-      dispatch(clearSearchResults()); // Очищаем результаты поиска при размонтировании
+      dispatch(clearSearchResults());
     };
   }, [dispatch, user, navigate]);
+
+  useEffect(() => {
+    // Сохраняем результаты поиска, избегая дубликатов
+    setAllSearchResults((prev) => [
+      ...prev,
+      ...searchResults.filter((user) => !prev.some((u) => u.id === user.id)),
+    ]);
+  }, [searchResults]);
 
   const resetProjectForm = () => {
     setProjectName('');
     setProjectDescription('');
-    setTeamId('');
+    setProjectTeamId('');
     setStatus('active');
     setDeadline('');
   };
 
-  const resetTeamForm = () => {
+  const resetTeamForm = useCallback(() => {
+    setTeamId('');
     setTeamName('');
     setTeamDescription('');
-    setUserEmail('');
+    setUserEmails('');
     setSelectedUsers([]);
+    setAllSearchResults([]);
     dispatch(clearSearchResults());
-  };
+  });
 
   const handleCreateProject = useCallback(async () => {
-    if (!projectName.trim() || !teamId) {
+    if (!projectName.trim() || !projectTeamId) {
       toast.error('Название проекта и команда обязательны');
       return;
     }
@@ -65,7 +84,7 @@ const Project = () => {
         addProject({
           name: projectName,
           description: projectDescription,
-          team_id: teamId,
+          team_id: projectTeamId,
           status,
           deadline,
         })
@@ -77,10 +96,10 @@ const Project = () => {
     } catch (err) {
       toast.error(err || 'Ошибка создания проекта');
     }
-  }, [projectName, projectDescription, teamId, status, deadline, dispatch, navigate]);
+  }, [projectName, projectDescription, projectTeamId, status, deadline, dispatch, navigate]);
 
   const handleEditProject = useCallback(async () => {
-    if (!projectName.trim() || !teamId) {
+    if (!projectName.trim() || !projectTeamId) {
       toast.error('Название проекта и команда обязательны');
       return;
     }
@@ -92,7 +111,7 @@ const Project = () => {
           projectData: {
             name: projectName,
             description: projectDescription,
-            team_id: teamId,
+            team_id: projectTeamId,
             status,
             deadline,
           },
@@ -105,7 +124,7 @@ const Project = () => {
     } catch (err) {
       toast.error(err || 'Ошибка редактирования проекта');
     }
-  }, [selectedProjectId, projectName, projectDescription, teamId, status, deadline, dispatch]);
+  }, [selectedProjectId, projectName, projectDescription, projectTeamId, status, deadline, dispatch]);
 
   const handleDeleteProject = useCallback(async (projectId) => {
     if (window.confirm('Вы уверены, что хотите удалить проект?')) {
@@ -133,11 +152,12 @@ const Project = () => {
         })
       ).unwrap();
 
-      // Добавление выбранных пользователей в команду
+      toast.info('Создание команды завершено, добавление участников...');
       for (const userId of selectedUsers) {
-        const user = searchResults.find((u) => u.id === userId);
+        const user = allSearchResults.find((u) => u.id === userId);
         if (user) {
           await dispatch(addMember({ teamId: response.id, user })).unwrap();
+          toast.info(`Добавлен участник: ${user.username}`);
         }
       }
 
@@ -147,26 +167,110 @@ const Project = () => {
     } catch (err) {
       toast.error(err || 'Ошибка создания команды');
     }
-  }, [teamName, teamDescription, user, selectedUsers, searchResults, dispatch]);
+  }, [teamName, dispatch, teamDescription, user.id, resetTeamForm, selectedUsers, allSearchResults]);
 
-  const handleSearchUsers = useCallback(async () => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!userEmail.trim() || !emailRegex.test(userEmail)) {
-      toast.error('Введите корректный email');
+  const handleEditTeam = useCallback(async () => {
+    if (!teamName.trim()) {
+      toast.error('Название команды обязательно');
       return;
     }
 
     try {
-      await dispatch(searchUsers(userEmail)).unwrap();
+      // Обновление данных команды
+      await dispatch(
+        editTeam({
+          id: teamId,
+          teamData: {
+            name: teamName,
+            description: teamDescription,
+          },
+        })
+      ).unwrap();
+
+      // Синхронизация участников
+      const currentMembers = teams.find((t) => t.id === teamId)?.members?.map((m) => m.id) || [];
+      const membersToAdd = selectedUsers.filter((id) => !currentMembers.includes(id));
+      const membersToRemove = currentMembers.filter((id) => !selectedUsers.includes(id));
+
+      for (const userId of membersToAdd) {
+        const user = allSearchResults.find((u) => u.id === userId);
+        if (user) {
+          await dispatch(addMember({ teamId, user })).unwrap();
+        }
+      }
+
+      for (const userId of membersToRemove) {
+        await dispatch(removeMember({ teamId, userId })).unwrap();
+      }
+
+      resetTeamForm();
+      setModalType(null);
+      toast.success('Команда успешно обновлена');
+    } catch (err) {
+      toast.error(err || 'Ошибка редактирования команды');
+    }
+  }, [teamName, dispatch, teamId, teamDescription, teams, selectedUsers, resetTeamForm, allSearchResults]);
+
+  const handleDeleteTeam = useCallback(async (teamId) => {
+    if (window.confirm('Вы уверены, что хотите удалить команду?')) {
+      try {
+        await dispatch(removeTeam(teamId)).unwrap();
+        toast.success('Команда успешно удалена');
+      } catch (err) {
+        toast.error(err || 'Ошибка удаления команды');
+      }
+    }
+  }, [dispatch]);
+
+  const handleSearchUsers = useCallback(async () => {
+    const emails = userEmails.split(',').map((email) => email.trim()).filter((email) => email);
+    if (emails.length === 0) {
+      toast.error('Введите хотя бы один email');
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const invalidEmails = emails.filter((email) => !emailRegex.test(email));
+    if (invalidEmails.length > 0) {
+      toast.error(`Некорректные email: ${invalidEmails.join(', ')}`);
+      return;
+    }
+
+    try {
+      for (const email of emails) {
+        await dispatch(searchUsers(email)).unwrap();
+      }
     } catch (err) {
       toast.error(err || 'Ошибка поиска пользователей');
     }
-  }, [userEmail, dispatch]);
+  }, [userEmails, dispatch]);
+
+  const handleEmailsInputChange = (e) => {
+    const input = e.target.value;
+    setUserEmails(input);
+    if (input.length > 2) {
+      const lastEmail = input.split(',').pop().trim();
+      if (lastEmail.length > 2) {
+        dispatch(searchUsers(lastEmail))
+          .unwrap()
+          .then((users) => {
+            setEmailSuggestions(users.map((user) => user.email));
+          })
+          .catch(() => setEmailSuggestions([]));
+      } else {
+        setEmailSuggestions([]);
+      }
+    } else {
+      setEmailSuggestions([]);
+    }
+  };
 
   const handleSelectUser = (userId) => {
-    if (!selectedUsers.includes(userId)) {
-      setSelectedUsers([...selectedUsers, userId]);
+    if (selectedUsers.includes(userId)) {
+      toast.warn('Пользователь уже добавлен');
+      return;
     }
+    setSelectedUsers([...selectedUsers, userId]);
   };
 
   const handleRemoveUser = (userId) => {
@@ -179,19 +283,28 @@ const Project = () => {
     }
   }, [navigate]);
 
-  const openEditModal = useCallback((project) => {
+  const openEditProjectModal = useCallback((project) => {
     setSelectedProjectId(project.id);
     setProjectName(project.name);
     setProjectDescription(project.description || '');
-    setTeamId(project.team_id);
+    setProjectTeamId(project.team_id);
     setStatus(project.status || 'active');
     setDeadline(project.deadline || '');
     setModalType('edit');
   }, []);
 
+  const openEditTeamModal = useCallback((team) => {
+    setTeamId(team.id);
+    setTeamName(team.name);
+    setTeamDescription(team.description || '');
+    setSelectedUsers(team.members?.map((m) => m.id) || []);
+    setModalType('editTeam');
+  }, []);
+
   const closeModal = () => {
     setModalType(null);
     setSelectedProjectId(null);
+    setTeamId('');
     resetProjectForm();
     resetTeamForm();
   };
@@ -200,7 +313,6 @@ const Project = () => {
     return <div className="loading-message">Загрузка...</div>;
   }
 
-  // Фильтрация команд для менеджера (уже выполняется на бэкенде, но оставим для совместимости)
   const filteredTeams = user.role === 'manager' ? teams.filter((team) => team.created_by === user.id) : teams;
 
   return (
@@ -246,7 +358,27 @@ const Project = () => {
             <div className="teams-grid">
               {filteredTeams.map((team) => (
                 <div key={team.id} className="team-card">
-                  <h3>{team.name}</h3>
+                  <div className="team-card-header">
+                    <h3>{team.name}</h3>
+                    {user.role !== 'employee' && (
+                      <div className="team-actions">
+                        <button
+                          className="team-action-btn"
+                          data-bs-toggle="modal"
+                          data-bs-target="#teamModal"
+                          onClick={() => openEditTeamModal(team)}
+                        >
+                          <FaEdit />
+                        </button>
+                        <button
+                          className="team-action-btn"
+                          onClick={() => handleDeleteTeam(team.id)}
+                        >
+                          <FaTrash />
+                        </button>
+                      </div>
+                    )}
+                  </div>
                   <p>{team.description || 'Описание отсутствует'}</p>
                   <div className="team-meta">
                     <span>Создатель: {team.creator?.username || 'Не указан'}</span>
@@ -274,7 +406,7 @@ const Project = () => {
                         className="project-action-btn"
                         data-bs-toggle="modal"
                         data-bs-target="#projectModal"
-                        onClick={() => openEditModal(project)}
+                        onClick={() => openEditProjectModal(project)}
                       >
                         <FaEdit />
                       </button>
@@ -388,8 +520,8 @@ const Project = () => {
                   <select
                     className="form-select"
                     id="teamSelect"
-                    value={teamId}
-                    onChange={(e) => setTeamId(e.target.value)}
+                    value={projectTeamId}
+                    onChange={(e) => setProjectTeamId(e.target.value)}
                     disabled={projectLoading}
                   >
                     <option value="" disabled>
@@ -438,7 +570,7 @@ const Project = () => {
             <div className="modal-content">
               <div className="modal-header">
                 <h5 className="modal-title" id="teamModalLabel">
-                  Создать новую команду
+                  {modalType === 'createTeam' ? 'Создать новую команду' : 'Редактировать команду'}
                 </h5>
                 <button
                   type="button"
@@ -478,19 +610,25 @@ const Project = () => {
                   />
                 </div>
                 <div className="mb-3">
-                  <label htmlFor="userEmail" className="form-label">
-                    Добавить участников по email
+                  <label htmlFor="userEmails" className="form-label">
+                    Добавить участников по email (через запятую)
                   </label>
                   <div className="input-group">
                     <input
-                      type="email"
+                      type="text"
                       className="form-control"
-                      id="userEmail"
-                      value={userEmail}
-                      onChange={(e) => setUserEmail(e.target.value)}
-                      placeholder="Введите email"
+                      id="userEmails"
+                      value={userEmails}
+                      onChange={handleEmailsInputChange}
+                      placeholder="email1@example.com, email2@example.com"
                       disabled={teamLoading}
+                      list="emailSuggestions"
                     />
+                    <datalist id="emailSuggestions">
+                      {emailSuggestions.map((email, index) => (
+                        <option key={index} value={email} />
+                      ))}
+                    </datalist>
                     <button
                       className="btn btn-outline-secondary"
                       type="button"
@@ -501,11 +639,11 @@ const Project = () => {
                     </button>
                   </div>
                 </div>
-                {searchResults.length > 0 && (
+                {allSearchResults.length > 0 && (
                   <div className="mb-3">
                     <label className="form-label">Найденные пользователи</label>
                     <ul className="list-group">
-                      {searchResults.map((result) => (
+                      {allSearchResults.map((result) => (
                         <li
                           key={result.id}
                           className="list-group-item d-flex justify-content-between align-items-center"
@@ -528,7 +666,7 @@ const Project = () => {
                     <label className="form-label">Выбранные участники</label>
                     <ul className="list-group">
                       {selectedUsers.map((userId) => {
-                        const user = searchResults.find((u) => u.id === userId);
+                        const user = allSearchResults.find((u) => u.id === userId) || teams.find((t) => t.id === teamId)?.members?.find((m) => m.id === userId);
                         return (
                           user && (
                             <li
@@ -564,10 +702,10 @@ const Project = () => {
                 <button
                   type="button"
                   className="btn btn-primary"
-                  onClick={handleCreateTeam}
+                  onClick={modalType === 'createTeam' ? handleCreateTeam : handleEditTeam}
                   disabled={teamLoading}
                 >
-                  {teamLoading ? 'Сохранение...' : 'Создать'}
+                  {teamLoading ? 'Сохранение...' : modalType === 'createTeam' ? 'Создать' : 'Сохранить'}
                 </button>
               </div>
             </div>

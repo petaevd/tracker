@@ -2,9 +2,9 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { fetchProjects, createProject, updateProject, deleteProject } from '../../api/projectApi';
 import { addTeamMember } from '../../api/teamApi';
 
-export const getProjects = createAsyncThunk('projects/fetchProjects', async (_, { rejectWithValue }) => {
+export const getProjects = createAsyncThunk('projects/fetchProjects', async (userId, { rejectWithValue }) => {
   try {
-    const response = await fetchProjects();
+    const response = await fetchProjects(userId);
     return response;
   } catch (error) {
     return rejectWithValue(error.response?.data?.message || 'Не удалось загрузить проекты');
