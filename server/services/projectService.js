@@ -24,14 +24,21 @@ const getAllProjects = async (user) => {
       ],
     });
   } else if (user.role === 'manager') {
+    // Получаем только команды, созданные менеджером
+    const managerTeams = await Team.findAll({
+      where: { created_by: user.id },
+      attributes: ['id'],
+    });
+    const teamIds = managerTeams.map(team => team.id);
+
+    if (teamIds.length === 0) {
+      return [];
+    }
+
     projects = await Project.findAll({
+      where: { team_id: teamIds },
       include: [
-        {
-          model: Team,
-          as: 'team',
-          attributes: ['name'],
-          where: { created_by: user.id },
-        },
+        { model: Team, as: 'team', attributes: ['name'] },
       ],
     });
   } else {

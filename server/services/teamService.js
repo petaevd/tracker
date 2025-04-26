@@ -2,6 +2,7 @@ import Team from '../models/Team.js';
 import User from '../models/User.js';
 import Project from '../models/Project.js';
 import TeamMember from '../models/TeamMember.js';
+import { Op } from 'sequelize';
 
 const searchUsersByEmail = async (email) => {
   const users = await User.findAll({

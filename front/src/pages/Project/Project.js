@@ -150,8 +150,9 @@ const Project = () => {
   }, [teamName, teamDescription, user, selectedUsers, searchResults, dispatch]);
 
   const handleSearchUsers = useCallback(async () => {
-    if (!userEmail.trim()) {
-      toast.error('Введите email для поиска');
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!userEmail.trim() || !emailRegex.test(userEmail)) {
+      toast.error('Введите корректный email');
       return;
     }
 

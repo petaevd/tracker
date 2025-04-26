@@ -33,6 +33,6 @@ export const removeTeamMember = async (teamId, userId) => {
 };
 
 export const searchUsersByEmail = async (email) => {
-  const response = await api.get(`/users/search?email=${encodeURIComponent(email)}`);
+  const response = await api.get(`/users/search`, { params: { email } });
   return response.data;
 };
