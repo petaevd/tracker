@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { FaPlus, FaEdit, FaTrash } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
@@ -10,7 +11,7 @@ import './Project.css';
 const Project = () => {
   const dispatch = useDispatch();
   const { projects, loading, error } = useSelector((state) => state.projects);
-  const user = useSelector((state) => state.auth.user); // Получаем user из Redux
+  const user = useSelector((state) => state.auth.user);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [projectName, setProjectName] = useState('');
@@ -19,11 +20,12 @@ const Project = () => {
   const [selectedProjectId, setSelectedProjectId] = useState(null);
   const [teams, setTeams] = useState([]);
   const navigate = useNavigate();
+  const createModalRef = useRef(null);
+  const editModalRef = useRef(null);
 
   useEffect(() => {
-    // Проверяем, есть ли пользователь
     if (!user) {
-      navigate('/login'); // Перенаправляем на логин, если пользователь не авторизован
+      navigate('/login');
       return;
     }
 
@@ -34,6 +36,23 @@ const Project = () => {
         .catch(() => toast.error('Ошибка загрузки команд'));
     }
   }, [dispatch, user, navigate]);
+
+  // Обработчик закрытия модалок по Escape
+  const handleKeyDown = useCallback((event) => {
+    if (event.key === 'Escape' && !loading) {
+      setShowCreateModal(false);
+      setShowEditModal(false);
+      setSelectedProjectId(null);
+      setProjectName('');
+      setProjectDescription('');
+      setTeamId('');
+    }
+  }, [loading]);
+
+  useEffect(() => {
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [handleKeyDown]);
 
   const handleCreateProject = async () => {
     if (!projectName.trim() || !teamId) {
@@ -102,7 +121,38 @@ const Project = () => {
     setShowEditModal(true);
   };
 
-  // Если пользователь не загружен, показываем лоадер или ничего
+  // Обработчик клика по оверлею
+  const handleOverlayClick = (e, modalRef) => {
+    if (modalRef.current && !modalRef.current.contains(e.target) && !loading) {
+      setShowCreateModal(false);
+      setShowEditModal(false);
+      setSelectedProjectId(null);
+      setProjectName('');
+      setProjectDescription('');
+      setTeamId('');
+    }
+  };
+
+  // Компонент модального окна
+  const Modal = ({ show, onClose, modalRef, title, children, id }) => {
+    if (!show) return null;
+
+    return createPortal(
+      <div
+        className="modal-overlay"
+        onClick={(e) => handleOverlayClick(e, modalRef)}
+        role="dialog"
+        aria-labelledby={id}
+      >
+        <div className="modal" ref={modalRef}>
+          <h3 id={id}>{title}</h3>
+          {children}
+        </div>
+      </div>,
+      document.body
+    );
+  };
+
   if (!user) {
     return <div className="loading-message">Загрузка...</div>;
   }
@@ -162,110 +212,126 @@ const Project = () => {
           )
         )}
 
-        {showCreateModal && (
-          <div className="modal-overlay">
-            <div className="modal">
-              <h3>Создать новый проект</h3>
-              <input
-                type="text"
-                value={projectName}
-                onChange={(e) => setProjectName(e.target.value)}
-                placeholder="Название проекта"
-                className="modal-input"
-                disabled={loading}
-              />
-              <input
-                type="text"
-                value={projectDescription}
-                onChange={(e) => setProjectDescription(e.target.value)}
-                placeholder="Описание проекта"
-                className="modal-input"
-                disabled={loading}
-              />
-              <select
-                className="modal-input"
-                value={teamId}
-                onChange={(e) => setTeamId(e.target.value)}
-                disabled={loading}
-              >
-                <option value="" disabled>Выберите команду</option>
-                {teams.map((team) => (
-                  <option key={team.id} value={team.id}>{team.name}</option>
-                ))}
-              </select>
-              <div className="modal-actions">
-                <button
-                  className="modal-btn cancel"
-                  onClick={() => setShowCreateModal(false)}
-                  disabled={loading}
-                >
-                  Отмена
-                </button>
-                <button
-                  className="modal-btn confirm"
-                  onClick={handleCreateProject}
-                  disabled={loading}
-                >
-                  {loading ? 'Создание...' : 'Создать'}
-                </button>
-              </div>
-            </div>
+        <Modal
+          show={showCreateModal}
+          onClose={() => setShowCreateModal(false)}
+          modalRef={createModalRef}
+          title="Создать новый проект"
+          id="create-modal-title"
+        >
+          <input
+            type="text"
+            value={projectName}
+            onChange={(e) => setProjectName(e.target.value)}
+            placeholder="Название проекта"
+            className="modal-input"
+            disabled={loading}
+            aria-label="Название проекта"
+          />
+          <input
+            type="text"
+            value={projectDescription}
+            onChange={(e) => setProjectDescription(e.target.value)}
+            placeholder="Описание проекта"
+            className="modal-input"
+            disabled={loading}
+            aria-label="Описание проекта"
+          />
+          <select
+            className="modal-input"
+            value={teamId}
+            onChange={(e) => setTeamId(e.target.value)}
+            disabled={loading}
+            aria-label="Выберите команду"
+          >
+            <option value="" disabled>Выберите команду</option>
+            {teams.map((team) => (
+              <option key={team.id} value={team.id}>{team.name}</option>
+            ))}
+          </select>
+          <div className="modal-actions">
+            <button
+              className="modal-btn cancel"
+              onClick={() => {
+                setShowCreateModal(false);
+                setProjectName('');
+                setProjectDescription('');
+                setTeamId('');
+              }}
+              disabled={loading}
+            >
+              Отмена
+            </button>
+            <button
+              className="modal-btn confirm"
+              onClick={handleCreateProject}
+              disabled={loading}
+            >
+              {loading ? 'Создание...' : 'Создать'}
+            </button>
           </div>
-        )}
+        </Modal>
 
-        {showEditModal && (
-          <div className="modal-overlay">
-            <div className="modal">
-              <h3>Редактировать проект</h3>
-              <input
-                type="text"
-                value={projectName}
-                onChange={(e) => setProjectName(e.target.value)}
-                placeholder="Название проекта"
-                className="modal-input"
-                disabled={loading}
-              />
-              <input
-                type="text"
-                value={projectDescription}
-                onChange={(e) => setProjectDescription(e.target.value)}
-                placeholder="Описание проекта"
-                className="modal-input"
-                disabled={loading}
-              />
-              <select
-                className="modal-input"
-                value={teamId}
-                onChange={(e) => setTeamId(e.target.value)}
-                disabled={loading}
-              >
-                <option value="" disabled>Выберите команду</option>
-                {teams.map((team) => (
-                  <option key={team.id} value={team.id}>{team.name}</option>
-                ))}
-              </select>
-              <div className="modal-actions">
-                <button
-                  className="modal-btn cancel"
-                  onClick={() => {
-                    setShowEditModal(false);
-                    setSelectedProjectId(null);
-                  }}
-                  disabled={loading}
-                >
-                  Отмена
-                </button>
-                <button
-                  className="modal-btn confirm"
-                  onClick={handleEditProject}
-                  disabled={loading}
-                >
-                  {loading ? 'Сохранение...' : 'Сохранить'}
-                </button>
-              </div>
-            </div>
+        <Modal
+          show={showEditModal}
+          onClose={() => setShowEditModal(false)}
+          modalRef={editModalRef}
+          title="Редактировать проект"
+          id="edit-modal-title"
+        >
+          <input
+            type="text"
+            value={projectName}
+            onChange={(e) => setProjectName(e.target.value)}
+            placeholder="Название проекта"
+            className="modal-input"
+            disabled={loading}
+            aria-label="Название проекта"
+          />
+          <input
+            type="text"
+            value={projectDescription}
+            onChange={(e) => setProjectDescription(e.target.value)}
+            placeholder="Описание проекта"
+            className="modal-input"
+            disabled={loading}
+            aria-label="Описание проекта"
+          />
+          <select
+            className="modal-input"
+            value={teamId}
+            onChange={(e) => setTeamId(e.target.value)}
+            disabled={loading}
+            aria-label="Выберите команду"
+          >
+            <option value="" disabled>Выберите команду</option>
+            {teams.map((team) => (
+              <option key={team.id} value={team.id}>{team.name}</option>
+            ))}
+          </select>
+          <div className="modal-actions">
+            <button
+              className="modal-btn cancel"
+              onClick={() => {
+                setShowEditModal(false);
+                setSelectedProjectId(null);
+                setProjectName('');
+                setProjectDescription('');
+                setTeamId('');
+              }}
+              disabled={loading}
+            >
+              Отмена
+            </button>
+            <button
+              className="modal-btn confirm"
+              onClick={handleEditProject}
+              disabled={loading}
+            >
+              {loading ? 'Сохранение...' : 'Сохранить'}
+            </button>
           </div>
-        )}
+        </Modal>
       </div>
     </div>
   );
