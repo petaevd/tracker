@@ -1,8 +1,24 @@
 import teamService from '../services/teamService.js';
 
+const searchUsersByEmail = async (req, res, next) => {
+  try {
+    const { email } = req.query;
+    if (!email) {
+      const err = new Error('Email обязателен для поиска');
+      err.status = 400;
+      throw err;
+    }
+    const users = await teamService.searchUsersByEmail(email);
+    res.json(users);
+  } catch (err) {
+    next(err);
+  }
+};
+
 const getAllTeams = async (req, res, next) => {
   try {
-    const teams = await teamService.getAllTeams();
+    const createdBy = req.user.role === 'manager' ? req.user.id : null;
+    const teams = await teamService.getAllTeams(createdBy);
     res.json(teams);
   } catch (err) {
     next(err);
@@ -73,4 +89,4 @@ const removeMember = async (req, res, next) => {
   }
 };
 
-export default { getAllTeams, getTeamById, getTeamMembers, createTeam, updateTeam, deleteTeam, addMember, removeMember };
+export default { searchUsersByEmail, getAllTeams, getTeamById, getTeamMembers, createTeam, updateTeam, deleteTeam, addMember, removeMember };

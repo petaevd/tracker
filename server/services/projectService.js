@@ -1,6 +1,7 @@
 import Project from '../models/Project.js';
 import Team from '../models/Team.js';
 import TeamMember from '../models/TeamMember.js';
+import Task from '../models/Task.js';
 
 const getAllProjects = async (user) => {
   let projects;
@@ -34,7 +35,6 @@ const getAllProjects = async (user) => {
       ],
     });
   } else {
-    // Для админов — все проекты
     projects = await Project.findAll({
       include: [
         { model: Team, as: 'team', attributes: ['name'] },

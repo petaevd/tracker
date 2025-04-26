@@ -1,15 +1,16 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { FaPlus, FaEdit, FaTrash } from 'react-icons/fa';
+import { FaPlus, FaEdit, FaTrash, FaUsers } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { getProjects, addProject, editProject, removeProject } from '../../store/slices/projectSlice';
-import { fetchTeams } from '../../api/teamApi';
+import { getTeams, addTeam, addMember, searchUsers, clearSearchResults } from '../../store/slices/teamSlice';
 import { toast } from 'react-toastify';
 import './Project.css';
 
 const Project = () => {
   const dispatch = useDispatch();
-  const { projects, loading, error } = useSelector((state) => state.projects);
+  const { projects, loading: projectLoading, error: projectError } = useSelector((state) => state.projects);
+  const { teams, searchResults, loading: teamLoading, error: teamError } = useSelector((state) => state.teams);
   const user = useSelector((state) => state.auth.user);
   const [modalType, setModalType] = useState(null);
   const [projectName, setProjectName] = useState('');
@@ -18,7 +19,10 @@ const Project = () => {
   const [status, setStatus] = useState('active');
   const [deadline, setDeadline] = useState('');
   const [selectedProjectId, setSelectedProjectId] = useState(null);
-  const [teams, setTeams] = useState([]);
+  const [teamName, setTeamName] = useState('');
+  const [teamDescription, setTeamDescription] = useState('');
+  const [userEmail, setUserEmail] = useState('');
+  const [selectedUsers, setSelectedUsers] = useState([]);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -28,19 +32,26 @@ const Project = () => {
     }
 
     dispatch(getProjects());
-    if (user.role !== 'employee') {
-      fetchTeams()
-        .then((data) => setTeams(data))
-        .catch(() => toast.error('Ошибка загрузки команд'));
-    }
+    dispatch(getTeams(user)); // Передаём user для фильтрации команд
+    return () => {
+      dispatch(clearSearchResults()); // Очищаем результаты поиска при размонтировании
+    };
   }, [dispatch, user, navigate]);
 
-  const resetForm = () => {
+  const resetProjectForm = () => {
     setProjectName('');
     setProjectDescription('');
     setTeamId('');
     setStatus('active');
     setDeadline('');
+  };
+
+  const resetTeamForm = () => {
+    setTeamName('');
+    setTeamDescription('');
+    setUserEmail('');
+    setSelectedUsers([]);
+    dispatch(clearSearchResults());
   };
 
   const handleCreateProject = useCallback(async () => {
@@ -59,7 +70,7 @@ const Project = () => {
           deadline,
         })
       ).unwrap();
-      resetForm();
+      resetProjectForm();
       setModalType(null);
       toast.success('Проект успешно создан');
       navigate(`/project/${response.id}/dashboard`);
@@ -87,7 +98,7 @@ const Project = () => {
           },
         })
       ).unwrap();
-      resetForm();
+      resetProjectForm();
       setModalType(null);
       setSelectedProjectId(null);
       toast.success('Проект успешно обновлён');
@@ -106,6 +117,60 @@ const Project = () => {
       }
     }
   }, [dispatch]);
+
+  const handleCreateTeam = useCallback(async () => {
+    if (!teamName.trim()) {
+      toast.error('Название команды обязательно');
+      return;
+    }
+
+    try {
+      const response = await dispatch(
+        addTeam({
+          name: teamName,
+          description: teamDescription,
+          created_by: user.id,
+        })
+      ).unwrap();
+
+      // Добавление выбранных пользователей в команду
+      for (const userId of selectedUsers) {
+        const user = searchResults.find((u) => u.id === userId);
+        if (user) {
+          await dispatch(addMember({ teamId: response.id, user })).unwrap();
+        }
+      }
+
+      resetTeamForm();
+      setModalType(null);
+      toast.success('Команда успешно создана');
+    } catch (err) {
+      toast.error(err || 'Ошибка создания команды');
+    }
+  }, [teamName, teamDescription, user, selectedUsers, searchResults, dispatch]);
+
+  const handleSearchUsers = useCallback(async () => {
+    if (!userEmail.trim()) {
+      toast.error('Введите email для поиска');
+      return;
+    }
+
+    try {
+      await dispatch(searchUsers(userEmail)).unwrap();
+    } catch (err) {
+      toast.error(err || 'Ошибка поиска пользователей');
+    }
+  }, [userEmail, dispatch]);
+
+  const handleSelectUser = (userId) => {
+    if (!selectedUsers.includes(userId)) {
+      setSelectedUsers([...selectedUsers, userId]);
+    }
+  };
+
+  const handleRemoveUser = (userId) => {
+    setSelectedUsers(selectedUsers.filter((id) => id !== userId));
+  };
 
   const handleProjectClick = useCallback((projectId) => {
     if (projectId) {
@@ -126,12 +191,16 @@ const Project = () => {
   const closeModal = () => {
     setModalType(null);
     setSelectedProjectId(null);
-    resetForm();
+    resetProjectForm();
+    resetTeamForm();
   };
 
   if (!user) {
     return <div className="loading-message">Загрузка...</div>;
   }
+
+  // Фильтрация команд для менеджера (уже выполняется на бэкенде, но оставим для совместимости)
+  const filteredTeams = user.role === 'manager' ? teams.filter((team) => team.created_by === user.id) : teams;
 
   return (
     <div className="project-container">
@@ -140,23 +209,57 @@ const Project = () => {
         <h1 className="project-title">Проекты</h1>
         <p className="project-subtitle">Управление и мониторинг ваших проектов</p>
 
-        {error && <div className="error-message">{error}</div>}
+        {projectError && <div className="error-message">{projectError}</div>}
+        {teamError && <div className="error-message">{teamError}</div>}
 
         <div className="action-buttons">
           {user.role !== 'employee' && (
-            <button
-              className="action-btn purple"
-              data-bs-toggle="modal"
-              data-bs-target="#projectModal"
-              onClick={() => setModalType('create')}
-              disabled={loading}
-            >
-              <FaPlus /> Создать проект
-            </button>
+            <>
+              <button
+                className="action-btn purple"
+                data-bs-toggle="modal"
+                data-bs-target="#projectModal"
+                onClick={() => setModalType('create')}
+                disabled={projectLoading || teamLoading}
+              >
+                <FaPlus /> Создать проект
+              </button>
+              <button
+                className="action-btn blue"
+                data-bs-toggle="modal"
+                data-bs-target="#teamModal"
+                onClick={() => setModalType('createTeam')}
+                disabled={teamLoading}
+              >
+                <FaUsers /> Создать команду
+              </button>
+            </>
           )}
         </div>
 
-        {loading && <div className="loading-message">Загрузка...</div>}
+        {(projectLoading || teamLoading) && <div className="loading-message">Загрузка...</div>}
+
+        <div className="teams-section">
+          <h2 className="section-title">Доступные команды</h2>
+          {filteredTeams.length > 0 ? (
+            <div className="teams-grid">
+              {filteredTeams.map((team) => (
+                <div key={team.id} className="team-card">
+                  <h3>{team.name}</h3>
+                  <p>{team.description || 'Описание отсутствует'}</p>
+                  <div className="team-meta">
+                    <span>Создатель: {team.creator?.username || 'Не указан'}</span>
+                    <span>Участников: {team.members?.length || 0}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="empty-state">
+              <p>Нет доступных команд. {user.role !== 'employee' ? 'Создайте свою первую команду!' : ''}</p>
+            </div>
+          )}
+        </div>
 
         {projects.length > 0 ? (
           <div className="projects-grid">
@@ -191,13 +294,14 @@ const Project = () => {
             ))}
           </div>
         ) : (
-          !loading && (
+          !projectLoading && (
             <div className="empty-state">
               <p>У вас пока нет проектов. {user.role !== 'employee' ? 'Создайте свой первый проект!' : ''}</p>
             </div>
           )
         )}
 
+        {/* Модальное окно для проекта */}
         <div
           className="modal fade"
           id="projectModal"
@@ -231,7 +335,7 @@ const Project = () => {
                     value={projectName}
                     onChange={(e) => setProjectName(e.target.value)}
                     placeholder="Название проекта"
-                    disabled={loading}
+                    disabled={projectLoading}
                   />
                 </div>
                 <div className="mb-3">
@@ -245,7 +349,7 @@ const Project = () => {
                     value={projectDescription}
                     onChange={(e) => setProjectDescription(e.target.value)}
                     placeholder="Описание проекта"
-                    disabled={loading}
+                    disabled={projectLoading}
                   />
                 </div>
                 <div className="mb-3">
@@ -257,7 +361,7 @@ const Project = () => {
                     id="projectStatus"
                     value={status}
                     onChange={(e) => setStatus(e.target.value)}
-                    disabled={loading}
+                    disabled={projectLoading}
                   >
                     <option value="active">Активный</option>
                     <option value="archived">Архивированный</option>
@@ -273,7 +377,7 @@ const Project = () => {
                     id="projectDeadline"
                     value={deadline}
                     onChange={(e) => setDeadline(e.target.value)}
-                    disabled={loading}
+                    disabled={projectLoading}
                   />
                 </div>
                 <div className="mb-3">
@@ -285,12 +389,12 @@ const Project = () => {
                     id="teamSelect"
                     value={teamId}
                     onChange={(e) => setTeamId(e.target.value)}
-                    disabled={loading}
+                    disabled={projectLoading}
                   >
                     <option value="" disabled>
                       Выберите команду
                     </option>
-                    {teams.map((team) => (
+                    {filteredTeams.map((team) => (
                       <option key={team.id} value={team.id}>
                         {team.name}
                       </option>
@@ -304,7 +408,7 @@ const Project = () => {
                   className="btn btn-secondary"
                   data-bs-dismiss="modal"
                   onClick={closeModal}
-                  disabled={loading}
+                  disabled={projectLoading}
                 >
                   Отмена
                 </button>
@@ -312,9 +416,157 @@ const Project = () => {
                   type="button"
                   className="btn btn-primary"
                   onClick={modalType === 'create' ? handleCreateProject : handleEditProject}
-                  disabled={loading}
+                  disabled={projectLoading}
                 >
-                  {loading ? 'Сохранение...' : modalType === 'create' ? 'Создать' : 'Сохранить'}
+                  {projectLoading ? 'Сохранение...' : modalType === 'create' ? 'Создать' : 'Сохранить'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Модальное окно для команды */}
+        <div
+          className="modal fade"
+          id="teamModal"
+          tabIndex="-1"
+          aria-labelledby="teamModalLabel"
+          aria-hidden="true"
+        >
+          <div className="modal-dialog">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title" id="teamModalLabel">
+                  Создать новую команду
+                </h5>
+                <button
+                  type="button"
+                  className="btn-close"
+                  data-bs-dismiss="modal"
+                  aria-label="Закрыть"
+                  onClick={closeModal}
+                ></button>
+              </div>
+              <div className="modal-body">
+                <div className="mb-3">
+                  <label htmlFor="teamName" className="form-label">
+                    Название команды
+                  </label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    id="teamName"
+                    value={teamName}
+                    onChange={(e) => setTeamName(e.target.value)}
+                    placeholder="Название команды"
+                    disabled={teamLoading}
+                  />
+                </div>
+                <div className="mb-3">
+                  <label htmlFor="teamDescription" className="form-label">
+                    Описание команды
+                  </label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    id="teamDescription"
+                    value={teamDescription}
+                    onChange={(e) => setTeamDescription(e.target.value)}
+                    placeholder="Описание команды"
+                    disabled={teamLoading}
+                  />
+                </div>
+                <div className="mb-3">
+                  <label htmlFor="userEmail" className="form-label">
+                    Добавить участников по email
+                  </label>
+                  <div className="input-group">
+                    <input
+                      type="email"
+                      className="form-control"
+                      id="userEmail"
+                      value={userEmail}
+                      onChange={(e) => setUserEmail(e.target.value)}
+                      placeholder="Введите email"
+                      disabled={teamLoading}
+                    />
+                    <button
+                      className="btn btn-outline-secondary"
+                      type="button"
+                      onClick={handleSearchUsers}
+                      disabled={teamLoading}
+                    >
+                      Поиск
+                    </button>
+                  </div>
+                </div>
+                {searchResults.length > 0 && (
+                  <div className="mb-3">
+                    <label className="form-label">Найденные пользователи</label>
+                    <ul className="list-group">
+                      {searchResults.map((result) => (
+                        <li
+                          key={result.id}
+                          className="list-group-item d-flex justify-content-between align-items-center"
+                        >
+                          {result.username} ({result.email})
+                          <button
+                            className="btn btn-sm btn-primary"
+                            onClick={() => handleSelectUser(result.id)}
+                            disabled={selectedUsers.includes(result.id) || teamLoading}
+                          >
+                            Добавить
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                {selectedUsers.length > 0 && (
+                  <div className="mb-3">
+                    <label className="form-label">Выбранные участники</label>
+                    <ul className="list-group">
+                      {selectedUsers.map((userId) => {
+                        const user = searchResults.find((u) => u.id === userId);
+                        return (
+                          user && (
+                            <li
+                              key={user.id}
+                              className="list-group-item d-flex justify-content-between align-items-center"
+                            >
+                              {user.username} ({user.email})
+                              <button
+                                className="btn btn-sm btn-danger"
+                                onClick={() => handleRemoveUser(user.id)}
+                                disabled={teamLoading}
+                              >
+                                Удалить
+                              </button>
+                            </li>
+                          )
+                        );
+                      })}
+                    </ul>
+                  </div>
+                )}
+              </div>
+              <div className="modal-footer">
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  data-bs-dismiss="modal"
+                  onClick={closeModal}
+                  disabled={teamLoading}
+                >
+                  Отмена
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-primary"
+                  onClick={handleCreateTeam}
+                  disabled={teamLoading}
+                >
+                  {teamLoading ? 'Сохранение...' : 'Создать'}
                 </button>
               </div>
             </div>

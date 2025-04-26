@@ -3,11 +3,21 @@ import User from '../models/User.js';
 import Project from '../models/Project.js';
 import TeamMember from '../models/TeamMember.js';
 
-const getAllTeams = async () => {
+const searchUsersByEmail = async (email) => {
+  const users = await User.findAll({
+    where: { email: { [Op.iLike]: `%${email}%` } },
+    attributes: ['id', 'username', 'email'],
+  });
+  return users;
+};
+
+const getAllTeams = async (createdBy = null) => {
+  const where = createdBy ? { created_by: createdBy } : {};
   return await Team.findAll({
+    where,
     include: [
       { model: User, as: 'creator', attributes: ['username'] },
-      { model: User, as: 'members', attributes: ['id', 'username'] },
+      { model: User, as: 'members', attributes: ['id', 'username', 'email'] },
     ],
   });
 };
@@ -186,4 +196,4 @@ const removeMember = async (teamId, userId) => {
   await member.destroy();
 };
 
-export default { getAllTeams, getTeamById, getTeamMembers, createTeam, updateTeam, deleteTeam, addMember, removeMember };
+export default { searchUsersByEmail, getAllTeams, getTeamById, getTeamMembers, createTeam, updateTeam, deleteTeam, addMember, removeMember };
