@@ -110,106 +110,6 @@
   margin-top: 15px;
 }
 
-/* Модальные окна */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.7);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-  overflow-y: auto;
-}
-
-.modal {
-  background-color: #1a1a1a;
-  padding: 25px;
-  border-radius: 10px;
-  width: 100%;
-  max-width: 400px;
-  margin: 20px;
-  position: relative;
-  animation: slideIn 0.3s ease-out;
-}
-
-@keyframes slideIn {
-  from {
-    transform: translateY(-50px);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
-
-.modal h3 {
-  margin-top: 0;
-  color: #9A48EA;
-  font-size: 1.5rem;
-  margin-bottom: 20px;
-}
-
-.modal-input {
-  width: 100%;
-  padding: 10px 15px;
-  margin: 15px 0;
-  background-color: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 5px;
-  color: white;
-  font-size: 1rem;
-  box-sizing: border-box;
-}
-
-.modal-input:focus {
-  outline: none;
-  border-color: #9A48EA;
-}
-
-.modal-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-  margin-top: 20px;
-}
-
-.modal-btn {
-  padding: 8px 15px;
-  border-radius: 5px;
-  border: none;
-  cursor: pointer;
-  font-weight: 500;
-  transition: background-color 0.2s ease;
-}
-
-.modal-btn.cancel {
-  background-color: rgba(255, 255, 255, 0.1);
-  color: white;
-}
-
-.modal-btn.confirm {
-  background-color: #9A48EA;
-  color: white;
-}
-
-.modal-btn.cancel:hover {
-  background-color: rgba(255, 255, 255, 0.2);
-}
-
-.modal-btn.confirm:hover {
-  background-color: #8a38da;
-}
-
-.modal-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
 /* Пустое состояние */
 .empty-state {
   background-color: rgba(255, 255, 255, 0.1);
@@ -249,4 +149,70 @@
 
 .project-action-btn:hover {
   color: #9A48EA;
+}
+
+/* Кастомизация Bootstrap модалки */
+.modal-content {
+  background-color: #1a1a1a;
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.modal-header {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.modal-title {
+  color: #9A48EA;
+}
+
+.modal-body {
+  background-color: #1a1a1a;
+}
+
+.form-label {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.form-control,
+.form-select {
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+}
+
+.form-control:focus,
+.form-select:focus {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-color: #9A48EA;
+  box-shadow: none;
+  color: white;
+}
+
+.btn-close {
+  filter: invert(1) grayscale(100%) brightness(200%);
+}
+
+.btn-secondary {
+  background-color: rgba(255, 255, 255, 0.1);
+  border: none;
+  color: white;
+}
+
+.btn-secondary:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.btn-primary {
+  background-color: #9A48EA;
+  border: none;
+}
+
+.btn-primary:hover {
+  background-color: #8a38da;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }

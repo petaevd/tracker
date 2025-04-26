@@ -1,5 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { createPortal } from 'react-dom';
+import React, { useState, useEffect, useCallback } from 'react';
 import { FaPlus, FaEdit, FaTrash } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
@@ -12,14 +11,13 @@ const Project = () => {
   const dispatch = useDispatch();
   const { projects, loading, error } = useSelector((state) => state.projects);
   const user = useSelector((state) => state.auth.user);
-  const [modalType, setModalType] = useState(null); // 'create', 'edit', или null
+  const [modalType, setModalType] = useState(null);
   const [projectName, setProjectName] = useState('');
   const [projectDescription, setProjectDescription] = useState('');
   const [teamId, setTeamId] = useState('');
   const [selectedProjectId, setSelectedProjectId] = useState(null);
   const [teams, setTeams] = useState([]);
   const navigate = useNavigate();
-  const modalRef = useRef(null);
 
   useEffect(() => {
     if (!user) {
@@ -34,19 +32,6 @@ const Project = () => {
         .catch(() => toast.error('Ошибка загрузки команд'));
     }
   }, [dispatch, user, navigate]);
-
-  const handleKeyDown = useCallback((event) => {
-    if (event.key === 'Escape' && !loading) {
-      setModalType(null);
-      setSelectedProjectId(null);
-      resetForm();
-    }
-  }, [loading]);
-
-  useEffect(() => {
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [handleKeyDown]);
 
   const resetForm = () => {
     setProjectName('');
@@ -120,84 +105,10 @@ const Project = () => {
     setModalType('edit');
   }, []);
 
-  const handleOverlayClick = useCallback((e) => {
-    if (modalRef.current && !modalRef.current.contains(e.target) && !loading) {
-      setModalType(null);
-      setSelectedProjectId(null);
-      resetForm();
-    }
-  }, [loading]);
-
-  const Modal = ({ type }) => {
-    if (!type) return null;
-
-    const isCreate = type === 'create';
-    const title = isCreate ? 'Создать новый проект' : 'Редактировать проект';
-    const onConfirm = isCreate ? handleCreateProject : handleEditProject;
-
-    return createPortal(
-      <div
-        className="modal-overlay"
-        onClick={handleOverlayClick}
-        role="dialog"
-        aria-labelledby={`${type}-modal-title`}
-      >
-        <div className="modal" ref={modalRef}>
-          <h3 id={`${type}-modal-title`}>{title}</h3>
-          <input
-            type="text"
-            value={projectName}
-            onChange={(e) => setProjectName(e.target.value)}
-            placeholder="Название проекта"
-            className="modal-input"
-            disabled={loading}
-            aria-label="Название проекта"
-          />
-          <input
-            type="text"
-            value={projectDescription}
-            onChange={(e) => setProjectDescription(e.target.value)}
-            placeholder="Описание проекта"
-            className="modal-input"
-            disabled={loading}
-            aria-label="Описание проекта"
-          />
-          <select
-            className="modal-input"
-            value={teamId}
-            onChange={(e) => setTeamId(e.target.value)}
-            disabled={loading}
-            aria-label="Выберите команду"
-          >
-            <option value="" disabled>Выберите команду</option>
-            {teams.map((team) => (
-              <option key={team.id} value={team.id}>{team.name}</option>
-            ))}
-          </select>
-          <div className="modal-actions">
-            <button
-              className="modal-btn cancel"
-              onClick={() => {
-                setModalType(null);
-                setSelectedProjectId(null);
-                resetForm();
-              }}
-              disabled={loading}
-            >
-              Отмена
-            </button>
-            <button
-              className="modal-btn confirm"
-              onClick={onConfirm}
-              disabled={loading}
-            >
-              {loading ? 'Сохранение...' : isCreate ? 'Создать' : 'Сохранить'}
-            </button>
-          </div>
-        </div>
-      </div>,
-      document.body
-    );
+  const closeModal = () => {
+    setModalType(null);
+    setSelectedProjectId(null);
+    resetForm();
   };
 
   if (!user) {
@@ -217,6 +128,8 @@ const Project = () => {
           {user.role !== 'employee' && (
             <button
               className="action-btn purple"
+              data-bs-toggle="modal"
+              data-bs-target="#projectModal"
               onClick={() => setModalType('create')}
               disabled={loading}
             >
@@ -235,10 +148,18 @@ const Project = () => {
                   <h3 onClick={() => handleProjectClick(project.id)}>{project.name}</h3>
                   {user.role !== 'employee' && (
                     <div className="project-actions">
-                      <button className="project-action-btn" onClick={() => openEditModal(project)}>
+                      <button
+                        className="project-action-btn"
+                        data-bs-toggle="modal"
+                        data-bs-target="#projectModal"
+                        onClick={() => openEditModal(project)}
+                      >
                         <FaEdit />
                       </button>
-                      <button className="project-action-btn" onClick={() => handleDeleteProject(project.id)}>
+                      <button
+                        className="project-action-btn"
+                        onClick={() => handleDeleteProject(project.id)}
+                      >
                         <FaTrash />
                       </button>
                     </div>
@@ -259,7 +180,100 @@ const Project = () => {
           )
         )}
 
-        <Modal type={modalType} />
+        <div
+          className="modal fade"
+          id="projectModal"
+          tabIndex="-1"
+          aria-labelledby="projectModalLabel"
+          aria-hidden="true"
+        >
+          <div className="modal-dialog">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title" id="projectModalLabel">
+                  {modalType === 'create' ? 'Создать новый проект' : 'Редактировать проект'}
+                </h5>
+                <button
+                  type="button"
+                  className="btn-close"
+                  data-bs-dismiss="modal"
+                  aria-label="Закрыть"
+                  onClick={closeModal}
+                ></button>
+              </div>
+              <div className="modal-body">
+                <div className="mb-3">
+                  <label htmlFor="projectName" className="form-label">
+                    Название проекта
+                  </label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    id="projectName"
+                    value={projectName}
+                    onChange={(e) => setProjectName(e.target.value)}
+                    placeholder="Название проекта"
+                    disabled={loading}
+                  />
+                </div>
+                <div className="mb-3">
+                  <label htmlFor="projectDescription" className="form-label">
+                    Описание проекта
+                  </label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    id="projectDescription"
+                    value={projectDescription}
+                    onChange={(e) => setProjectDescription(e.target.value)}
+                    placeholder="Описание проекта"
+                    disabled={loading}
+                  />
+                </div>
+                <div className="mb-3">
+                  <label htmlFor="teamSelect" className="form-label">
+                    Выберите команду
+                  </label>
+                  <select
+                    className="form-select"
+                    id="teamSelect"
+                    value={teamId}
+                    onChange={(e) => setTeamId(e.target.value)}
+                    disabled={loading}
+                  >
+                    <option value="" disabled>
+                      Выберите команду
+                    </option>
+                    {teams.map((team) => (
+                      <option key={team.id} value={team.id}>
+                        {team.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              <div className="modal-footer">
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  data-bs-dismiss="modal"
+                  onClick={closeModal}
+                  disabled={loading}
+                >
+                  Отмена
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-primary"
+                  onClick={modalType === 'create' ? handleCreateProject : handleEditProject}
+                  disabled={loading}
+                >
+                  {loading ? 'Сохранение...' : modalType === 'create' ? 'Создать' : 'Сохранить'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
