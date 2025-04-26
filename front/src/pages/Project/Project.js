@@ -12,7 +12,7 @@ const Project = () => {
   const dispatch = useDispatch();
   const { projects, loading, error } = useSelector((state) => state.projects);
   const user = useSelector((state) => state.auth.user);
-  const [modalType, setModalType] = useState(null);
+  const [modalType, setModalType] = useState(null); // 'create', 'edit', или null
   const [projectName, setProjectName] = useState('');
   const [projectDescription, setProjectDescription] = useState('');
   const [teamId, setTeamId] = useState('');
