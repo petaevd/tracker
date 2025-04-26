@@ -15,6 +15,8 @@ const Project = () => {
   const [projectName, setProjectName] = useState('');
   const [projectDescription, setProjectDescription] = useState('');
   const [teamId, setTeamId] = useState('');
+  const [status, setStatus] = useState('active');
+  const [deadline, setDeadline] = useState('');
   const [selectedProjectId, setSelectedProjectId] = useState(null);
   const [teams, setTeams] = useState([]);
   const navigate = useNavigate();
@@ -37,6 +39,8 @@ const Project = () => {
     setProjectName('');
     setProjectDescription('');
     setTeamId('');
+    setStatus('active');
+    setDeadline('');
   };
 
   const handleCreateProject = useCallback(async () => {
@@ -47,7 +51,13 @@ const Project = () => {
 
     try {
       const response = await dispatch(
-        addProject({ name: projectName, description: projectDescription, team_id: teamId })
+        addProject({
+          name: projectName,
+          description: projectDescription,
+          team_id: teamId,
+          status,
+          deadline,
+        })
       ).unwrap();
       resetForm();
       setModalType(null);
@@ -56,7 +66,7 @@ const Project = () => {
     } catch (err) {
       toast.error(err || 'Ошибка создания проекта');
     }
-  }, [projectName, projectDescription, teamId, dispatch, navigate]);
+  }, [projectName, projectDescription, teamId, status, deadline, dispatch, navigate]);
 
   const handleEditProject = useCallback(async () => {
     if (!projectName.trim() || !teamId) {
@@ -68,7 +78,13 @@ const Project = () => {
       await dispatch(
         editProject({
           id: selectedProjectId,
-          projectData: { name: projectName, description: projectDescription, team_id: teamId },
+          projectData: {
+            name: projectName,
+            description: projectDescription,
+            team_id: teamId,
+            status,
+            deadline,
+          },
         })
       ).unwrap();
       resetForm();
@@ -78,7 +94,7 @@ const Project = () => {
     } catch (err) {
       toast.error(err || 'Ошибка редактирования проекта');
     }
-  }, [selectedProjectId, projectName, projectDescription, teamId, dispatch]);
+  }, [selectedProjectId, projectName, projectDescription, teamId, status, deadline, dispatch]);
 
   const handleDeleteProject = useCallback(async (projectId) => {
     if (window.confirm('Вы уверены, что хотите удалить проект?')) {
@@ -102,6 +118,8 @@ const Project = () => {
     setProjectName(project.name);
     setProjectDescription(project.description || '');
     setTeamId(project.team_id);
+    setStatus(project.status || 'active');
+    setDeadline(project.deadline || '');
     setModalType('edit');
   }, []);
 
@@ -227,6 +245,34 @@ const Project = () => {
                     value={projectDescription}
                     onChange={(e) => setProjectDescription(e.target.value)}
                     placeholder="Описание проекта"
+                    disabled={loading}
+                  />
+                </div>
+                <div className="mb-3">
+                  <label htmlFor="projectStatus" className="form-label">
+                    Статус проекта
+                  </label>
+                  <select
+                    className="form-select"
+                    id="projectStatus"
+                    value={status}
+                    onChange={(e) => setStatus(e.target.value)}
+                    disabled={loading}
+                  >
+                    <option value="active">Активный</option>
+                    <option value="archived">Архивированный</option>
+                  </select>
+                </div>
+                <div className="mb-3">
+                  <label htmlFor="projectDeadline" className="form-label">
+                    Дедлайн
+                  </label>
+                  <input
+                    type="date"
+                    className="form-control"
+                    id="projectDeadline"
+                    value={deadline}
+                    onChange={(e) => setDeadline(e.target.value)}
                     disabled={loading}
                   />
                 </div>

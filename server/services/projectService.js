@@ -4,7 +4,7 @@ import TeamMember from '../models/TeamMember.js';
 
 const getAllProjects = async (user) => {
   let projects;
-  
+
   if (user.role === 'employee') {
     const teamMembers = await TeamMember.findAll({
       where: { users_id: user.id },
@@ -22,12 +22,24 @@ const getAllProjects = async (user) => {
         { model: Team, as: 'team', attributes: ['name'] },
       ],
     });
+  } else if (user.role === 'manager') {
+    projects = await Project.findAll({
+      include: [
+        {
+          model: Team,
+          as: 'team',
+          attributes: ['name'],
+          where: { created_by: user.id },
+        },
+      ],
+    });
   } else {
+    // Для админов — все проекты
     projects = await Project.findAll({
       include: [
         { model: Team, as: 'team', attributes: ['name'] },
       ],
-  });
+    });
   }
 
   return projects;
