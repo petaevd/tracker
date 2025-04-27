@@ -273,3 +273,43 @@
   color: white;
   border: 1px solid rgba(255, 255, 255, 0.2);
 }
+
+.form-select {
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  padding: 8px 32px 8px 12px;
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 16px;
+  cursor: pointer;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.form-select:focus {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-color: #9A48EA;
+  box-shadow: 0 0 0 0.2rem rgba(154, 72, 234, 0.25);
+  color: white;
+}
+
+.form-select:disabled {
+  background-color: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.5);
+  cursor: not-allowed;
+}
+
+.form-select option {
+  background-color: #1a1a1a;
+  color: white;
+  padding: 8px;
+}
+
+.form-select option:hover {
+  background-color: #9A48EA;
+}
+
+.form-select option:disabled {
+  color: rgba(255, 255, 255, 0.5);
+}
