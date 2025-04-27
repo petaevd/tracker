@@ -18,9 +18,11 @@ const debounce = (func, wait) => {
 
 const Project = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { projects, loading: projectLoading, error: projectError } = useSelector((state) => state.projects);
   const { teams, searchResults, loading: teamLoading, error: teamError } = useSelector((state) => state.teams);
   const user = useSelector((state) => state.auth.user);
+
   const [modalType, setModalType] = useState(null);
   const [projectName, setProjectName] = useState('');
   const [projectDescription, setProjectDescription] = useState('');
@@ -35,9 +37,7 @@ const Project = () => {
   const [selectedUsers, setSelectedUsers] = useState([]);
   const [allSearchResults, setAllSearchResults] = useState([]);
   const [emailSuggestions, setEmailSuggestions] = useState([]);
-  const navigate = useNavigate();
 
-  // Ref to store debounced function
   const debouncedSearchRef = useRef();
 
   useEffect(() => {
@@ -54,6 +54,7 @@ const Project = () => {
       console.error('Ошибка загрузки команд:', err);
       toast.error('Не удалось загрузить команды');
     });
+
     return () => {
       dispatch(clearSearchResults());
     };
@@ -66,7 +67,6 @@ const Project = () => {
     ]);
   }, [searchResults]);
 
-  // Initialize debounced search
   useEffect(() => {
     debouncedSearchRef.current = debounce((input) => {
       if (input.length > 2) {
@@ -178,23 +178,15 @@ const Project = () => {
           created_by: user.id,
         })
       ).unwrap();
-
-      toast.info('Создание команды завершено, добавление участников...');
-      for (const userId of selectedUsers) {
-        const user = allSearchResults.find((u) => u.id === userId);
-        if (user) {
-          await dispatch(addMember({ teamId: response.id, user })).unwrap();
-          toast.info(`Добавлен участник: ${user.username}`);
-        }
-      }
-
+      console.log('Created team response:', response); // Для отладки
       resetTeamForm();
       setModalType(null);
       toast.success('Команда успешно создана');
     } catch (err) {
-      toast.error(err || 'Ошибка создания команды');
+      console.error('Ошибка создания команды:', err);
+      toast.error(err.message || 'Ошибка создания команды');
     }
-  }, [teamName, teamDescription, user.id, selectedUsers, allSearchResults, dispatch, resetTeamForm]);
+  }, [teamName, teamDescription, user.id, dispatch, resetTeamForm]);
 
   const handleEditTeam = useCallback(async () => {
     if (!teamName.trim()) {
@@ -234,7 +226,8 @@ const Project = () => {
       setModalType(null);
       toast.success('Команда успешно обновлена');
     } catch (err) {
-      toast.error(err || 'Ошибка редактирования команды');
+      console.error('Ошибка редактирования команды:', err);
+      toast.error(err.message || 'Ошибка редактирования команды');
     }
   }, [teamId, teamName, teamDescription, selectedUsers, teams, allSearchResults, dispatch, resetTeamForm]);
 
@@ -314,7 +307,6 @@ const Project = () => {
     resetTeamForm();
   }, [resetProjectForm, resetTeamForm]);
 
-  // Memoize filtered teams to prevent unnecessary re-renders
   const filteredTeams = useMemo(() => {
     return user?.role === 'manager' ? teams.filter((team) => team.created_by === user.id) : teams;
   }, [user, teams]);
@@ -442,7 +434,6 @@ const Project = () => {
           )
         )}
 
-        {/* Project Modal */}
         <div
           className="modal fade"
           id="projectModal"
@@ -566,7 +557,6 @@ const Project = () => {
           </div>
         </div>
 
-        {/* Team Modal */}
         <div
           className="modal fade"
           id="teamModal"
@@ -617,89 +607,93 @@ const Project = () => {
                     disabled={teamLoading}
                   />
                 </div>
-                <div className="mb-3">
-                  <label htmlFor="userEmails" className="form-label">
-                    Поиск участников по email
-                  </label>
-                  <div className="input-group">
-                    <input
-                      type="text"
-                      className="form-control"
-                      id="userEmails"
-                      value={userEmails}
-                      onChange={handleEmailsInputChange}
-                      placeholder="Введите email"
-                      disabled={teamLoading}
-                      list="emailSuggestions"
-                    />
-                    <datalist id="emailSuggestions">
-                      {emailSuggestions.map((email, index) => (
-                        <option key={index} value={email} />
-                      ))}
-                    </datalist>
-                    <button
-                      className="btn btn-outline-secondary"
-                      type="button"
-                      onClick={handleSearchUsers}
-                      disabled={teamLoading}
-                    >
-                      Поиск
-                    </button>
-                  </div>
-                </div>
-                {allSearchResults.length > 0 && (
-                  <div className="mb-3">
-                    <label className="form-label">Найденные пользователи</label>
-                    <ul className="list-group">
-                      {allSearchResults
-                        .filter((result) => !selectedUsers.includes(result.id))
-                        .map((result) => (
-                          <li
-                            key={result.id}
-                            className="list-group-item d-flex justify-content-between align-items-center"
-                          >
-                            <span>
-                              {result.username} ({result.email})
-                            </span>
-                            <button
-                              className="btn btn-sm btn-primary"
-                              onClick={() => handleSelectUser(result.id)}
-                              disabled={teamLoading}
-                            >
-                              Добавить
-                            </button>
-                          </li>
-                        ))}
-                    </ul>
-                  </div>
-                )}
-                {selectedUsers.length > 0 && (
-                  <div className="mb-3">
-                    <label className="form-label">Добавленные участники</label>
-                    <ul className="list-group">
-                      {selectedUsers.map((userId) => {
-                        const user = allSearchResults.find((u) => u.id === userId) ||
-                                    teams.find((t) => t.id === teamId)?.members?.find((m) => m.id === userId);
-                        return user ? (
-                          <li
-                            key={user.id}
-                            className="list-group-item d-flex justify-content-between align-items-center"
-                          >
-                            <span>
-                              {user.username} ({user.email})
-                            </span>
-                            <button
-                              className="btn btn-sm btn-danger"
-                              onClick={() => handleRemoveUser(user.id)}
-                              disabled={teamLoading}
-                            >
-                              Удалить
-                            </button>
-                          </li>
-                        ) : null;
-                      })}
-                    </ul>
-                  </div>
+                {modalType === 'editTeam' && (
+                  <>
+                    <div className="mb-3">
+                      <label htmlFor="userEmails" className="form-label">
+                        Поиск участников по email
+                      </label>
+                      <div className="input-group">
+                        <input
+                          type="text"
+                          className="form-control"
+                          id="userEmails"
+                          value={userEmails}
+                          onChange={handleEmailsInputChange}
+                          placeholder="Введите email"
+                          disabled={teamLoading}
+                          list="emailSuggestions"
+                        />
+                        <datalist id="emailSuggestions">
+                          {emailSuggestions.map((email, index) => (
+                            <option key={index} value={email} />
+                          ))}
+                        </datalist>
+                        <button
+                          className="btn btn-outline-secondary"
+                          type="button"
+                          onClick={handleSearchUsers}
+                          disabled={teamLoading}
+                        >
+                          Поиск
+                        </button>
+                      </div>
+                    </div>
+                    {allSearchResults.length > 0 && (
+                      <div className="mb-3">
+                        <label className="form-label">Найденные пользователи</label>
+                        <ul className="list-group">
+                          {allSearchResults
+                            .filter((result) => !selectedUsers.includes(result.id))
+                            .map((result) => (
+                              <li
+                                key={result.id}
+                                className="list-group-item d-flex justify-content-between align-items-center"
+                              >
+                                <span>
+                                  {result.username} ({result.email})
+                                </span>
+                                <button
+                                  className="btn btn-sm btn-primary"
+                                  onClick={() => handleSelectUser(result.id)}
+                                  disabled={teamLoading}
+                                >
+                                  Добавить
+                                </button>
+                              </li>
+                            ))}
+                        </ul>
+                      </div>
+                    )}
+                    {selectedUsers.length > 0 && (
+                      <div className="mb-3">
+                        <label className="form-label">Добавленные участники</label>
+                        <ul className="list-group">
+                          {selectedUsers.map((userId) => {
+                            const user = allSearchResults.find((u) => u.id === userId) ||
+                                        teams.find((t) => t.id === teamId)?.members?.find((m) => m.id === userId);
+                            return user ? (
+                              <li
+                                key={user.id}
+                                className="list-group-item d-flex justify-content-between align-items-center"
+                              >
+                                <span>
+                                  {user.username} ({user.email})
+                                </span>
+                                <button
+                                  className="btn btn-sm btn-danger"
+                                  onClick={() => handleRemoveUser(user.id)}
+                                  disabled={teamLoading}
+                                >
+                                  Удалить
+                                </button>
+                              </li>
+                            ) : null;
+                          })}
+                        </ul>
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
               <div className="modal-footer">
