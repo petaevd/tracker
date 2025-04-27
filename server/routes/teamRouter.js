@@ -7,7 +7,7 @@ import { teamSchema, teamMemberSchema } from '../utils/validators.js';
 
 const router = Router();
 
-router.get('/users/search', authMiddleware, roleMiddleware(['manager', 'admin']), teamController.searchUsersByEmail);
+router.get('/search', authMiddleware, roleMiddleware(['manager', 'admin']), teamController.searchUsersByEmail);
 router.get('/', authMiddleware, teamController.getAllTeams);
 router.get('/:id', authMiddleware, validate(teamSchema.id), teamController.getTeamById);
 router.get('/:id/members', authMiddleware, validate(teamSchema.id), teamController.getTeamMembers);

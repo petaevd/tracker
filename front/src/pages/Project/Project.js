@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { FaPlus, FaEdit, FaTrash, FaUsers } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
@@ -6,6 +6,15 @@ import { getProjects, addProject, editProject, removeProject } from '../../store
 import { getTeams, addTeam, addMember, removeMember, editTeam, removeTeam, searchUsers, clearSearchResults } from '../../store/slices/teamSlice';
 import { toast } from 'react-toastify';
 import './Project.css';
+
+// Simple debounce function
+const debounce = (func, wait) => {
+  let timeout;
+  return (...args) => {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => func(...args), wait);
+  };
+};
 
 const Project = () => {
   const dispatch = useDispatch();
@@ -28,6 +37,9 @@ const Project = () => {
   const [emailSuggestions, setEmailSuggestions] = useState([]);
   const navigate = useNavigate();
 
+  // Ref to store debounced function
+  const debouncedSearchRef = useRef();
+
   useEffect(() => {
     if (!user) {
       navigate('/login');
@@ -48,20 +60,35 @@ const Project = () => {
   }, [dispatch, user, navigate]);
 
   useEffect(() => {
-    // Сохраняем результаты поиска, избегая дубликатов
     setAllSearchResults((prev) => [
       ...prev,
       ...searchResults.filter((user) => !prev.some((u) => u.id === user.id)),
     ]);
   }, [searchResults]);
 
-  const resetProjectForm = () => {
+  // Initialize debounced search
+  useEffect(() => {
+    debouncedSearchRef.current = debounce((input) => {
+      if (input.length > 2) {
+        dispatch(searchUsers(input))
+          .unwrap()
+          .then((users) => {
+            setEmailSuggestions(users.map((user) => user.email));
+          })
+          .catch(() => setEmailSuggestions([]));
+      } else {
+        setEmailSuggestions([]);
+      }
+    }, 300);
+  }, [dispatch]);
+
+  const resetProjectForm = useCallback(() => {
     setProjectName('');
     setProjectDescription('');
     setProjectTeamId('');
     setStatus('active');
     setDeadline('');
-  };
+  }, []);
 
   const resetTeamForm = useCallback(() => {
     setTeamId('');
@@ -96,7 +123,7 @@ const Project = () => {
     } catch (err) {
       toast.error(err || 'Ошибка создания проекта');
     }
-  }, [projectName, projectDescription, projectTeamId, status, deadline, dispatch]);
+  }, [projectName, projectDescription, projectTeamId, status, deadline, dispatch, resetProjectForm]);
 
   const handleEditProject = useCallback(async () => {
     if (!projectName.trim() || !projectTeamId) {
@@ -124,7 +151,7 @@ const Project = () => {
     } catch (err) {
       toast.error(err || 'Ошибка редактирования проекта');
     }
-  }, [selectedProjectId, projectName, projectDescription, projectTeamId, status, deadline, dispatch]);
+  }, [selectedProjectId, projectName, projectDescription, projectTeamId, status, deadline, dispatch, resetProjectForm]);
 
   const handleDeleteProject = useCallback(async (projectId) => {
     if (window.confirm('Вы уверены, что хотите удалить проект?')) {
@@ -176,7 +203,6 @@ const Project = () => {
     }
 
     try {
-      // Обновление данных команды
       await dispatch(
         editTeam({
           id: teamId,
@@ -187,7 +213,6 @@ const Project = () => {
         })
       ).unwrap();
 
-      // Синхронизация участников
       const currentMembers = teams.find((t) => t.id === teamId)?.members?.map((m) => m.id) || [];
       const membersToAdd = selectedUsers.filter((id) => !currentMembers.includes(id));
       const membersToRemove = currentMembers.filter((id) => !selectedUsers.includes(id));
@@ -232,39 +257,30 @@ const Project = () => {
 
     try {
       await dispatch(searchUsers(userEmails)).unwrap();
-      setUserEmails(''); // Очищаем поле после поиска
+      setUserEmails('');
     } catch (err) {
       toast.error(err || 'Ошибка поиска пользователей');
     }
   }, [userEmails, dispatch]);
 
-  const handleEmailsInputChange = (e) => {
+  const handleEmailsInputChange = useCallback((e) => {
     const input = e.target.value;
     setUserEmails(input);
-    if (input.length > 2) {
-      dispatch(searchUsers(input))
-        .unwrap()
-        .then((users) => {
-          setEmailSuggestions(users.map((user) => user.email));
-        })
-        .catch(() => setEmailSuggestions([]));
-    } else {
-      setEmailSuggestions([]);
-    }
-  };
+    debouncedSearchRef.current(input);
+  }, []);
 
-  const handleSelectUser = (userId) => {
+  const handleSelectUser = useCallback((userId) => {
     if (selectedUsers.includes(userId)) {
       toast.warn('Пользователь уже добавлен');
       return;
     }
-    setSelectedUsers([...selectedUsers, userId]);
-    setUserEmails(''); // Очищаем поле ввода после добавления
-  };
+    setSelectedUsers((prev) => [...prev, userId]);
+    setUserEmails('');
+  }, [selectedUsers]);
 
-  const handleRemoveUser = (userId) => {
-    setSelectedUsers(selectedUsers.filter((id) => id !== userId));
-  };
+  const handleRemoveUser = useCallback((userId) => {
+    setSelectedUsers((prev) => prev.filter((id) => id !== userId));
+  }, []);
 
   const handleProjectClick = useCallback((projectId) => {
     if (projectId) {
@@ -290,19 +306,22 @@ const Project = () => {
     setModalType('editTeam');
   }, []);
 
-  const closeModal = () => {
+  const closeModal = useCallback(() => {
     setModalType(null);
     setSelectedProjectId(null);
     setTeamId('');
     resetProjectForm();
     resetTeamForm();
-  };
+  }, [resetProjectForm, resetTeamForm]);
+
+  // Memoize filtered teams to prevent unnecessary re-renders
+  const filteredTeams = useMemo(() => {
+    return user?.role === 'manager' ? teams.filter((team) => team.created_by === user.id) : teams;
+  }, [user, teams]);
 
   if (!user) {
     return <div className="loading-message">Загрузка...</div>;
   }
-
-  const filteredTeams = user.role === 'manager' ? teams.filter((team) => team.created_by === user.id) : teams;
 
   return (
     <div className="project-container">
@@ -423,7 +442,7 @@ const Project = () => {
           )
         )}
 
-        {/* Модальное окно для проекта */}
+        {/* Project Modal */}
         <div
           className="modal fade"
           id="projectModal"
@@ -547,7 +566,7 @@ const Project = () => {
           </div>
         </div>
 
-        {/* Модальное окно для команды */}
+        {/* Team Modal */}
         <div
           className="modal fade"
           id="teamModal"
