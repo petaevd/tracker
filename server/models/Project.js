@@ -23,6 +23,14 @@ const Project = sequelize.define('Project', {
       key: 'id',
     },
   },
+  creator_id: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    references: {
+      model: 'users',
+      key: 'id',
+    },
+  },
   status: {
     type: DataTypes.ENUM('active', 'archived'),
     allowNull: false,

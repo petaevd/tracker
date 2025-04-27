@@ -3,8 +3,9 @@ import Team from '../models/Team.js';
 import TeamMember from '../models/TeamMember.js';
 import Task from '../models/Task.js';
 
-const getAllProjects = async (user) => {
+const getAllProjects = async (user, query = {}) => {
   let projects;
+  const { created_by } = query;
 
   if (user.role === 'employee') {
     const teamMembers = await TeamMember.findAll({
@@ -24,19 +25,10 @@ const getAllProjects = async (user) => {
       ],
     });
   } else if (user.role === 'manager') {
-    // Получаем только команды, созданные менеджером
-    const managerTeams = await Team.findAll({
-      where: { created_by: user.id },
-      attributes: ['id'],
-    });
-    const teamIds = managerTeams.map(team => team.id);
-
-    if (teamIds.length === 0) {
-      return [];
-    }
+    const createdById = created_by ? parseInt(created_by) : user.id;
 
     projects = await Project.findAll({
-      where: { team_id: teamIds },
+      where: { creator_id: createdById },
       include: [
         { model: Team, as: 'team', attributes: ['name'] },
       ],
@@ -66,7 +58,14 @@ const createProject = async ({ name, team_id, status, description, deadline }, u
     throw err;
   }
 
-  return await Project.create({ name, team_id, status, description, deadline });
+  return await Project.create({
+    name,
+    team_id,
+    status,
+    description,
+    deadline,
+    creator_id: user.id,
+  });
 };
 
 const updateProject = async (id, { name, team_id, status, description, deadline }, user) => {
@@ -79,8 +78,8 @@ const updateProject = async (id, { name, team_id, status, description, deadline 
     throw err;
   }
 
-  if (user.role === 'manager' && project.team.created_by !== user.id) {
-    const err = new Error('Вы можете редактировать проекты только своих команд');
+  if (user.role === 'manager' && project.creator_id !== user.id) {
+    const err = new Error('Вы можете редактировать только свои проекты');
     err.status = 403;
     throw err;
   }
@@ -126,8 +125,8 @@ const deleteProject = async (id, user) => {
     throw err;
   }
 
-  if (user.role === 'manager' && project.team.created_by !== user.id) {
-    const err = new Error('Вы можете удалять проекты только своих команд');
+  if (user.role === 'manager' && project.creator_id !== user.id) {
+    const err = new Error('Вы можете удалять только свои проекты');
     err.status = 403;
     throw err;
   }

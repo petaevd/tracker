@@ -80,7 +80,7 @@ const Project = () => {
     }
 
     try {
-      const response = await dispatch(
+      await dispatch(
         addProject({
           name: projectName,
           description: projectDescription,
@@ -92,11 +92,10 @@ const Project = () => {
       resetProjectForm();
       setModalType(null);
       toast.success('Проект успешно создан');
-      navigate(`/project/${response.id}/dashboard`);
     } catch (err) {
       toast.error(err || 'Ошибка создания проекта');
     }
-  }, [projectName, projectDescription, projectTeamId, status, deadline, dispatch, navigate]);
+  }, [projectName, projectDescription, projectTeamId, status, deadline, dispatch]);
 
   const handleEditProject = useCallback(async () => {
     if (!projectName.trim() || !projectTeamId) {

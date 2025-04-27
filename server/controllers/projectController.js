@@ -2,7 +2,7 @@ import projectService from '../services/projectService.js';
 
 const getAllProjects = async (req, res, next) => {
   try {
-    const projects = await projectService.getAllProjects(req.user);
+    const projects = await projectService.getAllProjects(req.user, req.query);
     res.json(projects);
   } catch (err) {
     next(err);
