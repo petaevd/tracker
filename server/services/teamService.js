@@ -6,9 +6,17 @@ import { Op } from 'sequelize';
 
 const searchUsersByEmail = async (email) => {
   const users = await User.findAll({
-    where: { email: { [Op.iLike]: `%${email}%` } },
-    attributes: ['id', 'username', 'email'],
+    where: {
+      email: { [Op.iLike]: `%${email}%` },
+      role: 'employee', // Ограничиваем поиск сотрудниками
+    },
+    attributes: ['id', 'username', 'email', 'role'],
   });
+  if (!users.length) {
+    const err = new Error('Пользователи не найдены');
+    err.status = 404;
+    throw err;
+  }
   return users;
 };
 
@@ -27,7 +35,7 @@ const getTeamById = async (id) => {
   const team = await Team.findByPk(id, {
     include: [
       { model: User, as: 'creator', attributes: ['username'] },
-      { model: User, as: 'members', attributes: ['id', 'username'] },
+      { model: User, as: 'members', attributes: ['id', 'username', 'email'] },
     ],
   });
   if (!team) {
@@ -41,7 +49,7 @@ const getTeamById = async (id) => {
 const getTeamMembers = async (teamId) => {
   const team = await Team.findByPk(teamId, {
     include: [
-      { model: User, as: 'members', attributes: ['id', 'username'] },
+      { model: User, as: 'members', attributes: ['id', 'username', 'email'] },
     ],
   });
   if (!team) {
@@ -159,6 +167,13 @@ const addMember = async (teamId, userId) => {
   if (user.role !== 'employee') {
     const err = new Error('В команду можно добавлять только пользователей с ролью employee');
     err.status = 403;
+    throw err;
+  }
+
+  const memberCount = await TeamMember.count({ where: { team_id: teamId } });
+  if (memberCount >= 50) {
+    const err = new Error('Достигнуто максимальное количество участников');
+    err.status = 400;
     throw err;
   }
 

@@ -19,7 +19,7 @@ const Project = () => {
   const [status, setStatus] = useState('active');
   const [deadline, setDeadline] = useState('');
   const [selectedProjectId, setSelectedProjectId] = useState(null);
-  const [teamId, setTeamId] = useState(''); // Для редактирования команды
+  const [teamId, setTeamId] = useState('');
   const [teamName, setTeamName] = useState('');
   const [teamDescription, setTeamDescription] = useState('');
   const [userEmails, setUserEmails] = useState('');
@@ -70,8 +70,9 @@ const Project = () => {
     setUserEmails('');
     setSelectedUsers([]);
     setAllSearchResults([]);
+    setEmailSuggestions([]);
     dispatch(clearSearchResults());
-  });
+  }, [dispatch]);
 
   const handleCreateProject = useCallback(async () => {
     if (!projectName.trim() || !projectTeamId) {
@@ -166,7 +167,7 @@ const Project = () => {
     } catch (err) {
       toast.error(err || 'Ошибка создания команды');
     }
-  }, [teamName, dispatch, teamDescription, user.id, resetTeamForm, selectedUsers, allSearchResults]);
+  }, [teamName, teamDescription, user.id, selectedUsers, allSearchResults, dispatch, resetTeamForm]);
 
   const handleEditTeam = useCallback(async () => {
     if (!teamName.trim()) {
@@ -195,11 +196,13 @@ const Project = () => {
         const user = allSearchResults.find((u) => u.id === userId);
         if (user) {
           await dispatch(addMember({ teamId, user })).unwrap();
+          toast.info(`Добавлен участник: ${user.username}`);
         }
       }
 
       for (const userId of membersToRemove) {
         await dispatch(removeMember({ teamId, userId })).unwrap();
+        toast.info(`Удалён участник с ID: ${userId}`);
       }
 
       resetTeamForm();
@@ -208,7 +211,7 @@ const Project = () => {
     } catch (err) {
       toast.error(err || 'Ошибка редактирования команды');
     }
-  }, [teamName, dispatch, teamId, teamDescription, teams, selectedUsers, resetTeamForm, allSearchResults]);
+  }, [teamId, teamName, teamDescription, selectedUsers, teams, allSearchResults, dispatch, resetTeamForm]);
 
   const handleDeleteTeam = useCallback(async (teamId) => {
     if (window.confirm('Вы уверены, что хотите удалить команду?')) {
@@ -222,23 +225,14 @@ const Project = () => {
   }, [dispatch]);
 
   const handleSearchUsers = useCallback(async () => {
-    const emails = userEmails.split(',').map((email) => email.trim()).filter((email) => email);
-    if (emails.length === 0) {
-      toast.error('Введите хотя бы один email');
-      return;
-    }
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    const invalidEmails = emails.filter((email) => !emailRegex.test(email));
-    if (invalidEmails.length > 0) {
-      toast.error(`Некорректные email: ${invalidEmails.join(', ')}`);
+    if (!userEmails.trim()) {
+      toast.error('Введите email для поиска');
       return;
     }
 
     try {
-      for (const email of emails) {
-        await dispatch(searchUsers(email)).unwrap();
-      }
+      await dispatch(searchUsers(userEmails)).unwrap();
+      setUserEmails(''); // Очищаем поле после поиска
     } catch (err) {
       toast.error(err || 'Ошибка поиска пользователей');
     }
@@ -248,17 +242,12 @@ const Project = () => {
     const input = e.target.value;
     setUserEmails(input);
     if (input.length > 2) {
-      const lastEmail = input.split(',').pop().trim();
-      if (lastEmail.length > 2) {
-        dispatch(searchUsers(lastEmail))
-          .unwrap()
-          .then((users) => {
-            setEmailSuggestions(users.map((user) => user.email));
-          })
-          .catch(() => setEmailSuggestions([]));
-      } else {
-        setEmailSuggestions([]);
-      }
+      dispatch(searchUsers(input))
+        .unwrap()
+        .then((users) => {
+          setEmailSuggestions(users.map((user) => user.email));
+        })
+        .catch(() => setEmailSuggestions([]));
     } else {
       setEmailSuggestions([]);
     }
@@ -270,6 +259,7 @@ const Project = () => {
       return;
     }
     setSelectedUsers([...selectedUsers, userId]);
+    setUserEmails(''); // Очищаем поле ввода после добавления
   };
 
   const handleRemoveUser = (userId) => {
@@ -610,7 +600,7 @@ const Project = () => {
                 </div>
                 <div className="mb-3">
                   <label htmlFor="userEmails" className="form-label">
-                    Добавить участников по email (через запятую)
+                    Поиск участников по email
                   </label>
                   <div className="input-group">
                     <input
@@ -619,7 +609,7 @@ const Project = () => {
                       id="userEmails"
                       value={userEmails}
                       onChange={handleEmailsInputChange}
-                      placeholder="email1@example.com, email2@example.com"
+                      placeholder="Введите email"
                       disabled={teamLoading}
                       list="emailSuggestions"
                     />
@@ -642,47 +632,52 @@ const Project = () => {
                   <div className="mb-3">
                     <label className="form-label">Найденные пользователи</label>
                     <ul className="list-group">
-                      {allSearchResults.map((result) => (
-                        <li
-                          key={result.id}
-                          className="list-group-item d-flex justify-content-between align-items-center"
-                        >
-                          {result.username} ({result.email})
-                          <button
-                            className="btn btn-sm btn-primary"
-                            onClick={() => handleSelectUser(result.id)}
-                            disabled={selectedUsers.includes(result.id) || teamLoading}
+                      {allSearchResults
+                        .filter((result) => !selectedUsers.includes(result.id))
+                        .map((result) => (
+                          <li
+                            key={result.id}
+                            className="list-group-item d-flex justify-content-between align-items-center"
                           >
-                            Добавить
-                          </button>
-                        </li>
-                      ))}
+                            <span>
+                              {result.username} ({result.email})
+                            </span>
+                            <button
+                              className="btn btn-sm btn-primary"
+                              onClick={() => handleSelectUser(result.id)}
+                              disabled={teamLoading}
+                            >
+                              Добавить
+                            </button>
+                          </li>
+                        ))}
                     </ul>
                   </div>
                 )}
                 {selectedUsers.length > 0 && (
                   <div className="mb-3">
-                    <label className="form-label">Выбранные участники</label>
+                    <label className="form-label">Добавленные участники</label>
                     <ul className="list-group">
                       {selectedUsers.map((userId) => {
-                        const user = allSearchResults.find((u) => u.id === userId) || teams.find((t) => t.id === teamId)?.members?.find((m) => m.id === userId);
-                        return (
-                          user && (
-                            <li
-                              key={user.id}
-                              className="list-group-item d-flex justify-content-between align-items-center"
-                            >
+                        const user = allSearchResults.find((u) => u.id === userId) ||
+                                    teams.find((t) => t.id === teamId)?.members?.find((m) => m.id === userId);
+                        return user ? (
+                          <li
+                            key={user.id}
+                            className="list-group-item d-flex justify-content-between align-items-center"
+                          >
+                            <span>
                               {user.username} ({user.email})
-                              <button
-                                className="btn btn-sm btn-danger"
-                                onClick={() => handleRemoveUser(user.id)}
-                                disabled={teamLoading}
-                              >
-                                Удалить
-                              </button>
-                            </li>
-                          )
-                        );
+                            </span>
+                            <button
+                              className="btn btn-sm btn-danger"
+                              onClick={() => handleRemoveUser(user.id)}
+                              disabled={teamLoading}
+                            >
+                              Удалить
+                            </button>
+                          </li>
+                        ) : null;
                       })}
                     </ul>
                   </div>

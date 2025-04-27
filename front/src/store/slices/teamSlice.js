@@ -58,7 +58,7 @@ export const removeMember = createAsyncThunk('teams/removeMember', async ({ team
 export const searchUsers = createAsyncThunk('teams/searchUsers', async (email, { rejectWithValue }) => {
   try {
     const response = await searchUsersByEmail(email);
-    return response;
+    return response.filter(user => user.role === 'employee'); // Фильтрация по роли employee
   } catch (error) {
     return rejectWithValue(error.response?.data?.message || 'Не удалось найти пользователей');
   }
