@@ -41,7 +41,22 @@ const Settings = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
-  // Загрузка профиля и настроек
+  const applyAccessibilitySettings = (settings) => {
+    // Apply font size
+    document.documentElement.style.setProperty('--font-size', `${settings.fontSize}px`);
+    
+    // Apply high contrast
+    if (settings.highContrast) {
+      document.body.classList.add('high-contrast');
+    } else {
+      document.body.classList.remove('high-contrast');
+    }
+    
+    // Save settings to localStorage
+    localStorage.setItem('appSettings', JSON.stringify(settings));
+  };
+
+  // Load profile and settings
   useEffect(() => {
     if (!user) {
       navigate('/login');
@@ -73,7 +88,9 @@ const Settings = () => {
       try {
         const savedSettings = localStorage.getItem('appSettings');
         if (savedSettings) {
-          setSettings(JSON.parse(savedSettings));
+          const parsedSettings = JSON.parse(savedSettings);
+          setSettings(parsedSettings);
+          applyAccessibilitySettings(parsedSettings);
         }
       } catch (error) {
         console.error('Ошибка загрузки настроек:', error);
@@ -84,41 +101,57 @@ const Settings = () => {
     loadSettings();
   }, [user, navigate, dispatch]);
 
-  // Сохранение настроек
+  // Save settings
   const saveSettings = async (newSettings) => {
     try {
       localStorage.setItem('appSettings', JSON.stringify(newSettings));
       setSettings(newSettings);
+      applyAccessibilitySettings(newSettings);
     } catch (error) {
       console.error('Ошибка сохранения настроек:', error);
       setError('Не удалось сохранить настройки');
     }
   };
 
-  // Обработка изменения настроек
+  // Handle setting changes
   const handleSettingChange = (key, value) => {
     const updatedSettings = { ...settings, [key]: value };
     saveSettings(updatedSettings);
   };
 
-  // Голосовой помощник
+  // Voice assistant toggle
   const toggleVoiceAssistant = (e) => {
     const isEnabled = e.target.checked;
     handleSettingChange('voiceAssistant', isEnabled);
 
     if (isEnabled && 'speechSynthesis' in window) {
+      // Stop current speech
+      window.speechSynthesis.cancel();
+      
       const utterance = new SpeechSynthesisUtterance('Голосовой помощник включён');
+      utterance.lang = 'ru-RU';
+      
+      // Add speech end handler
+      utterance.onend = () => {
+        if (settings.voiceAssistant) {
+          // Here you can add voice announcements for important events
+          console.log('Голосовой помощник готов к работе');
+        }
+      };
+      
       speechSynthesis.speak(utterance);
+    } else {
+      window.speechSynthesis.cancel();
     }
   };
 
-  // Валидация email
+  // Email validation
   const validateEmail = (email) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
   };
 
-  // Обновление профиля
+  // Update profile
   const updateProfile = async () => {
     if (profileData.name.length < 3) {
       setError('Имя пользователя должно быть не короче 3 символов');
@@ -156,7 +189,7 @@ const Settings = () => {
     }
   };
 
-  // Загрузка аватара
+  // Handle avatar change
   const handleAvatarChange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -171,7 +204,7 @@ const Settings = () => {
     try {
       const response = await uploadAvatar(user.id, file);
       const avatarUrl = response.avatar_url;
-      console.log('Avatar URL:', avatarUrl); // Для отладки
+      console.log('Avatar URL:', avatarUrl); // For debugging
       setProfileData((prev) => ({
         ...prev,
         avatar: avatarUrl,
@@ -186,7 +219,7 @@ const Settings = () => {
     }
   };
 
-  // Смена пароля
+  // Change password
   const handleChangePassword = async () => {
     if (passwordData.newPassword.length < 6) {
       setError('Новый пароль должен быть не короче 6 символов');
@@ -217,7 +250,7 @@ const Settings = () => {
   return (
     <div className="dashboard-container">
       <div className="main-content">
-        <div className="breadcrumb">Домашняя/Настройки</div>
+        <div className="breadcrumb">Домашняя / Настройки</div>
         <h1 className="dashboard-title">Настройки</h1>
         <p className="dashboard-subtitle">Управление настройками вашего аккаунта</p>
 
@@ -264,7 +297,6 @@ const Settings = () => {
                 <h2 className="section-title">Настройки профиля</h2>
                 <div className="avatar-upload">
                   <div className="avatar-preview">
-                    {console.log('profileData.avatar:', profileData.avatar)}
                     {profileData.avatar ? (
                       <img
                         src={profileData.avatar}
@@ -274,7 +306,6 @@ const Settings = () => {
                       />
                     ) : (
                       <div className="avatar-placeholder">
-                        {console.log('Rendering placeholder, username:', user?.username, 'email:', user?.email)}
                         {getAvatarLetter(user?.username, user?.email) || '?'}
                       </div>
                     )}
@@ -441,6 +472,7 @@ const Settings = () => {
                     </div>
                     <div className="slider-value">{settings.fontSize}px</div>
                   </div>
+                  <p className="hint-text">Изменяет размер текста на всём сайте</p>
                 </div>
 
                 <div className="accessibility-item">
@@ -461,9 +493,9 @@ const Settings = () => {
                     </span>
                   </div>
                   <p className="hint-text">
-                    {!('speechSynthesis' in 'window')
+                    {!('speechSynthesis' in window)
                       ? 'Ваш браузер не поддерживает речевой синтез'
-                      : 'Включите для голосового сопровождения действий'}
+                      : 'Озвучивает основные действия и элементы интерфейса'}
                   </p>
                 </div>
               </div>

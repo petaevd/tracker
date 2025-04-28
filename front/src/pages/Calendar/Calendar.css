@@ -98,14 +98,15 @@
   /* Основной контент календаря */
   .calendar-main-content {
     margin-top: 20px;
-    padding: 0 10px;
+    padding: 0 20px;
   }
   
   .calendar-breadcrumb {
-    color: rgba(255, 255, 255, 0.5);
+    color: rgba(255, 255, 255, 0.7);
     font-size: 0.8rem;
     margin-bottom: 5px;
     padding-left: 5px;
+    padding-top: 40px;
     text-align: left;
   }
   

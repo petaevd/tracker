@@ -8,11 +8,14 @@ import './Home.css';
 const Home = () => {
   const dispatch = useDispatch();
   const { events, loading, error } = useSelector((state) => state.events);
-  
-  // Загрузка событий при монтировании компонента
-  useEffect(() => {
-    dispatch(getEvents());
-  }, [dispatch]);
+  const user = useSelector((state) => state.auth.user); // Добавьте получение пользователя
+
+  // Загрузка событий с передачей user.id
+useEffect(() => {
+  if (user?.id) {
+    dispatch(getEvents(user.id)); // Передаем ID пользователя
+  }
+}, [dispatch, user]);
 
   // Состояния календаря
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -25,26 +28,35 @@ const Home = () => {
     "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"];
   const days = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
 
-  // Получение событий для дня
-  const getEventsForDay = (day, month, year) => {
-    if (!events?.length) return [];
+// Получение событий для дня - исправленная версия
+const getEventsForDay = (day, month, year) => {
+  if (!Array.isArray(events)) return [];
+  
+  return events.filter(event => {
+    if (!event?.event_date) return false;
     
-    return events.filter(event => {
-      if (!event.event_date) return false;
+    try {
       const eventDate = new Date(event.event_date);
+      // Проверка на валидность даты
+      if (isNaN(eventDate.getTime())) return false;
+      
       return (
         eventDate.getDate() === day &&
         eventDate.getMonth() === month &&
         eventDate.getFullYear() === year
       );
-    }).map(event => ({
-      ...event,
-      dateTime: `${event.event_date}T${event.event_time}`,
-      color: event.color,
-      title: event.title,
-      description: event.description,
-    }));
-  };
+    } catch (e) {
+      console.error('Ошибка обработки даты события:', e, event);
+      return false;
+    }
+  }).map(event => ({
+    ...event,
+    dateTime: `${event.event_date}T${event.event_time || '00:00:00'}`,
+    color: event.color || '#9A48EA',
+    title: event.title || 'Без названия',
+    description: event.description || ''
+  }));
+};
 
   // Генерация данных календаря
   const generateCalendar = () => {
