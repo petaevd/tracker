@@ -1,6 +1,7 @@
-import { createSlice } from '@reduxjs/toolkit';
-import { getAvatarLetter } from '../../utils';
+import { createSlice } from '@reduxjs/toolkit'; // Импорт createSlice
+import { getAvatarLetter } from '../../utils'; // Импорт функции getAvatarLetter
 
+// Определение initialState
 const initialState = {
   user: null,
   token: null,
@@ -9,16 +10,35 @@ const initialState = {
 
 const authSlice = createSlice({
   name: 'auth',
-  initialState,
+  initialState, // Использование initialState
   reducers: {
     login: (state, action) => {
-      const { user, token } = action.payload;
+      // Принимаем как прямой объект пользователя, так и структуру { user, token }
+      const payload = action.payload;
+      const user = payload.user || payload;
+      const token = payload.token || payload.token;
+      
+      if (!user || !token) {
+        console.error('Invalid auth payload:', payload);
+        return state;
+      }
+
+      // Нормализуем данные пользователя
+      const normalizedUser = {
+        id: user.userId || user.id,
+        username: user.username || '',
+        email: user.email || '',
+        role: user.role || 'employee',
+        ...user // сохраняем остальные поля
+      };
+
       state.user = {
-        ...user,
-        avatarLetter: getAvatarLetter(user.username, user.email),
+        ...normalizedUser,
+        avatarLetter: getAvatarLetter(normalizedUser.username, normalizedUser.email), // Использование getAvatarLetter
       };
       state.token = token;
       state.isAuthenticated = true;
+      
       localStorage.setItem('token', token);
       localStorage.setItem('user', JSON.stringify(state.user));
     },
@@ -33,7 +53,7 @@ const authSlice = createSlice({
       const { user, token } = action.payload;
       state.user = {
         ...user,
-        avatarLetter: getAvatarLetter(user.username, user.email),
+        avatarLetter: getAvatarLetter(user.username, user.email), // Использование getAvatarLetter
       };
       state.token = token;
       state.isAuthenticated = true;

@@ -159,45 +159,101 @@ const Home = () => {
         
         {/* Первая строка карточек */}
         <div className="cards-row">
-          {/* Плашка "Прогресс проекта" */}
+        {/* Плашка "Прогресс проекта" */}
           <div className="dashboard-card progress-card">
-            <h3 className="card-title">Прогресс проекта</h3>
-            <div className="progress-chart">
-              <div className="progress-segment completed"
-                style={{ width: `${projectProgressData.completed}%` }}>
-                <div className="progress-label">{projectProgressData.completed}%</div>
-              </div>
-              <div className="progress-segment in-progress"
-                style={{ width: `${projectProgressData.inProgress}%` }}>
-                <div className="progress-label">{projectProgressData.inProgress}%</div>
-              </div>
-              <div className="progress-segment not-started"
-                style={{ width: `${projectProgressData.notStarted}%` }}>
-                <div className="progress-label">{projectProgressData.notStarted}%</div>
-              </div>
+            <div className="progress-header">
+              <h3 className="card-title">Прогресс проекта</h3>
+              <button className="manage-btn">Управлять</button>
             </div>
-            <div className="progress-legend">
-              <div className="legend-item">
-                <div className="legend-color completed"></div>
-                <span>Выполнено</span>
+            
+            <div className="circular-progress-wrapper">
+              <div className="circular-progress">
+                <svg viewBox="0 0 100 100">
+                  {/* Фоновый круг */}
+                  <circle 
+                    cx="50" 
+                    cy="50" 
+                    r="45" 
+                    fill="none" 
+                    stroke="#2a2a2a" 
+                    strokeWidth="8"
+                  />
+                  {/* Не начатые задачи */}
+                  <circle 
+                    cx="50" 
+                    cy="50" 
+                    r="45" 
+                    fill="none" 
+                    stroke="#1b8df7" 
+                    strokeWidth="8"
+                    strokeDasharray={`${20 * 2.83} 283`}
+                    strokeDashoffset="0"
+                    strokeLinecap="round"
+                    transform="rotate(-90 50 50)"
+                  />
+                  {/* Задачи в работе */}
+                  <circle 
+                    cx="50" 
+                    cy="50" 
+                    r="45" 
+                    fill="none" 
+                    stroke="#9A48EA" 
+                    strokeWidth="8"
+                    strokeDasharray={`${45 * 2.83} 283`}
+                    strokeDashoffset={`${-20 * 2.83}`}
+                    strokeLinecap="round"
+                    transform="rotate(-90 50 50)"
+                  />
+                  {/* Выполненные задачи */}
+                  <circle 
+                    cx="50" 
+                    cy="50" 
+                    r="45" 
+                    fill="none" 
+                    stroke="#59b25c" 
+                    strokeWidth="8"
+                    strokeDasharray={`${35 * 2.83} 283`}
+                    strokeDashoffset={`${-65 * 2.83}`}
+                    strokeLinecap="round"
+                    transform="rotate(-90 50 50)"
+                  />
+                </svg>
+                <div className="progress-percent">80%</div>
               </div>
-              <div className="legend-item">
-                <div className="legend-color in-progress"></div>
-                <span>В работе</span>
-              </div>
-              <div className="legend-item">
-                <div className="legend-color not-started"></div>
-                <span>Не начато</span>
+              
+              <div className="progress-stats-row">
+                <div className="stat-item">
+                  <div className="stat-color" style={{backgroundColor: '#59b25c'}}></div>
+                  <div>
+                    <div className="stat-value">32</div>
+                    <div className="stat-label">Выполнено</div>
+                  </div>
+                </div>
+                <div className="stat-item">
+                  <div className="stat-color" style={{backgroundColor: '#9A48EA'}}></div>
+                  <div>
+                    <div className="stat-value">12</div>
+                    <div className="stat-label">В работе</div>
+                  </div>
+                </div>
+                <div className="stat-item">
+                  <div className="stat-color" style={{backgroundColor: '#1b8df7'}}></div>
+                  <div>
+                    <div className="stat-value">16</div>
+                    <div className="stat-label">Не начато</div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
-
           {/* Плашка "Задания" */}
           <div className="dashboard-card tasks-card">
             <div className="tasks-header">
-              <h3 className="card-title">Задачи на сегодня</h3>
-              <span className="tasks-count">{tasks.length}</span>
-              <button className="manage-btn">управлять</button>
+              <div className="tasks-header-content">
+                <h3 className="card-title">Задачи на сегодня</h3>
+                <span className="tasks-count">{tasks.length}</span>
+              </div>
+              <button className="manage-btn">Управлять</button>
             </div>
             
             <div className="add-task-container">

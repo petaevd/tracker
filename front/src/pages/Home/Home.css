@@ -292,74 +292,88 @@
 .progress-card {
   display: flex;
   flex-direction: column;
+  padding: 20px;
 }
 
-.progress-chart {
-  display: flex;
-  height: 30px;
-  border-radius: 15px;
-  overflow: hidden;
-  margin: 20px 0;
-  background-color: #f0f0f0;
-}
-
-.progress-segment {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-size: 12px;
-  font-weight: bold;
-  transition: width 0.3s ease;
-}
-
-.progress-segment.completed {
-  background-color: #4CAF50;
-}
-
-.progress-segment.in-progress {
-  background-color: #FFC107;
-}
-
-.progress-segment.not-started {
-  background-color: #F44336;
-}
-
-.progress-label {
-  position: absolute;
-  white-space: nowrap;
-}
-
-.progress-legend {
+.progress-header {
   display: flex;
   justify-content: space-between;
-  margin-top: 10px;
+  align-items: center;
+  margin-bottom: 20px;
 }
 
-.legend-item {
+.manage-btn {
+  background: none;
+  border: none;
+  color: #9A48EA;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
   display: flex;
   align-items: center;
+  gap: 5px;
+}
+
+.circular-progress-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 25px;
+}
+
+.circular-progress {
+  position: relative;
+  width: 180px;
+  height: 180px;
+}
+
+.circular-progress svg {
+  width: 100%;
+  height: 100%;
+}
+
+.progress-percent {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 32px;
+  font-weight: bold;
+  color: white;
+}
+
+.progress-stats-row {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  gap: 15px;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+}
+
+.stat-color {
+  width: 10px;
+  height: 10px;
+  border-radius: 4px;
+  flex-shrink: 0;
+  margin-top: 30px;
+}
+
+.stat-value {
+  font-size: 20px;
+  font-weight: bold;
+  color: white;
+}
+
+.stat-label {
   font-size: 12px;
-}
-
-.legend-color {
-  width: 12px;
-  height: 12px;
-  border-radius: 3px;
-  margin-right: 5px;
-}
-
-.legend-color.completed {
-  background-color: #4CAF50;
-}
-
-.legend-color.in-progress {
-  background-color: #FFC107;
-}
-
-.legend-color.not-started {
-  background-color: #F44336;
+  color: rgba(255, 255, 255, 0.7);
+  margin-top: 2px;
 }
 
 /* Стили для плашки заданий */
@@ -379,20 +393,28 @@
   margin-bottom: 10px;
 }
 
+.tasks-header-content {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .tasks-count {
-  background: #e0e0e0;
+  background: rgba(255, 255, 255, 0.3);
   border-radius: 10px;
-  padding: 2px 8px;
+  padding: 3px 8px;
   font-size: 12px;
+  margin-bottom: 10px;
   font-weight: 500;
 }
 
 .manage-btn {
   background: none;
   border: none;
-  color: #7e57c2;
-  font-size: 12px;
+  color: #9A48EA;
+  font-size: 15px;
   font-weight: 500;
+  margin-bottom: 10px;
   cursor: pointer;
 }
 
@@ -408,8 +430,8 @@
   justify-content: center;
   gap: 8px;
   background: none;
-  border: 1px dashed #7e57c2;
-  color: #7e57c2;
+  border: 1px dashed #9A48EA;
+  color: #9A48EA;
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
@@ -439,14 +461,14 @@
   align-items: center;
   gap: 12px;
   padding: 12px;
-  color: rgb(255, 255, 255, 0.6);
+  background: rgb(255, 255, 255, 0.05);
   border-radius: 8px;
 }
 
 .task-checkbox {
   width: 16px;
   height: 16px;
-  border: 2px solid #5e35b1;
+  border: 2px solid #9A48EA;
   border-radius: 4px;
   display: flex;
   align-items: center;
@@ -468,12 +490,12 @@
 .task-text {
   font-size: 14px;
   line-height: 1.4;
-  color: #333;
+  color: #ffffff;
 }
 
 .task-item.completed .task-text {
   text-decoration: line-through;
-  color: #757575;
+  color: rgb(255, 255, 255, 0.29);
 }
 
 .task-item.completed .task-checkbox {
