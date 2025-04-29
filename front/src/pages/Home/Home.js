@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { FiClock } from 'react-icons/fi';
-import { FaChevronDown } from 'react-icons/fa';
+import { FiClock, FiPlus } from 'react-icons/fi';
+import { FaChevronDown, FaCheck } from 'react-icons/fa';
 import { useSelector, useDispatch } from 'react-redux';
 import { getEvents } from '../../store/slices/eventSlice';
 import './Home.css';
@@ -8,14 +8,13 @@ import './Home.css';
 const Home = () => {
   const dispatch = useDispatch();
   const { events, loading, error } = useSelector((state) => state.events);
-  const user = useSelector((state) => state.auth.user); // Добавьте получение пользователя
+  const user = useSelector((state) => state.auth.user);
 
-  // Загрузка событий с передачей user.id
-useEffect(() => {
-  if (user?.id) {
-    dispatch(getEvents(user.id)); // Передаем ID пользователя
-  }
-}, [dispatch, user]);
+  useEffect(() => {
+    if (user?.id) {
+      dispatch(getEvents(user.id));
+    }
+  }, [dispatch, user]);
 
   // Состояния календаря
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -23,42 +22,55 @@ useEffect(() => {
   const [hoveredDate, setHoveredDate] = useState(null);
   const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
 
+  // Состояния для задач
+  const [tasks, setTasks] = useState([
+    { id: 1, text: 'Have an in-depth look at the metrics of the Playground project', completed: false },
+    { id: 2, text: 'Review Calendar Prototype and get an approval', completed: false },
+    { id: 3, text: 'Call with the PM', completed: false },
+    { id: 4, text: 'Share component access with Rohan', completed: false },
+  ]);
+  const [newTaskText, setNewTaskText] = useState('');
+
+  // Данные для диаграммы прогресса
+  const projectProgressData = {
+    completed: 35,
+    inProgress: 45,
+    notStarted: 20,
+  };
+
   // Константы календаря
   const monthNames = ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь",
     "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"];
   const days = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
 
-// Получение событий для дня - исправленная версия
-const getEventsForDay = (day, month, year) => {
-  if (!Array.isArray(events)) return [];
-  
-  return events.filter(event => {
-    if (!event?.event_date) return false;
+  const getEventsForDay = (day, month, year) => {
+    if (!Array.isArray(events)) return [];
     
-    try {
-      const eventDate = new Date(event.event_date);
-      // Проверка на валидность даты
-      if (isNaN(eventDate.getTime())) return false;
+    return events.filter(event => {
+      if (!event?.event_date) return false;
       
-      return (
-        eventDate.getDate() === day &&
-        eventDate.getMonth() === month &&
-        eventDate.getFullYear() === year
-      );
-    } catch (e) {
-      console.error('Ошибка обработки даты события:', e, event);
-      return false;
-    }
-  }).map(event => ({
-    ...event,
-    dateTime: `${event.event_date}T${event.event_time || '00:00:00'}`,
-    color: event.color || '#9A48EA',
-    title: event.title || 'Без названия',
-    description: event.description || ''
-  }));
-};
+      try {
+        const eventDate = new Date(event.event_date);
+        if (isNaN(eventDate.getTime())) return false;
+        
+        return (
+          eventDate.getDate() === day &&
+          eventDate.getMonth() === month &&
+          eventDate.getFullYear() === year
+        );
+      } catch (e) {
+        console.error('Ошибка обработки даты события:', e, event);
+        return false;
+      }
+    }).map(event => ({
+      ...event,
+      dateTime: `${event.event_date}T${event.event_time || '00:00:00'}`,
+      color: event.color || '#9A48EA',
+      title: event.title || 'Без названия',
+      description: event.description || ''
+    }));
+  };
 
-  // Генерация данных календаря
   const generateCalendar = () => {
     const firstDayOfMonth = new Date(
       currentDate.getFullYear(), 
@@ -75,7 +87,6 @@ const getEventsForDay = (day, month, year) => {
     const today = new Date();
     const dates = [];
 
-    // Добавляем дни текущего месяца
     for (let i = 1; i <= daysInMonth; i++) {
       const dayEvents = getEventsForDay(
         i, 
@@ -93,7 +104,6 @@ const getEventsForDay = (day, month, year) => {
       });
     }
 
-    // Добавляем пустые ячейки для выравнивания
     const offset = firstDayOfMonth === 0 ? 6 : firstDayOfMonth - 1;
     for (let i = 0; i < offset; i++) {
       dates.unshift({ day: null });
@@ -102,13 +112,11 @@ const getEventsForDay = (day, month, year) => {
     return dates;
   };
 
-  // Смена месяца
   const changeMonth = (monthIndex) => {
     setCurrentDate(new Date(currentDate.getFullYear(), monthIndex, 1));
     setShowMonthDropdown(false);
   };
 
-  // Обработчик наведения на день
   const handleMouseEnter = (date, event) => {
     if (date.hasEvents) {
       const rect = event.currentTarget.getBoundingClientRect();
@@ -120,11 +128,28 @@ const getEventsForDay = (day, month, year) => {
     }
   };
 
+  // Обработчики для задач
+  const handleAddTask = () => {
+    if (newTaskText.trim()) {
+      setTasks([...tasks, {
+        id: Date.now(),
+        text: newTaskText,
+        completed: false
+      }]);
+      setNewTaskText('');
+    }
+  };
+
+  const handleTaskComplete = (taskId) => {
+    setTasks(tasks.map(task => 
+      task.id === taskId ? { ...task, completed: !task.completed } : task
+    ));
+  };
+
   const dates = generateCalendar();
 
   return (
     <div className="home-container">
-      {/* Основной контент */}
       <div className="main-content">
         <div className="breadcrumb">Домашняя</div>
         <h1 className="dashboard-title">Панель просмотра проекта</h1>
@@ -134,12 +159,70 @@ const getEventsForDay = (day, month, year) => {
         
         {/* Первая строка карточек */}
         <div className="cards-row">
-          <div className="dashboard-card">
+          {/* Плашка "Прогресс проекта" */}
+          <div className="dashboard-card progress-card">
             <h3 className="card-title">Прогресс проекта</h3>
+            <div className="progress-chart">
+              <div className="progress-segment completed"
+                style={{ width: `${projectProgressData.completed}%` }}>
+                <div className="progress-label">{projectProgressData.completed}%</div>
+              </div>
+              <div className="progress-segment in-progress"
+                style={{ width: `${projectProgressData.inProgress}%` }}>
+                <div className="progress-label">{projectProgressData.inProgress}%</div>
+              </div>
+              <div className="progress-segment not-started"
+                style={{ width: `${projectProgressData.notStarted}%` }}>
+                <div className="progress-label">{projectProgressData.notStarted}%</div>
+              </div>
+            </div>
+            <div className="progress-legend">
+              <div className="legend-item">
+                <div className="legend-color completed"></div>
+                <span>Выполнено</span>
+              </div>
+              <div className="legend-item">
+                <div className="legend-color in-progress"></div>
+                <span>В работе</span>
+              </div>
+              <div className="legend-item">
+                <div className="legend-color not-started"></div>
+                <span>Не начато</span>
+              </div>
+            </div>
           </div>
-          <div className="dashboard-card">
-            <h3 className="card-title">Задания</h3>
+
+          {/* Плашка "Задания" */}
+          <div className="dashboard-card tasks-card">
+            <div className="tasks-header">
+              <h3 className="card-title">Задачи на сегодня</h3>
+              <span className="tasks-count">{tasks.length}</span>
+              <button className="manage-btn">управлять</button>
+            </div>
+            
+            <div className="add-task-container">
+              <button className="add-task-btn">
+                <FiPlus className="plus-icon" />
+                <span className="add-task-text">Добавить задачу</span>
+              </button>
+            </div>
+            
+            <div className="tasks-list">
+              {tasks.map(task => (
+                <div key={task.id} className={`task-item ${task.completed ? 'completed' : ''}`}>
+                  <div 
+                    className="task-checkbox"
+                    onClick={() => handleTaskComplete(task.id)}
+                  >
+                    {task.completed && <FaCheck className="check-icon" />}
+                  </div>
+                  <div className="task-text">{task.text}</div>
+                </div>
+              ))}
+            </div>
           </div>
+
+          {/* Плашка "Календарь" */}
           <div className="dashboard-card calendar-card">
             <div className="calendar-header">
               <div className="calendar-title-container">

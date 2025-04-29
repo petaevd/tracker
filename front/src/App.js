@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
-import { setUser, logout } from './store/slices/authSlice';
+import { useDispatch, useSelector } from 'react-redux';
+import { setAuthState, logout } from './store/slices/authSlice';
+import { jwtDecode } from 'jwt-decode';
 import Home from './pages/Home/Home';
 import Calendar from './pages/Calendar/Calendar';
 import Dashboard from './pages/Dashboard/Dashboard';
@@ -16,23 +17,45 @@ import Layout from './components/Layout/Layout';
 
 const App = () => {
   const dispatch = useDispatch();
+  const { isAuthenticated } = useSelector((state) => state.auth);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('user');
-    const token = localStorage.getItem('token');
+    const checkAuth = () => {
+      const storedUser = localStorage.getItem('user');
+      const token = localStorage.getItem('token');
 
-    if (storedUser && token) {
-      try {
-        const parsedUser = JSON.parse(storedUser);
-        dispatch(setUser(parsedUser));
-      } catch (e) {
-        console.error('Ошибка при загрузке пользователя:', e);
+      if (!storedUser || !token) {
         dispatch(logout());
+        setIsLoading(false);
+        return;
       }
+
+      try {
+        // Проверяем срок действия токена
+        const decodedToken = jwtDecode(token);
+        if (decodedToken.exp * 1000 < Date.now()) {
+          throw new Error('Token expired');
+        }
+
+        const parsedUser = JSON.parse(storedUser);
+        dispatch(setAuthState({ user: parsedUser, token }));
+      } catch (error) {
+        console.error('Authentication error:', error);
+        dispatch(logout());
+        localStorage.removeItem('user');
+        localStorage.removeItem('token');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (!isAuthenticated) {
+      checkAuth();
+    } else {
+      setIsLoading(false);
     }
-    setIsLoading(false);
-  }, [dispatch]);
+  }, [dispatch, isAuthenticated]);
 
   if (isLoading) {
     return <div>Загрузка...</div>;

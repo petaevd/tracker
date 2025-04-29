@@ -227,6 +227,7 @@
 
 .modal-header {
   border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  margin-top: 30px;
 }
 
 .modal-title {
@@ -396,4 +397,87 @@
   text-align: center;
   font-size: 16px;
   color: rgba(255, 255, 255, 0.7);
+}
+/* Стили для переключателя вкладок */
+.tabs-container {
+  display: flex;
+  margin-bottom: 25px;
+  gap: 8px;
+}
+
+.tab-btn {
+  padding: 12px 24px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 500;
+  color: #8e8e8e;
+  position: relative;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 8px;
+}
+
+.tab-btn.active {
+  color: #7b2cbf;
+  font-weight: 600;
+  background-color: rgba(123, 44, 191, 0.3);
+}
+
+.tab-btn:hover:not(.active) {
+  color: #7b2cbf;
+  background-color: rgba(123, 44, 191, 0.05);
+}
+
+.tab-btn:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(123, 44, 191, 0.2);
+}
+
+/* Адаптация существующих стилей */
+.action-buttons {
+  margin: 25px 0;
+  display: flex;
+  gap: 12px;
+}
+
+.teams-section, .projects-section {
+  margin-top: 25px;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.section-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #4a4a4a;
+  margin-bottom: 20px;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.archive-banner {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: #dc3545;
+  color: white;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.project-card {
+  position: relative;
+  padding-top: 15px;
 }

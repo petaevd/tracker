@@ -12,13 +12,10 @@ const authSlice = createSlice({
   initialState,
   reducers: {
     login: (state, action) => {
-      const { userId, token, email, username, role } = action.payload;
+      const { user, token } = action.payload;
       state.user = {
-        id: userId,
-        email,
-        username,
-        role,
-        avatarLetter: getAvatarLetter(username, email),
+        ...user,
+        avatarLetter: getAvatarLetter(user.username, user.email),
       };
       state.token = token;
       state.isAuthenticated = true;
@@ -32,15 +29,17 @@ const authSlice = createSlice({
       localStorage.removeItem('token');
       localStorage.removeItem('user');
     },
-    setUser: (state, action) => {
+    setAuthState: (state, action) => {
+      const { user, token } = action.payload;
       state.user = {
-        ...action.payload,
-        avatarLetter: getAvatarLetter(action.payload.username, action.payload.email),
+        ...user,
+        avatarLetter: getAvatarLetter(user.username, user.email),
       };
+      state.token = token;
       state.isAuthenticated = true;
     },
   },
 });
 
-export const { login, logout, setUser } = authSlice.actions;
+export const { login, logout, setAuthState } = authSlice.actions;
 export default authSlice.reducer;

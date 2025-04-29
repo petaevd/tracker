@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { FaEye, FaEyeSlash, FaPalette } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { setUser, logout } from '../../store/slices/authSlice';
+import { setAuthState, logout } from '../../store/slices/authSlice';
 import { getUserById, updateUser, uploadAvatar, changePassword } from '../../api/userApi';
 import { getAvatarLetter } from '../../utils';
 import './Settings.css';
@@ -10,7 +10,7 @@ import './Settings.css';
 const Settings = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const user = useSelector((state) => state.auth.user);
+  const { user, token } = useSelector((state) => state.auth);
 
   const [activeTab, setActiveTab] = useState('profile');
   const [settings, setSettings] = useState({
@@ -42,21 +42,17 @@ const Settings = () => {
   const [error, setError] = useState('');
 
   const applyAccessibilitySettings = (settings) => {
-    // Apply font size
     document.documentElement.style.setProperty('--font-size', `${settings.fontSize}px`);
     
-    // Apply high contrast
     if (settings.highContrast) {
       document.body.classList.add('high-contrast');
     } else {
       document.body.classList.remove('high-contrast');
     }
     
-    // Save settings to localStorage
     localStorage.setItem('appSettings', JSON.stringify(settings));
   };
 
-  // Load profile and settings
   useEffect(() => {
     if (!user) {
       navigate('/login');
@@ -101,7 +97,6 @@ const Settings = () => {
     loadSettings();
   }, [user, navigate, dispatch]);
 
-  // Save settings
   const saveSettings = async (newSettings) => {
     try {
       localStorage.setItem('appSettings', JSON.stringify(newSettings));
@@ -113,28 +108,23 @@ const Settings = () => {
     }
   };
 
-  // Handle setting changes
   const handleSettingChange = (key, value) => {
     const updatedSettings = { ...settings, [key]: value };
     saveSettings(updatedSettings);
   };
 
-  // Voice assistant toggle
   const toggleVoiceAssistant = (e) => {
     const isEnabled = e.target.checked;
     handleSettingChange('voiceAssistant', isEnabled);
 
     if (isEnabled && 'speechSynthesis' in window) {
-      // Stop current speech
       window.speechSynthesis.cancel();
       
       const utterance = new SpeechSynthesisUtterance('Голосовой помощник включён');
       utterance.lang = 'ru-RU';
       
-      // Add speech end handler
       utterance.onend = () => {
         if (settings.voiceAssistant) {
-          // Here you can add voice announcements for important events
           console.log('Голосовой помощник готов к работе');
         }
       };
@@ -145,13 +135,11 @@ const Settings = () => {
     }
   };
 
-  // Email validation
   const validateEmail = (email) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
   };
 
-  // Update profile
   const updateProfile = async () => {
     if (profileData.name.length < 3) {
       setError('Имя пользователя должно быть не короче 3 символов');
@@ -173,7 +161,20 @@ const Settings = () => {
         username: profileData.name,
         email: profileData.email,
       });
-      dispatch(setUser(response.user));
+      
+      // Исправлено: используем данные из response для обновления состояния
+      const updatedUser = {
+        ...user,
+        username: profileData.name,
+        email: profileData.email
+      };
+      
+      dispatch(setAuthState({ 
+        user: updatedUser, 
+        token: token // Используем токен из Redux store
+      }));
+      
+      localStorage.setItem('user', JSON.stringify(updatedUser));
       alert('Профиль успешно обновлён!');
     } catch (error) {
       console.error('Ошибка обновления профиля:', error);
@@ -189,37 +190,125 @@ const Settings = () => {
     }
   };
 
-  // Handle avatar change
+  const compressImage = async (file) => {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = (event) => {
+        const img = new Image();
+        img.src = event.target.result;
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          
+          // Максимальные размеры
+          const MAX_WIDTH = 800;
+          const MAX_HEIGHT = 800;
+          let width = img.width;
+          let height = img.height;
+  
+          if (width > height) {
+            if (width > MAX_WIDTH) {
+              height *= MAX_WIDTH / width;
+              width = MAX_WIDTH;
+            }
+          } else {
+            if (height > MAX_HEIGHT) {
+              width *= MAX_HEIGHT / height;
+              height = MAX_HEIGHT;
+            }
+          }
+  
+          canvas.width = width;
+          canvas.height = height;
+          ctx.drawImage(img, 0, 0, width, height);
+  
+          canvas.toBlob((blob) => {
+            resolve(new File([blob], file.name, {
+              type: 'image/jpeg',
+              lastModified: Date.now()
+            }));
+          }, 'image/jpeg', 0.7); // 0.7 - качество сжатия
+        };
+      };
+    });
+  };
+  
+  // Обновленная handleAvatarChange с сжатием
   const handleAvatarChange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-
-    if (file.size > 2 * 1024 * 1024) {
-      setError('Размер файла не должен превышать 2MB');
+  
+    // Проверка типа файла
+    const validTypes = ['image/jpeg', 'image/png', 'image/webp'];
+    if (!validTypes.includes(file.type)) {
+      setError('Допустимые форматы: JPEG, PNG, WebP');
       return;
     }
-
+  
+    // Проверка размера файла (2MB)
+    const MAX_SIZE = 2 * 1024 * 1024;
+    if (file.size > MAX_SIZE) {
+      setError(`Файл слишком большой (${(file.size / 1024 / 1024).toFixed(1)} MB). Максимум 2 MB.`);
+      return;
+    }
+  
     setIsLoading(true);
     setError('');
+  
     try {
-      const response = await uploadAvatar(user.id, file);
-      const avatarUrl = response.avatar_url;
-      console.log('Avatar URL:', avatarUrl); // For debugging
-      setProfileData((prev) => ({
-        ...prev,
-        avatar: avatarUrl,
+      // 1. Показываем превью
+      const previewUrl = URL.createObjectURL(file);
+      setProfileData(prev => ({ ...prev, avatar: previewUrl }));
+  
+      // 2. Подготовка FormData
+      const formData = new FormData();
+      formData.append('avatar', file);
+  
+      // 3. Отправка на сервер
+      const response = await uploadAvatar(user.id, formData);
+      
+      if (!response.avatar_url) {
+        throw new Error('Сервер не вернул URL аватара');
+      }
+  
+      // 4. Обновление состояния
+      const updatedUser = { 
+        ...user, 
+        avatar_url: response.avatar_url 
+      };
+  
+      dispatch(setAuthState({ 
+        user: updatedUser, 
+        token 
       }));
-      dispatch(setUser({ ...user, avatar_url: avatarUrl }));
+  
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+      
+      // 5. Очистка превью URL
+      URL.revokeObjectURL(previewUrl);
+      
       alert('Аватар успешно обновлён!');
     } catch (error) {
-      console.error('Ошибка обновления аватара:', error);
-      setError(error.response?.data?.message || 'Ошибка при обновлении аватара');
+      console.error('Ошибка загрузки:', error);
+      
+      // Восстанавливаем предыдущий аватар при ошибке
+      setProfileData(prev => ({
+        ...prev,
+        avatar: user.avatar_url || null
+      }));
+  
+      setError(
+        error.response?.data?.message || 
+        error.message || 
+        'Не удалось обновить аватар. Попробуйте другой файл.'
+      );
     } finally {
       setIsLoading(false);
+      e.target.value = ''; // Сброс input
     }
   };
 
-  // Change password
   const handleChangePassword = async () => {
     if (passwordData.newPassword.length < 6) {
       setError('Новый пароль должен быть не короче 6 символов');
@@ -295,32 +384,42 @@ const Settings = () => {
             {activeTab === 'profile' && (
               <div className="settings-section">
                 <h2 className="section-title">Настройки профиля</h2>
-                <div className="avatar-upload">
-                  <div className="avatar-preview">
-                    {profileData.avatar ? (
-                      <img
-                        src={profileData.avatar}
-                        alt="Avatar"
-                        className="avatar-image"
-                        onError={() => console.error('Failed to load avatar image:', profileData.avatar)}
-                      />
-                    ) : (
-                      <div className="avatar-placeholder">
-                        {getAvatarLetter(user?.username, user?.email) || '?'}
-                      </div>
-                    )}
-                  </div>
-                  <label className="upload-button">
-                    Изменить фото
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleAvatarChange}
-                      hidden
-                      disabled={isLoading}
+               <div className="avatar-upload">
+                <div className="avatar-preview">
+                  {profileData.avatar ? (
+                    <img
+                      src={profileData.avatar}
+                      alt="Ваш аватар"
+                      className="avatar-image"
+                      onError={() => {
+                        setProfileData(prev => ({
+                          ...prev,
+                          avatar: null
+                        }));
+                      }}
                     />
-                  </label>
+                  ) : (
+                    <div className="avatar-placeholder">
+                      {getAvatarLetter(user?.username, user?.email)}
+                    </div>
+                  )}
                 </div>
+                
+                <label className={`upload-button ${isLoading ? 'uploading' : ''}`}>
+                  {isLoading ? 'Загрузка...' : 'Выбрать файл'}
+                  <input
+                    type="file"
+                    accept="image/jpeg, image/png, image/webp"
+                    onChange={handleAvatarChange}
+                    disabled={isLoading}
+                    hidden
+                  />
+                </label>
+                
+                <div className="upload-hint">
+                  Максимальный размер: 2MB (JPEG, PNG, WebP)
+                </div>
+              </div>
 
                 <div className="form-group">
                   <label>Имя пользователя</label>
