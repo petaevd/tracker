@@ -6,9 +6,46 @@ import './Favorites.css';
 const Favorites = () => {
   const user = useSelector((state) => state.auth.user);
   const [favorites, setFavorites] = useState([
-    { id: 1, title: 'Задача по математике', subject: 'Математика', difficulty: 'Средняя', isBookmarked: true },
-    { id: 2, title: 'Лабораторная по физике', subject: 'Физика', difficulty: 'Высокая', isBookmarked: true },
-    { id: 3, title: 'Эссе по литературе', subject: 'Литература', difficulty: 'Низкая', isBookmarked: true },
+    { 
+      id: 1, 
+      title: 'Рефакторинг компонента Dashboard', 
+      category: 'Frontend', 
+      difficulty: 'Средняя', 
+      isBookmarked: true,
+      tech: 'React, Redux'
+    },
+    { 
+      id: 2, 
+      title: 'Реализация JWT аутентификации', 
+      category: 'Backend', 
+      difficulty: 'Высокая', 
+      isBookmarked: true,
+      tech: 'Node.js, Express'
+    },
+    { 
+      id: 3, 
+      title: 'Оптимизация SQL запросов', 
+      category: 'Базы данных', 
+      difficulty: 'Высокая', 
+      isBookmarked: true,
+      tech: 'PostgreSQL'
+    },
+    { 
+      id: 4, 
+      title: 'Настройка CI/CD пайплайна', 
+      category: 'DevOps', 
+      difficulty: 'Средняя', 
+      isBookmarked: true,
+      tech: 'GitHub Actions'
+    },
+    { 
+      id: 5, 
+      title: 'Создание модального окна', 
+      category: 'UI/UX', 
+      difficulty: 'Низкая', 
+      isBookmarked: true,
+      tech: 'React, CSS'
+    },
   ]);
   const [filter, setFilter] = useState('all');
 
@@ -23,8 +60,8 @@ const Favorites = () => {
   return (
     <div className="dashboard-container">
       <div className="main-content">
-        <div className="breadcrumb">Домашняя / Избранное</div>
-        <h1 className="dashboard-title">Избранное</h1>
+        <div className="breadcrumb">Главная / Избранное</div>
+        <h1 className="dashboard-title">Избранные задачи</h1>
         
         {/* Фильтры */}
         <div className="favorites-controls">
@@ -71,7 +108,8 @@ const Favorites = () => {
                       <span className={`difficulty-badge ${item.difficulty.toLowerCase()}`}>
                         {item.difficulty}
                       </span>
-                      <span className="subject-tag">{item.subject}</span>
+                      <span className="category-tag">{item.category}</span>
+                      <span className="tech-tag">{item.tech}</span>
                     </div>
                   </div>
                 </div>

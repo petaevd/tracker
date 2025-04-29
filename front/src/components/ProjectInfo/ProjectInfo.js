@@ -8,7 +8,7 @@ const ProjectInfo = ({ project, teamMembers }) => {
       <p><strong>Описание:</strong> {project.description || 'Нет описания'}</p>
       <p><strong>Команда:</strong> {project.team?.name || 'Не указана'}</p>
       <p><strong>Дедлайн:</strong> {project.deadline || 'Не указан'}</p>
-      <p><strong>Статус:</strong> {project.status === 'active' ? 'Активен' : 'Архивирован'}</p>
+      <p><strong>Статус:</strong> {project.status === 'active' ? 'Активен' : 'Архив'}</p>
       <p><strong>Участников:</strong> {teamMembers.length || 1}</p>
     </div>
   );

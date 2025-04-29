@@ -12,6 +12,7 @@ import Settings from './pages/Settings/Settings';
 import Help from './pages/Help/Help';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import TaskListPage from './components/TaskList/TaskList';
 import ProtectedRoute from './components/shared/ProtectedRoute';
 import Layout from './components/Layout/Layout';
 
@@ -132,6 +133,17 @@ const App = () => {
             <ProtectedRoute>
               <Layout>
                 <Help />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        {/* Добавленный маршрут для страницы задач */}
+        <Route
+          path="/tasks"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <TaskListPage />
               </Layout>
             </ProtectedRoute>
           }

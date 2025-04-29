@@ -2,11 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { FiClock, FiPlus } from 'react-icons/fi';
 import { FaChevronDown, FaCheck } from 'react-icons/fa';
 import { useSelector, useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import { getEvents } from '../../store/slices/eventSlice';
 import './Home.css';
 
 const Home = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { events, loading, error } = useSelector((state) => state.events);
   const user = useSelector((state) => state.auth.user);
 
@@ -146,6 +148,10 @@ const Home = () => {
     ));
   };
 
+  const handleManageTasks = () => {
+    navigate('/tasks'); // Переход на страницу задач
+  };
+
   const dates = generateCalendar();
 
   return (
@@ -159,7 +165,7 @@ const Home = () => {
         
         {/* Первая строка карточек */}
         <div className="cards-row">
-        {/* Плашка "Прогресс проекта" */}
+          {/* Плашка "Прогресс проекта" */}
           <div className="dashboard-card progress-card">
             <div className="progress-header">
               <h3 className="card-title">Прогресс проекта</h3>
@@ -246,6 +252,7 @@ const Home = () => {
               </div>
             </div>
           </div>
+          
           {/* Плашка "Задания" */}
           <div className="dashboard-card tasks-card">
             <div className="tasks-header">
@@ -253,7 +260,7 @@ const Home = () => {
                 <h3 className="card-title">Задачи на сегодня</h3>
                 <span className="tasks-count">{tasks.length}</span>
               </div>
-              <button className="manage-btn">Управлять</button>
+              <button className="manage-btn" onClick={handleManageTasks}>Управлять</button>
             </div>
             
             <div className="add-task-container">
