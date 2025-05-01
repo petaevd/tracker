@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { FiClock, FiPlus } from 'react-icons/fi';
 import { FaChevronDown, FaCheck } from 'react-icons/fa';
 import { useSelector, useDispatch } from 'react-redux';
@@ -9,8 +9,13 @@ import './Home.css';
 const Home = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { events, loading, error } = useSelector((state) => state.events);
+  const { eventsByUser = {}, loading, error } = useSelector((state) => state.events);
   const user = useSelector((state) => state.auth.user);
+
+  // Получаем события только для текущего пользователя
+  const events = useMemo(() => {
+    return user?.id ? eventsByUser[user.id] || [] : [];
+  }, [user?.id, eventsByUser]);
 
   useEffect(() => {
     if (user?.id) {
@@ -45,33 +50,30 @@ const Home = () => {
     "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"];
   const days = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
 
-  const getEventsForDay = (day, month, year) => {
-    if (!Array.isArray(events)) return [];
+
+// In Home.js, update the getEventsForDay function:
+const getEventsForDay = (day, month, year) => {
+  if (!Array.isArray(events)) return [];
+  
+  return events.filter(event => {
+    if (!event?.event_date) return false;
     
-    return events.filter(event => {
-      if (!event?.event_date) return false;
+    try {
+      const eventDate = new Date(event.event_date);
+      if (isNaN(eventDate.getTime())) return false;
       
-      try {
-        const eventDate = new Date(event.event_date);
-        if (isNaN(eventDate.getTime())) return false;
-        
-        return (
-          eventDate.getDate() === day &&
-          eventDate.getMonth() === month &&
-          eventDate.getFullYear() === year
-        );
-      } catch (e) {
-        console.error('Ошибка обработки даты события:', e, event);
-        return false;
-      }
-    }).map(event => ({
-      ...event,
-      dateTime: `${event.event_date}T${event.event_time || '00:00:00'}`,
-      color: event.color || '#9A48EA',
-      title: event.title || 'Без названия',
-      description: event.description || ''
-    }));
-  };
+      // Compare dates without time components
+      return (
+        eventDate.getDate() === day &&
+        eventDate.getMonth() === month &&
+        eventDate.getFullYear() === year
+      );
+    } catch (e) {
+      console.error('Error processing event date:', e, event);
+      return false;
+    }
+  });
+};
 
   const generateCalendar = () => {
     const firstDayOfMonth = new Date(
@@ -166,7 +168,7 @@ const Home = () => {
         {/* Первая строка карточек */}
         <div className="cards-row">
           {/* Плашка "Прогресс проекта" */}
-          <div className="dashboard-card progress-card">
+          <div className="dashboard-card progress-card" style={{ backgroundColor: "rgba(255, 255, 255, 0.1)" }}>
             <div className="progress-header">
               <h3 className="card-title">Прогресс проекта</h3>
               <button className="manage-btn">Управлять</button>
@@ -254,7 +256,7 @@ const Home = () => {
           </div>
           
           {/* Плашка "Задания" */}
-          <div className="dashboard-card tasks-card">
+          <div className="dashboard-card tasks-card" style={{ backgroundColor: "rgba(255, 255, 255, 0.1)" }}>
             <div className="tasks-header">
               <div className="tasks-header-content">
                 <h3 className="card-title">Задачи на сегодня</h3>
@@ -286,7 +288,7 @@ const Home = () => {
           </div>
 
           {/* Плашка "Календарь" */}
-          <div className="dashboard-card calendar-card">
+          <div className="dashboard-card calendar-card" style={{ backgroundColor: "rgba(255, 255, 255, 0.1)" }}>
             <div className="calendar-header">
               <div className="calendar-title-container">
                 <h3 className="card-title">Календарь</h3>
@@ -359,18 +361,18 @@ const Home = () => {
           </div>
         </div>
 
-        {/* Вторая строка карточек */}
+        {/* Вторая строка карточек
         <div className="cards-row">
-          <div className="dashboard-card">
+          <div className="dashboard-card" style={{ backgroundColor: "rgba(255, 255, 255, 0.1)" }}>
             <h3 className="card-title">Прогресс заданий</h3>
           </div>
-          <div className="dashboard-card">
+          <div className="dashboard-card" style={{ backgroundColor: "rgba(255, 255, 255, 0.1)" }}>
             <h3 className="card-title">Временная шкала выполнения задачи</h3>
           </div>
-          <div className="dashboard-card">
+          <div className="dashboard-card" style={{ backgroundColor: "rgba(255, 255, 255, 0.1)" }}>
             <h3 className="card-title">Сегодняшняя встреча</h3>
           </div>
-        </div>
+        </div> */}
       </div>
 
       {/* Тултип события */}

@@ -21,22 +21,27 @@ const Calendar = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const user = useSelector((state) => state.auth.user);
-  const { events = [], loading, error } = useSelector((state) => state.events);
+  const { eventsByUser = {}, loading, error } = useSelector((state) => state.events);
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Перенаправление если пользователь не авторизован
+  // Get events for current user
+  const events = useMemo(() => {
+    return user?.id ? eventsByUser[user.id] || [] : [];
+  }, [user?.id, eventsByUser]);
+
+  // Redirect if not authenticated
   useEffect(() => {
     if (!user) {
       navigate('/login');
     }
   }, [user, navigate]);
 
-// Загрузка событий с передачей user.id
-useEffect(() => {
-  if (user?.id) {
-    dispatch(fetchEvents(user.id)); // Передаем ID пользователя
-  }
-}, [dispatch, user]);
+  // Load events for current user
+  useEffect(() => {
+    if (user?.id) {
+      dispatch(fetchEvents(user.id));
+    }
+  }, [dispatch, user?.id]);
 
   const [currentDate, setCurrentDate] = useState(new Date());
   const [showMonthDropdown, setShowMonthDropdown] = useState(false);
@@ -45,7 +50,7 @@ useEffect(() => {
     "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"];
   const days = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
   
-  // Генерация дней календаря
+  // Generate calendar dates
   const generateCalendarDates = () => {
     const firstDayOfMonth = new Date(
       currentDate.getFullYear(), 
@@ -68,7 +73,7 @@ useEffect(() => {
     const today = new Date();
     const dates = [];
     
-    // Дни предыдущего месяца
+    // Previous month days
     for (let i = firstDayOfMonth - 1; i >= 0; i--) {
       dates.push({
         day: daysInPrevMonth - i,
@@ -77,7 +82,7 @@ useEffect(() => {
       });
     }
     
-    // Дни текущего месяца
+    // Current month days
     for (let i = 1; i <= daysInMonth; i++) {
       dates.push({
         day: i,
@@ -88,7 +93,7 @@ useEffect(() => {
       });
     }
     
-    // Дни следующего месяца
+    // Next month days
     const totalCells = Math.ceil(dates.length / 7) * 7;
     for (let i = dates.length; i < totalCells; i++) {
       dates.push({
@@ -117,14 +122,14 @@ useEffect(() => {
     return date.toLocaleDateString('ru-RU', options);
   };
 
-  // Модальные окна и управление событиями
+  // Event modals and management
   const [showEventModal, setShowEventModal] = useState(false);
   const [showEventDetailsModal, setShowEventDetailsModal] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState(null);
   
   const eventColors = [
     { name: 'Green', value: '#59b25c' },
-    { name: 'white', value: '#E0C1FF' },
+    { name: 'White', value: '#E0C1FF' },
     { name: 'Blue', value: '#1b8df7' },
     { name: 'Purple', value: '#9A48EA' },
   ];
@@ -137,7 +142,7 @@ useEffect(() => {
     color: eventColors[0].value
   });
 
-  // Фильтрация событий
+  // Filter events
   const filteredEvents = useMemo(() => {
     if (!searchQuery.trim()) return [];
     
@@ -152,29 +157,29 @@ useEffect(() => {
     });
   }, [events, searchQuery]);
 
-  // Обработчики событий
-  const handleAddEvent = () => {
-    if (!user?.id) {
-      console.error('Пользователь не авторизован');
-      return;
+  // Event handlers
+  const handleAddEvent = async () => {
+    try {
+      const eventData = {
+        title: newEvent.title.trim(),
+        description: newEvent.description,
+        event_date: new Date(newEvent.date).toISOString(),
+        event_time: newEvent.time.padStart(5, '0'), // гарантируем HH:MM
+        color: newEvent.color
+      };
+  
+      console.log('Dispatching:', eventData);
+      await dispatch(createEvent(eventData)).unwrap();
+      
+      setShowEventModal(false);
+      resetNewEvent();
+      dispatch(fetchEvents(user.id));
+    } catch (error) {
+      console.error('Creation error:', error);
+      alert(`Error: ${error.message}`);
     }
-
-    if (!newEvent.title.trim()) return;
-    
-    const eventData = {
-      userId: user.id,
-      title: newEvent.title.trim(),
-      description: newEvent.description,
-      eventDate: newEvent.date,
-      eventTime: newEvent.time,
-      color: newEvent.color
-    };
-    
-    dispatch(createEvent(eventData));
-    setShowEventModal(false);
-    resetNewEvent();
   };
-
+  
   const handleUpdateEvent = () => {
     if (!selectedEvent || !selectedEvent.title.trim()) return;
     
@@ -221,62 +226,62 @@ useEffect(() => {
     setShowEventDetailsModal(true);
   };
 
-  // Получение событий для дня
-// Получение событий для дня - исправленная версия
-const getEventsForDay = (day) => {
-  if (!day?.isCurrentMonth || !Array.isArray(events)) return null;
-  
-  const dayEvents = events.filter(event => {
-    if (!event?.event_date) return false;
+  // Get events for specific day
+  const getEventsForDay = (day) => {
+    if (!day?.isCurrentMonth || !Array.isArray(events)) return null;
     
-    try {
-      const eventDate = new Date(event.event_date);
-      // Добавляем проверку на корректность даты
-      if (isNaN(eventDate.getTime())) return false;
+    const dayEvents = events.filter(event => {
+      if (!event?.event_date) return false;
+      
+      try {
+        const eventDate = new Date(event.event_date);
+        if (isNaN(eventDate.getTime())) return false;
+        
+        return (
+          eventDate.getDate() === day.day && 
+          eventDate.getMonth() === currentDate.getMonth() && 
+          eventDate.getFullYear() === currentDate.getFullYear()
+        );
+      } catch (e) {
+        console.error('Error processing event date:', e, event);
+        return false;
+      }
+    });
+    
+    return dayEvents.map(event => {
+      if (!event) return null;
+      
+      const isHighlighted = filteredEvents.some(e => e?.id === event?.id);
       
       return (
-        eventDate.getDate() === day.day && 
-        eventDate.getMonth() === currentDate.getMonth() && 
-        eventDate.getFullYear() === currentDate.getFullYear()
+        <div 
+          key={event.id} 
+          className={`calendar-event ${isHighlighted ? 'highlighted-event' : ''}`}
+          style={{
+            backgroundColor: `${event.color || '#9A48EA'}20`,
+            color: event.color || '#9A48EA',
+            border: `1px solid ${event.color || '#9A48EA'}80`,
+            boxShadow: isHighlighted ? `0 0 15px 5px ${event.color || '#9A48EA'}` : 'none'
+          }}
+          onClick={() => openEventDetails(event)}
+        >
+          {event.title} {event.event_time || ''}
+        </div>
       );
-    } catch (e) {
-      console.error('Ошибка обработки даты события:', e, event);
-      return false;
-    }
-  });
-  
-  return dayEvents.map(event => {
-    if (!event) return null;
-    
-    const isHighlighted = Array.isArray(filteredEvents) 
-      ? filteredEvents.some(e => e?.id === event?.id)
-      : false;
-    
-    return (
-      <div 
-        key={event.id} 
-        className={`calendar-event ${isHighlighted ? 'highlighted-event' : ''}`}
-        style={{
-          backgroundColor: `${event.color || '#9A48EA'}20`,
-          color: event.color || '#9A48EA',
-          border: `1px solid ${event.color || '#9A48EA'}80`,
-          boxShadow: isHighlighted ? `0 0 15px 5px ${event.color || '#9A48EA'}` : 'none'
-        }}
-        onClick={() => openEventDetails(event)}
-      >
-        {event.title} {event.event_time || ''}
-      </div>
-    );
-  });
-};
-
+    });
+  };
 
   if (!user) {
-    return <div className="loading-message">Перенаправление на страницу входа...</div>;
+    return <div className="loading-message">Redirecting to login...</div>;
   }
 
-  if (loading) return <div className="loading-message">Загрузка событий...</div>;
-  if (error) return <div className="error-message">{error}</div>;
+  if (loading) return <div className="loading-message">Loading events...</div>;
+  if (error) {
+    const errorMessage = typeof error === 'object' 
+      ? error.message || JSON.stringify(error)
+      : error;
+    return <div className="error-message">{errorMessage}</div>;
+  }
 
   return (
     <div className="calendar-page">

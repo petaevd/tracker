@@ -239,73 +239,43 @@ const Settings = () => {
     const file = e.target.files[0];
     if (!file) return;
   
-    // Проверка типа файла
-    const validTypes = ['image/jpeg', 'image/png', 'image/webp'];
-    if (!validTypes.includes(file.type)) {
-      setError('Допустимые форматы: JPEG, PNG, WebP');
-      return;
-    }
-  
-    // Проверка размера файла (2MB)
-    const MAX_SIZE = 2 * 1024 * 1024;
-    if (file.size > MAX_SIZE) {
-      setError(`Файл слишком большой (${(file.size / 1024 / 1024).toFixed(1)} MB). Максимум 2 MB.`);
-      return;
-    }
-  
     setIsLoading(true);
     setError('');
   
     try {
-      // 1. Показываем превью
-      const previewUrl = URL.createObjectURL(file);
-      setProfileData(prev => ({ ...prev, avatar: previewUrl }));
-  
-      // 2. Подготовка FormData
       const formData = new FormData();
       formData.append('avatar', file);
   
-      // 3. Отправка на сервер
       const response = await uploadAvatar(user.id, formData);
       
+      console.log('Avatar upload response:', response); // Добавьте логирование
+      
       if (!response.avatar_url) {
-        throw new Error('Сервер не вернул URL аватара');
+        throw new Error('Не удалось получить URL аватара');
       }
   
-      // 4. Обновление состояния
-      const updatedUser = { 
-        ...user, 
-        avatar_url: response.avatar_url 
+      const updatedUser = {
+        ...user,
+        avatar_url: response.avatar_url
       };
   
-      dispatch(setAuthState({ 
-        user: updatedUser, 
-        token 
+      dispatch(setAuthState({
+        user: updatedUser,
+        token
+      }));
+  
+      setProfileData(prev => ({
+        ...prev,
+        avatar: response.avatar_url
       }));
   
       localStorage.setItem('user', JSON.stringify(updatedUser));
-      
-      // 5. Очистка превью URL
-      URL.revokeObjectURL(previewUrl);
-      
-      alert('Аватар успешно обновлён!');
     } catch (error) {
-      console.error('Ошибка загрузки:', error);
-      
-      // Восстанавливаем предыдущий аватар при ошибке
-      setProfileData(prev => ({
-        ...prev,
-        avatar: user.avatar_url || null
-      }));
-  
-      setError(
-        error.response?.data?.message || 
-        error.message || 
-        'Не удалось обновить аватар. Попробуйте другой файл.'
-      );
+      console.error('Upload error:', error);
+      setError(error.message || 'Не удалось обновить аватар');
     } finally {
       setIsLoading(false);
-      e.target.value = ''; // Сброс input
+      e.target.value = '';
     }
   };
 
@@ -385,26 +355,27 @@ const Settings = () => {
               <div className="settings-section">
                 <h2 className="section-title">Настройки профиля</h2>
                <div className="avatar-upload">
-                <div className="avatar-preview">
-                  {profileData.avatar ? (
-                    <img
-                      src={profileData.avatar}
-                      alt="Ваш аватар"
-                      className="avatar-image"
-                      onError={() => {
-                        setProfileData(prev => ({
-                          ...prev,
-                          avatar: null
-                        }));
-                      }}
-                    />
-                  ) : (
-                    <div className="avatar-placeholder">
-                      {getAvatarLetter(user?.username, user?.email)}
-                    </div>
-                  )}
-                </div>
-                
+               <div className="avatar-preview">
+                {profileData.avatar ? (
+                  <img
+                    src={profileData.avatar}
+                    alt="Ваш аватар"
+                    className="avatar-image"
+                    onError={(e) => {
+                      e.target.onerror = null; // Предотвращаем бесконечный цикл
+                      e.target.src = ''; // Удаляем нерабочий URL
+                      setProfileData(prev => ({
+                        ...prev,
+                        avatar: null
+                      }));
+                    }}
+                  />
+                ) : (
+                  <div className="avatar-placeholder">
+                    {getAvatarLetter(user?.username, user?.email)}
+                  </div>
+                )}
+              </div>
                 <label className={`upload-button ${isLoading ? 'uploading' : ''}`}>
                   {isLoading ? 'Загрузка...' : 'Выбрать файл'}
                   <input
