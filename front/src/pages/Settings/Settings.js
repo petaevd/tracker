@@ -507,7 +507,7 @@ const Settings = () => {
             {activeTab === 'accessibility' && (
               <div className="settings-section">
                 <h2 className="section-title">Доступность</h2>
-                <div className="accessibility-item">
+                {/* <div className="accessibility-item">
                   <h3>Режим высокой контрастности</h3>
                   <div className="toggle-switch">
                     <input
@@ -522,7 +522,7 @@ const Settings = () => {
                     <span>{settings.highContrast ? 'Включено' : 'Выключено'}</span>
                   </div>
                   <p className="hint-text">Улучшает видимость для пользователей с нарушением зрения</p>
-                </div>
+                </div> */}
 
                 <div className="accessibility-item">
                   <h3>Размер текста</h3>
@@ -597,7 +597,7 @@ const Settings = () => {
                     </div>
                   </div>
                 </div>
-                <div className="appearance-item">
+                {/* <div className="appearance-item">
                   <h3>Акцентный цвет</h3>
                   <div className="color-picker">
                     {['#9A48EA', '#FF5252', '#4CAF50', '#2196F3', '#FFC107'].map((color) => (
@@ -616,7 +616,7 @@ const Settings = () => {
                       disabled={isLoading}
                     />
                   </div>
-                </div>
+                </div> */}
               </div>
             )}
 
@@ -633,11 +633,9 @@ const Settings = () => {
                   >
                     <option value="ru">Русский</option>
                     <option value="en">English</option>
-                    <option value="es">Español</option>
-                    <option value="de">Deutsch</option>
                   </select>
                 </div>
-                <div className="form-group">
+                {/* <div className="form-group">
                   <label>Формат даты</label>
                   <select
                     value={settings.dateFormat}
@@ -649,8 +647,8 @@ const Settings = () => {
                     <option value="MM/DD/YYYY">MM/DD/YYYY</option>
                     <option value="YYYY-MM-DD">YYYY-MM-DD</option>
                   </select>
-                </div>
-                <div className="form-group">
+                </div> */}
+                {/* <div className="form-group">
                   <label>Часовой пояс</label>
                   <select
                     value={settings.timezone}
@@ -663,7 +661,7 @@ const Settings = () => {
                     <option value="Лондон (UTC+1)">Лондон (UTC+1)</option>
                     <option value="Нью-Йорк (UTC-4)">Нью-Йорк (UTC-4)</option>
                   </select>
-                </div>
+                </div> */}
               </div>
             )}
           </div>
