@@ -1,0 +1,10 @@
+{
+    "development": {
+        "username": "postgres",
+        "password": "12345",
+        "database": "trecker",
+        "host": "localhost",
+        "dialect": "postgres",
+        "port": 5432
+    }
+}

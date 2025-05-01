@@ -6,8 +6,10 @@ import { setAuthState, logout } from '../../store/slices/authSlice';
 import { getUserById, updateUser, uploadAvatar, changePassword } from '../../api/userApi';
 import { getAvatarLetter } from '../../utils';
 import './Settings.css';
+import useAssetUrl from '../../hooks/useAssetUrl';
 
 const Settings = () => {
+  const getAssetUrl = useAssetUrl();
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { user, token } = useSelector((state) => state.auth);
