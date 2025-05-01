@@ -243,7 +243,6 @@ const Settings = () => {
     setError('');
   
     try {
-<<<<<<< HEAD
       const formData = new FormData();
       formData.append('avatar', file);
   
@@ -263,14 +262,6 @@ const Settings = () => {
       dispatch(setAuthState({
         user: updatedUser,
         token
-=======
-      const response = await uploadAvatar(user.id, file);
-      const avatarUrl = response.avatar_url;
-      console.log('Avatar URL:', avatarUrl); // For debugging
-      setProfileData((prev) => ({
-        ...prev,
-        avatar: avatarUrl,
->>>>>>> c797f5e (Revert "Аватар")
       }));
   
       setProfileData(prev => ({
@@ -363,7 +354,6 @@ const Settings = () => {
             {activeTab === 'profile' && (
               <div className="settings-section">
                 <h2 className="section-title">Настройки профиля</h2>
-<<<<<<< HEAD
                <div className="avatar-upload">
                <div className="avatar-preview">
                 {profileData.avatar ? (
@@ -383,22 +373,6 @@ const Settings = () => {
                 ) : (
                   <div className="avatar-placeholder">
                     {getAvatarLetter(user?.username, user?.email)}
-=======
-                <div className="avatar-upload">
-                  <div className="avatar-preview">
-                    {profileData.avatar ? (
-                      <img
-                        src={profileData.avatar}
-                        alt="Avatar"
-                        className="avatar-image"
-                        onError={() => console.error('Failed to load avatar image:', profileData.avatar)}
-                      />
-                    ) : (
-                      <div className="avatar-placeholder">
-                        {getAvatarLetter(user?.username, user?.email) || '?'}
-                      </div>
-                    )}
->>>>>>> c797f5e (Revert "Аватар")
                   </div>
                 )}
               </div>
@@ -533,7 +507,7 @@ const Settings = () => {
             {activeTab === 'accessibility' && (
               <div className="settings-section">
                 <h2 className="section-title">Доступность</h2>
-                {/* <div className="accessibility-item">
+                <div className="accessibility-item">
                   <h3>Режим высокой контрастности</h3>
                   <div className="toggle-switch">
                     <input
@@ -548,7 +522,7 @@ const Settings = () => {
                     <span>{settings.highContrast ? 'Включено' : 'Выключено'}</span>
                   </div>
                   <p className="hint-text">Улучшает видимость для пользователей с нарушением зрения</p>
-                </div> */}
+                </div>
 
                 <div className="accessibility-item">
                   <h3>Размер текста</h3>
@@ -623,7 +597,7 @@ const Settings = () => {
                     </div>
                   </div>
                 </div>
-                {/* <div className="appearance-item">
+                <div className="appearance-item">
                   <h3>Акцентный цвет</h3>
                   <div className="color-picker">
                     {['#9A48EA', '#FF5252', '#4CAF50', '#2196F3', '#FFC107'].map((color) => (
@@ -642,7 +616,7 @@ const Settings = () => {
                       disabled={isLoading}
                     />
                   </div>
-                </div> */}
+                </div>
               </div>
             )}
 
