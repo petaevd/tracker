@@ -159,27 +159,39 @@ const Calendar = () => {
 
   // Event handlers
   const handleAddEvent = async () => {
+    if (!user?.id) {
+      console.error('User not authenticated');
+      return;
+    }
+  
+    if (!newEvent.title.trim()) {
+      alert('Please enter event title');
+      return;
+    }
+  
     try {
       const eventData = {
         title: newEvent.title.trim(),
         description: newEvent.description,
-        event_date: new Date(newEvent.date).toISOString(),
-        event_time: newEvent.time.padStart(5, '0'), // гарантируем HH:MM
+        event_date: newEvent.date,  // используем правильное имя поля
+        event_time: newEvent.time,  // используем правильное имя поля
         color: newEvent.color
       };
-  
-      console.log('Dispatching:', eventData);
+      
+      console.log('Creating event with data:', eventData);
       await dispatch(createEvent(eventData)).unwrap();
       
       setShowEventModal(false);
       resetNewEvent();
+      
+      // Обновляем список событий
       dispatch(fetchEvents(user.id));
     } catch (error) {
-      console.error('Creation error:', error);
+      console.error('Event creation failed:', error);
       alert(`Error: ${error.message}`);
     }
   };
-  
+
   const handleUpdateEvent = () => {
     if (!selectedEvent || !selectedEvent.title.trim()) return;
     
