@@ -6,8 +6,10 @@ import { setAuthState, logout } from '../../store/slices/authSlice';
 import { getUserById, updateUser, uploadAvatar, changePassword } from '../../api/userApi';
 import { getAvatarLetter } from '../../utils';
 import './Settings.css';
+import useAssetUrl from '../../hooks/useAssetUrl';
 
 const Settings = () => {
+  const getAssetUrl = useAssetUrl();
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { user, token } = useSelector((state) => state.auth);
@@ -243,10 +245,7 @@ const Settings = () => {
     setError('');
   
     try {
-      const formData = new FormData();
-      formData.append('avatar', file);
-  
-      const response = await uploadAvatar(user.id, formData);
+      const response = await uploadAvatar(user.id, file);
       
       console.log('Avatar upload response:', response); // Добавьте логирование
       
@@ -358,7 +357,7 @@ const Settings = () => {
                <div className="avatar-preview">
                 {profileData.avatar ? (
                   <img
-                    src={profileData.avatar}
+                    src={getAssetUrl(profileData.avatar)}
                     alt="Ваш аватар"
                     className="avatar-image"
                     onError={(e) => {
@@ -366,7 +365,7 @@ const Settings = () => {
                       e.target.src = ''; // Удаляем нерабочий URL
                       setProfileData(prev => ({
                         ...prev,
-                        avatar: null
+                        avatar: prev.avatar || null
                       }));
                     }}
                   />
