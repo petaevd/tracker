@@ -29,8 +29,8 @@ const setupAssociations = () => {
   Task.belongsTo(Project, { foreignKey: 'project_id', as: 'project' });
 
   // TaskStatus -> Task
-  TaskStatus.hasMany(Task, { foreignKey: 'status_id', as: 'tasks' });
-  Task.belongsTo(TaskStatus, { foreignKey: 'status_id', as: 'status' });
+  // TaskStatus.hasMany(Task, { foreignKey: 'status_id', as: 'tasks' });
+  // Task.belongsTo(TaskStatus, { foreignKey: 'status_id', as: 'status' });
 
   // Task <-> Tag (many-to-many)
   Task.belongsToMany(Tag, { through: 'TaskTag', foreignKey: 'task_id', otherKey: 'tag_id', as: 'taskTags' });
