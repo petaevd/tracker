@@ -2,16 +2,26 @@ import taskService from '../services/taskService.js';
 
 const getAllTasks = async (req, res, next) => {
   try {
-    const tasks = await taskService.getAllTasks();
+    const tasks = await taskService.getAllTasks(req.body, req.user);
     res.json(tasks);
   } catch (err) {
     next(err);
   }
 };
 
+// Юзлесс пока что
+const getTasksByCreator = async (req, res, next) => {
+  try {
+    const tasks = await taskService.getTasksByCreator(req.user);
+    res.json(tasks);
+  } catch (err) {
+    next(err);
+  }
+}
+
 const createTask = async (req, res, next) => {
   try {
-    const task = await taskService.createTask(req.body);
+    const task = await taskService.createTask(req.body, req.user);
     res.status(201).json({ message: 'Задача успешно создана', id: task.id });
   } catch (err) {
     next(err);
@@ -36,4 +46,4 @@ const deleteTask = async (req, res, next) => {
   }
 };
 
-export default { getAllTasks, createTask, updateTask, deleteTask };
+export default { getAllTasks, createTask, updateTask, deleteTask, getTasksByCreator };
