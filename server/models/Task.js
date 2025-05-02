@@ -23,13 +23,18 @@ const Task = sequelize.define('Task', {
       key: 'id',
     },
   },
-  status_id: {
-    type: DataTypes.INTEGER,
+  // status_id: {
+  //   type: DataTypes.INTEGER,
+  //   allowNull: false,
+  //   references: {
+  //     model: 'task_status', 
+  //     key: 'id',
+  //   },
+  // },
+  status: {
+    type: DataTypes.ENUM('open', 'closed', 'in_test', 'in_development'),
     allowNull: false,
-    references: {
-      model: 'task_status', 
-      key: 'id',
-    },
+    defaultValue: 'open',
   },
   creator_id: {
     type: DataTypes.INTEGER,
