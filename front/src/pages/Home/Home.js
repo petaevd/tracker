@@ -16,22 +16,62 @@ const Home = () => {
 
   // ================ Задачи ================
   const { tasks, loadingTask, errorTask } = useSelector((state) => state.tasks);
-  useEffect(() => {
-    dispatch(getTasks());
-  }, [dispatch])
-  const priorityMap = {
-    low: 'Низкая',
-    medium: 'Средняя',
-    high: 'Высокая',
+  const [filterTask, setFilterTask] = useState('all');
+
+  const filterTasks = (tasks) => {
+    const now = new Date();
+    console.log(`${tasks.map(task => (new Date(task.due_date)))}`)
+  
+    switch (filterTask) {
+      case 'overdue':
+        return tasks.filter(task => task.due_date && new Date(task.due_date) < now);
+      
+      case 'upcoming':
+        const today = new Date();
+        const weekLater = new Date();
+        weekLater.setDate(today.getDate() + 7);
+        return tasks.filter(
+          task =>
+            task.due_date &&
+            new Date(task.due_date) >= today &&
+            new Date(task.due_date) <= weekLater
+        );
+  
+      case 'open':
+        return tasks.filter(task => task.status && task.status.toLowerCase() === 'open');
+  
+      case 'closed':
+        return tasks.filter(task => task.status && task.status.toLowerCase() === 'closed');
+  
+      case 'in_test':
+        return tasks.filter(task => task.status && task.status.toLowerCase() === 'in_test');
+  
+      case 'in_development':
+        return tasks.filter(task => task.status && task.status.toLowerCase() === 'in_development');
+
+      case 'high-priority':
+        return tasks.filter(task => task.priority && task.priority.toLowerCase() === 'high');
+
+      case 'medium-priority':
+        return tasks.filter(task => task.priority && task.priority.toLowerCase() === 'medium');
+
+      case 'low-priority':
+        return tasks.filter(task => task.priority && task.priority.toLowerCase() === 'low');
+  
+      default:
+        return tasks;
+    }
   };
+
   const [currentPage, setCurrentPage] = useState(1);
   const tasksPerPage = 3;
 
   const indexOfLastTask = currentPage * tasksPerPage;
   const indexOfFirstTask = indexOfLastTask - tasksPerPage;
-  const currentTasks = tasks.slice(indexOfFirstTask, indexOfLastTask);
+  const currentTasks = filterTasks(tasks).slice(indexOfFirstTask, indexOfLastTask);
 
-  const totalPages = Math.ceil(tasks.length / tasksPerPage);
+  const totalPages = Math.ceil(filterTasks(tasks).length / tasksPerPage);
+
   const renderPagination = () => {
     const pages = [];
     const maxPages = 5;
@@ -54,6 +94,20 @@ const Home = () => {
     }
   
     return pages;
+  };
+
+  useEffect(() => {
+    dispatch(getTasks());
+  }, [dispatch])
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filterTask]);
+
+  const priorityMap = {
+    low: 'Низкая',
+    medium: 'Средняя',
+    high: 'Высокая',
   };
   // ================ Задачи ================
 
@@ -281,10 +335,27 @@ const getEventsForDay = (day, month, year) => {
           <div className="dashboard-card tasks-card" style={{ backgroundColor: "rgba(255, 255, 255, 0.1)" }}>
             <div className="tasks-header">
               <div className="tasks-header-content">
-                <h3 className="card-title">Задачи на сегодня</h3>
+                <h3 className="card-title">Задачи</h3>
                 <span className="tasks-count">{tasks.length}</span>
               </div>
             </div>
+
+            <select
+              value={filterTask}
+              onChange={(e) => setFilterTask(e.target.value)}
+              className="custom-select"
+            >
+              <option value="all">Все</option>
+              <option value="overdue">Просроченные</option>
+              <option value="upcoming">Ближайшие</option>
+              <option value="open">Открытые</option>
+              <option value="closed">Завершённые</option>
+              <option value="in_test">В тестировании</option>
+              <option value="in_development">В разработке</option>
+              <option value="low-priority">Малый приоритет</option>
+              <option value="medium-priority">Средний приоритет</option>
+              <option value="high-priority">Высокий приоритет</option>
+            </select>
             
             <div className="add-task-container">
               <button className="add-task-btn">
@@ -294,7 +365,7 @@ const getEventsForDay = (day, month, year) => {
             </div>
             
             <div className="tasks-list">
-              {currentTasks.map(task => (
+              {filterTasks(currentTasks).map(task => (
                 <div key={task.id} className='task-item'>
                     <div className="task-main">
                       <div className="task-text">{task.title}</div>
