@@ -2,10 +2,12 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { FiClock, FiPlus } from 'react-icons/fi';
 import { FaChevronDown, FaCheck } from 'react-icons/fa';
 import { FaWhmcs } from "react-icons/fa";
+import { FaTimes } from "react-icons/fa";
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { getEvents } from '../../store/slices/eventSlice';
-import { getTasks, removeTask, updateTask, createTask } from '../../store/slices/taskSlice';
+import { getTasks, removeTask, updateTask, addTask } from '../../store/slices/taskSlice';
+import { getProjects } from '../../store/slices/projectSlice';
 import './Home.css';
 
 const Home = () => {
@@ -16,11 +18,11 @@ const Home = () => {
 
   // ================ Задачи ================
   const { tasks, loadingTask, errorTask } = useSelector((state) => state.tasks);
+  const { projects, loadingProjects, errorProjects } = useSelector(state => state.projects)
   const [filterTask, setFilterTask] = useState('all');
 
   const filterTasks = (tasks) => {
     const now = new Date();
-    console.log(`${tasks.map(task => (new Date(task.due_date)))}`)
   
     switch (filterTask) {
       case 'overdue':
@@ -104,17 +106,23 @@ const Home = () => {
     setCurrentPage(1);
   }, [filterTask]);
 
+  useEffect(() => {
+    dispatch(getProjects());
+  }, [dispatch]);
+
+
   const priorityMap = {
     low: 'Низкая',
     medium: 'Средняя',
     high: 'Высокая',
   };
   // Для круговой диаграммы
-  const completedCount = tasks.filter(task => task.status === 'closed').length;
+  const completedCount = tasks.filter(task => task?.status === 'closed').length;
   const inProgressCount = tasks.filter(task =>
-    ['in_test', 'in_development'].includes(task.status)
+    ['in_test', 'in_development'].includes(task?.status)
   ).length;
-  const notStartedCount = tasks.filter(task => task.status === 'open').length;
+  const notStartedCount = tasks.filter(task => task?.status === 'open').length;
+
 
   const total = completedCount + inProgressCount + notStartedCount;
   const completedPercent = (completedCount / total) * 100;
@@ -125,7 +133,43 @@ const Home = () => {
   const completedLength = (completedPercent / 100) * CIRCLE_LENGTH;
   const inProgressLength = (inProgressPercent / 100) * CIRCLE_LENGTH;
   const notStartedLength = (notStartedPercent / 100) * CIRCLE_LENGTH;
-  const percent = Math.round((completedCount / total) * 100);
+  const percent = total > 0 ? Math.round((completedCount / total) * 100) : 0;
+
+  const [showTaskModal, setShowTaskModal] = useState(false);
+
+  const [newTask, setNewTask] = useState({
+    title: "",
+    description: "",
+    due_date: "",
+    priority: "low",
+    project_id: "",
+  });
+  
+  const resetNewTask = () => {
+    setNewTask({
+      title: "",
+      description: "",
+      due_date: "",
+      priority: "low",
+      project_id: "",
+    });
+  };
+  
+  const handleCreateTask = () => {
+    console.log("handleCreateTask вызвана")
+    console.log("Создана задача:", newTask);
+    dispatch(addTask({ ...newTask, creator_id: user.id, status: "open",  }))
+    .unwrap()
+    .then(() => {
+      setShowTaskModal(false);
+      resetNewTask();
+      console.log('Данные отправлены')
+    })
+    .catch((error) => {
+      console.error("Ошибка при создании задачи:", error);
+      console.log('Данные отправлены')
+    });
+  };
 
   // ================ Задачи ================
 
@@ -346,7 +390,7 @@ const getEventsForDay = (day, month, year) => {
             <select
               value={filterTask}
               onChange={(e) => setFilterTask(e.target.value)}
-              className="custom-select"
+              className="filter-select"
             >
               <option value="all">Все</option>
               <option value="overdue">Просроченные</option>
@@ -361,17 +405,19 @@ const getEventsForDay = (day, month, year) => {
             </select>
             
             <div className="add-task-container">
-              <button className="add-task-btn">
+              <button className="add-task-btn" onClick={() => setShowTaskModal(true)}>
                 <FiPlus className="plus-icon" />
                 <span className="add-task-text">Добавить задачу</span>
               </button>
             </div>
+
+
             
             <div className="tasks-list">
               {filterTasks(currentTasks).map(task => (
                 <div key={task.id} className='task-item'>
                     <div className="task-main">
-                      <div className="task-text">{task.title}</div>
+                      <div className={`task-text ${task.status === 'closed' ? 'text-muted text-line-through' : ''}`}>{task.title}</div>
                       <span className={`difficulty-badge ${task.priority}`}>{priorityMap[task.priority]}</span>
                       <span className='text-muted ms-2'>
                         дедлайн {new Date(task.due_date).toLocaleDateString('ru-RU', {
@@ -491,6 +537,109 @@ const getEventsForDay = (day, month, year) => {
           </div>
         </div> */}
       </div>
+
+      {/* Модальное окно для создания задач */}
+      {showTaskModal && (
+        <div className="event-modal-overlay">
+          <div className="event-modal">
+            <div className="event-modal-header">
+              <h3>Создание новой задачи</h3>
+              <button 
+                className="close-modal"
+                onClick={() => {
+                  setShowTaskModal(false);
+                  resetNewTask();
+                }}
+              >
+                <FaTimes />
+              </button>
+            </div>
+
+            <div className="event-form">
+              <div className="form-group">
+                <label>Название задачи</label>
+                <input
+                  type="text"
+                  value={newTask.title}
+                  onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
+                  placeholder="Например, 'Подготовить отчёт'"
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label>Описание</label>
+                <textarea
+                  value={newTask.description}
+                  onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
+                  placeholder="Добавьте детали по задаче"
+                  rows="3"
+                />
+              </div>
+
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Срок выполнения</label>
+                  <input
+                    type="date"
+                    value={newTask.due_date}
+                    onChange={(e) => setNewTask({ ...newTask, due_date: e.target.value })}
+                    required
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Приоритет</label>
+                  <select
+                    className='form-select'
+                    value={newTask.priority}
+                    onChange={(e) => setNewTask({ ...newTask, priority: e.target.value })}
+                  >
+                    <option value="low">Низкий</option>
+                    <option value="medium">Средний</option>
+                    <option value="high">Высокий</option>
+                  </select>
+                </div>
+
+                <div className="form-group">
+                  <label>Проект</label>
+                  <select
+                    className="form-select"
+                    value={newTask.project_id}
+                    onChange={(e) => setNewTask({ ...newTask, project_id: e.target.value })}
+                  >
+                    <option value="">Выберите проект</option>
+                    {Array.isArray(projects) && projects.length > 0 ? (
+                      projects.map((project) => (
+                        <option key={project.id} value={project.id}>
+                          {project.name}
+                        </option>
+                      ))
+                    ) : (
+                      <option disabled>Загрузка...</option>
+                    )}
+                  </select>
+                </div>
+              </div>
+
+              <div className="form-actions">
+                <button 
+                  className="save-event-button"
+                  onClick={handleCreateTask}
+                  disabled={
+                    !newTask.title.trim() ||
+                    !newTask.project_id ||
+                    !newTask.priority ||
+                    !newTask.due_date
+                  }
+                >
+                  Добавить задачу
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Тултип события */}
       {hoveredDate?.events?.[0] && (
