@@ -19,12 +19,19 @@ const Home = () => {
   useEffect(() => {
     dispatch(getTasks());
   }, [dispatch])
-
   const priorityMap = {
     low: 'Низкая',
     medium: 'Средняя',
     high: 'Высокая',
   };
+  const [currentPage, setCurrentPage] = useState(1);
+  const tasksPerPage = 3;
+
+  const indexOfLastTask = currentPage * tasksPerPage;
+  const indexOfFirstTask = indexOfLastTask - tasksPerPage;
+  const currentTasks = tasks.slice(indexOfFirstTask, indexOfLastTask);
+
+  const totalPages = Math.ceil(tasks.length / tasksPerPage);
   // ================ Задачи ================
 
   // Получаем события только для текущего пользователя
@@ -264,7 +271,7 @@ const getEventsForDay = (day, month, year) => {
             </div>
             
             <div className="tasks-list">
-              {tasks.map(task => (
+              {currentTasks.map(task => (
                 <div key={task.id} className='task-item'>
                     <div className="task-main">
                       <div className="task-text">{task.title}</div>
@@ -281,6 +288,17 @@ const getEventsForDay = (day, month, year) => {
                     <FaWhmcs className="tasks-icon" />
                   </div>
                 </div>
+              ))}
+            </div>
+            <div className="pagination">
+              {Array.from({ length: totalPages }, (_, i) => (
+                <button
+                  key={i}
+                  className={i + 1 === currentPage ? 'active' : ''}
+                  onClick={() => setCurrentPage(i + 1)}
+                >
+                  {i + 1}
+                </button>
               ))}
             </div>
           </div>
