@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { FiClock, FiPlus } from 'react-icons/fi';
 import { FaChevronDown, FaCheck } from 'react-icons/fa';
+import { FaWhmcs } from "react-icons/fa";
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { getEvents } from '../../store/slices/eventSlice';
+import { getTasks, removeTask, updateTask, createTask } from '../../store/slices/taskSlice';
 import './Home.css';
 
 const Home = () => {
@@ -11,6 +13,19 @@ const Home = () => {
   const navigate = useNavigate();
   const { eventsByUser = {}, loading, error } = useSelector((state) => state.events);
   const user = useSelector((state) => state.auth.user);
+
+  // ================ Задачи ================
+  const { tasks, loadingTask, errorTask } = useSelector((state) => state.tasks);
+  useEffect(() => {
+    dispatch(getTasks());
+  }, [dispatch])
+
+  const priorityMap = {
+    low: 'Низкая',
+    medium: 'Средняя',
+    high: 'Высокая',
+  };
+  // ================ Задачи ================
 
   // Получаем события только для текущего пользователя
   const events = useMemo(() => {
@@ -30,12 +45,12 @@ const Home = () => {
   const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
 
   // Состояния для задач
-  const [tasks, setTasks] = useState([
-    { id: 1, text: 'Have an in-depth look at the metrics of the Playground project', completed: false },
-    { id: 2, text: 'Review Calendar Prototype and get an approval', completed: false },
-    { id: 3, text: 'Call with the PM', completed: false },
-    { id: 4, text: 'Share component access with Rohan', completed: false },
-  ]);
+  // const [tasks, setTasks] = useState([
+  //   { id: 1, text: 'Have an in-depth look at the metrics of the Playground project', completed: false },
+  //   { id: 2, text: 'Review Calendar Prototype and get an approval', completed: false },
+  //   { id: 3, text: 'Call with the PM', completed: false },
+  //   { id: 4, text: 'Share component access with Rohan', completed: false },
+  // ]);
   const [newTaskText, setNewTaskText] = useState('');
 
   // Данные для диаграммы прогресса
@@ -49,7 +64,6 @@ const Home = () => {
   const monthNames = ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь",
     "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"];
   const days = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
-
 
 // In Home.js, update the getEventsForDay function:
 const getEventsForDay = (day, month, year) => {
@@ -130,28 +144,6 @@ const getEventsForDay = (day, month, year) => {
         y: rect.top + window.scrollY - 120
       });
     }
-  };
-
-  // Обработчики для задач
-  const handleAddTask = () => {
-    if (newTaskText.trim()) {
-      setTasks([...tasks, {
-        id: Date.now(),
-        text: newTaskText,
-        completed: false
-      }]);
-      setNewTaskText('');
-    }
-  };
-
-  const handleTaskComplete = (taskId) => {
-    setTasks(tasks.map(task => 
-      task.id === taskId ? { ...task, completed: !task.completed } : task
-    ));
-  };
-
-  const handleManageTasks = () => {
-    navigate('/tasks'); // Переход на страницу задач
   };
 
   const dates = generateCalendar();
@@ -262,7 +254,6 @@ const getEventsForDay = (day, month, year) => {
                 <h3 className="card-title">Задачи на сегодня</h3>
                 <span className="tasks-count">{tasks.length}</span>
               </div>
-              <button className="manage-btn" onClick={handleManageTasks}>Управлять</button>
             </div>
             
             <div className="add-task-container">
@@ -274,14 +265,21 @@ const getEventsForDay = (day, month, year) => {
             
             <div className="tasks-list">
               {tasks.map(task => (
-                <div key={task.id} className={`task-item ${task.completed ? 'completed' : ''}`}>
-                  <div 
-                    className="task-checkbox"
-                    onClick={() => handleTaskComplete(task.id)}
-                  >
-                    {task.completed && <FaCheck className="check-icon" />}
+                <div key={task.id} className='task-item'>
+                    <div className="task-main">
+                      <div className="task-text">{task.title}</div>
+                      <span className={`difficulty-badge ${task.priority}`}>{priorityMap[task.priority]}</span>
+                      <span className='text-muted ms-2'>
+                        дедлайн {new Date(task.due_date).toLocaleDateString('ru-RU', {
+                          day: '2-digit',
+                          month: 'long',
+                          year: 'numeric',
+                        })}
+                      </span>
+                    </div>
+                  <div className="task-icons">
+                    <FaWhmcs className="tasks-icon" />
                   </div>
-                  <div className="task-text">{task.text}</div>
                 </div>
               ))}
             </div>

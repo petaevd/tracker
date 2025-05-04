@@ -50,7 +50,7 @@ const Task = sequelize.define('Task', {
   },
   due_date: {
     type: DataTypes.DATEONLY,
-    allowNull: true,
+    allowNull: false,
   },
 }, {
   tableName: 'tasks',
