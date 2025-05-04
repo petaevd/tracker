@@ -32,6 +32,29 @@ const Home = () => {
   const currentTasks = tasks.slice(indexOfFirstTask, indexOfLastTask);
 
   const totalPages = Math.ceil(tasks.length / tasksPerPage);
+  const renderPagination = () => {
+    const pages = [];
+    const maxPages = 5;
+  
+    if (totalPages <= maxPages) {
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      pages.push(1);
+  
+      const start = Math.max(2, currentPage - 1);
+      const end = Math.min(totalPages - 1, currentPage + 1);
+  
+      if (start > 2) pages.push('...');
+      for (let i = start; i <= end; i++) pages.push(i);
+      if (end < totalPages - 1) pages.push('...');
+      
+      pages.push(totalPages);
+    }
+  
+    return pages;
+  };
   // ================ Задачи ================
 
   // Получаем события только для текущего пользователя
@@ -290,16 +313,20 @@ const getEventsForDay = (day, month, year) => {
                 </div>
               ))}
             </div>
-            <div className="pagination">
-              {Array.from({ length: totalPages }, (_, i) => (
-                <button
-                  key={i}
-                  className={i + 1 === currentPage ? 'active' : ''}
-                  onClick={() => setCurrentPage(i + 1)}
-                >
-                  {i + 1}
-                </button>
-              ))}
+            <div className="pagination mt-auto justify-content-center">
+              {renderPagination().map((page, index) =>
+                page === '...' ? (
+                  <span key={index} className="dots">...</span>
+                ) : (
+                  <button
+                    key={index}
+                    className={page === currentPage ? 'active' : ''}
+                    onClick={() => setCurrentPage(page)}
+                  >
+                    {page}
+                  </button>
+                )
+              )}
             </div>
           </div>
 

@@ -524,14 +524,26 @@
 }
 
 .pagination button {
-  padding: 6px 10px;
-  background-color: #eee;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  background-color: #222222;
+  color: white;
   border: none;
   border-radius: 4px;
   cursor: pointer;
+  text-align: center;
+  line-height: 36px;
 }
 
 .pagination button.active {
   background-color: #5e35b1;
   color: white;
+}
+
+.pagination .dots {
+  color: white;
+  background-color: #222222;
+  border-radius: 4px;
+  padding: 6px 10px;
 }
