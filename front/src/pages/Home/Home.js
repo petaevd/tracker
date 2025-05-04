@@ -109,6 +109,24 @@ const Home = () => {
     medium: 'Средняя',
     high: 'Высокая',
   };
+  // Для круговой диаграммы
+  const completedCount = tasks.filter(task => task.status === 'closed').length;
+  const inProgressCount = tasks.filter(task =>
+    ['in_test', 'in_development'].includes(task.status)
+  ).length;
+  const notStartedCount = tasks.filter(task => task.status === 'open').length;
+
+  const total = completedCount + inProgressCount + notStartedCount;
+  const completedPercent = (completedCount / total) * 100;
+  const inProgressPercent = (inProgressCount / total) * 100;
+  const notStartedPercent = (notStartedCount / total) * 100;
+  const CIRCLE_LENGTH = 2 * Math.PI * 45;
+
+  const completedLength = (completedPercent / 100) * CIRCLE_LENGTH;
+  const inProgressLength = (inProgressPercent / 100) * CIRCLE_LENGTH;
+  const notStartedLength = (notStartedPercent / 100) * CIRCLE_LENGTH;
+  const percent = Math.round((completedCount / total) * 100);
+
   // ================ Задачи ================
 
   // Получаем события только для текущего пользователя
@@ -139,9 +157,9 @@ const Home = () => {
 
   // Данные для диаграммы прогресса
   const projectProgressData = {
-    completed: 35,
-    inProgress: 45,
-    notStarted: 20,
+    completed: 40,
+    inProgress: 40,
+    notStarted: 0,
   };
 
   // Константы календаря
@@ -247,83 +265,68 @@ const getEventsForDay = (day, month, year) => {
           <div className="dashboard-card progress-card" style={{ backgroundColor: "rgba(255, 255, 255, 0.1)" }}>
             <div className="progress-header">
               <h3 className="card-title">Прогресс проекта</h3>
-              <button className="manage-btn">Управлять</button>
+              {/* <button className="manage-btn">Управлять</button> */}
             </div>
-            
+
             <div className="circular-progress-wrapper">
               <div className="circular-progress">
                 <svg viewBox="0 0 100 100">
-                  {/* Фоновый круг */}
                   <circle 
                     cx="50" 
                     cy="50" 
                     r="45" 
-                    fill="none" 
-                    stroke="#2a2a2a" 
+                    stroke="#db163a" 
                     strokeWidth="8"
-                  />
-                  {/* Не начатые задачи */}
-                  <circle 
-                    cx="50" 
-                    cy="50" 
-                    r="45" 
-                    fill="none" 
-                    stroke="#1b8df7" 
-                    strokeWidth="8"
-                    strokeDasharray={`${20 * 2.83} 283`}
+                    strokeDasharray={`${notStartedLength} ${CIRCLE_LENGTH}`}
                     strokeDashoffset="0"
-                    strokeLinecap="round"
                     transform="rotate(-90 50 50)"
+                    fill="none"
                   />
-                  {/* Задачи в работе */}
                   <circle 
                     cx="50" 
                     cy="50" 
                     r="45" 
-                    fill="none" 
                     stroke="#9A48EA" 
                     strokeWidth="8"
-                    strokeDasharray={`${45 * 2.83} 283`}
-                    strokeDashoffset={`${-20 * 2.83}`}
-                    strokeLinecap="round"
+                    strokeDasharray={`${inProgressLength} ${CIRCLE_LENGTH}`}
+                    strokeDashoffset={`-${notStartedLength}`}
                     transform="rotate(-90 50 50)"
+                    fill="none"
                   />
-                  {/* Выполненные задачи */}
                   <circle 
                     cx="50" 
                     cy="50" 
                     r="45" 
-                    fill="none" 
                     stroke="#59b25c" 
                     strokeWidth="8"
-                    strokeDasharray={`${35 * 2.83} 283`}
-                    strokeDashoffset={`${-65 * 2.83}`}
-                    strokeLinecap="round"
+                    strokeDasharray={`${completedLength} ${CIRCLE_LENGTH}`}
+                    strokeDashoffset={`-${notStartedLength + inProgressLength}`}
                     transform="rotate(-90 50 50)"
+                    fill="none"
                   />
                 </svg>
-                <div className="progress-percent">80%</div>
+                <div className="progress-percent">{percent}%</div>
               </div>
-              
+
               <div className="progress-stats-row">
                 <div className="stat-item">
                   <div className="stat-color" style={{backgroundColor: '#59b25c'}}></div>
                   <div>
-                    <div className="stat-value">32</div>
+                    <div className="stat-value">{completedCount}</div>
                     <div className="stat-label">Выполнено</div>
                   </div>
                 </div>
                 <div className="stat-item">
                   <div className="stat-color" style={{backgroundColor: '#9A48EA'}}></div>
                   <div>
-                    <div className="stat-value">12</div>
+                    <div className="stat-value">{inProgressCount}</div>
                     <div className="stat-label">В работе</div>
                   </div>
                 </div>
                 <div className="stat-item">
-                  <div className="stat-color" style={{backgroundColor: '#1b8df7'}}></div>
+                  <div className="stat-color" style={{backgroundColor: '#db163a'}}></div>
                   <div>
-                    <div className="stat-value">16</div>
+                    <div className="stat-value">{notStartedCount}</div>
                     <div className="stat-label">Не начато</div>
                   </div>
                 </div>
