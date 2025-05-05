@@ -4,57 +4,59 @@ import { useSelector } from 'react-redux';
 import './Favorites.css';
 
 const Favorites = () => {
-  const user = useSelector((state) => state.auth.user);
-  const [favorites, setFavorites] = useState([
-    { 
-      id: 1, 
-      title: 'Рефакторинг компонента Dashboard', 
-      category: 'Frontend', 
-      difficulty: 'Средняя', 
-      isBookmarked: true,
-      tech: 'React, Redux'
-    },
-    { 
-      id: 2, 
-      title: 'Реализация JWT аутентификации', 
-      category: 'Backend', 
-      difficulty: 'Высокая', 
-      isBookmarked: true,
-      tech: 'Node.js, Express'
-    },
-    { 
-      id: 3, 
-      title: 'Оптимизация SQL запросов', 
-      category: 'Базы данных', 
-      difficulty: 'Высокая', 
-      isBookmarked: true,
-      tech: 'PostgreSQL'
-    },
-    { 
-      id: 4, 
-      title: 'Настройка CI/CD пайплайна', 
-      category: 'DevOps', 
-      difficulty: 'Средняя', 
-      isBookmarked: true,
-      tech: 'GitHub Actions'
-    },
-    { 
-      id: 5, 
-      title: 'Создание модального окна', 
-      category: 'UI/UX', 
-      difficulty: 'Низкая', 
-      isBookmarked: true,
-      tech: 'React, CSS'
-    },
-  ]);
-  const [filter, setFilter] = useState('all');
 
-  const removeFromFavorites = (id) => {
-    setFavorites(favorites.filter(item => item.id !== id));
+  // ================ Избранные задачи ================
+
+  const FAVORITES_KEY = 'favoriteTasks';
+
+  const priorityMap = {
+    low: 'Низкая',
+    medium: 'Средняя',
+    high: 'Высокая',
   };
 
-  const filteredFavorites = favorites.filter(item => {
-    return filter === 'all' || item.difficulty.toLowerCase() === filter.toLowerCase();
+  const getFavoriteTasks = () => {
+    const data = localStorage.getItem(FAVORITES_KEY);
+    try {
+      const parsed = JSON.parse(data);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  };
+
+  const setFavoriteTasks = (favorites) => {
+    localStorage.setItem(FAVORITES_KEY, JSON.stringify(favorites));
+  };
+
+  const toggleFavoriteTask = (task) => {
+    let favorites = getFavoriteTasks();
+    const exists = favorites.some(t => t.id === task.id);
+  
+    if (exists) {
+      favorites = favorites.filter(t => t.id !== task.id);
+    } else {
+      favorites.push(task);
+    }
+  
+    setFavoriteTasks(favorites);
+    return favorites;
+  };
+
+  const [favoriteTasks, setFavoriteTasksState] = useState(getFavoriteTasks());
+
+  const handleToggleFavorite = (task) => {
+    const updated = toggleFavoriteTask(task);
+    setFavoriteTasksState(updated);
+  };
+
+  // ================ Избранные задачи ================
+
+  const [filter, setFilter] = useState('all');
+
+
+  const filteredFavorites = favoriteTasks.filter(item => {
+    return filter === 'all' || item.priority === filter;
   });
 
   return (
@@ -73,20 +75,20 @@ const Favorites = () => {
               Все
             </button>
             <button 
-              className={`filter-btn ${filter === 'низкая' ? 'active' : ''}`}
-              onClick={() => setFilter('низкая')}
+              className={`filter-btn ${filter === 'low' ? 'active' : ''}`}
+              onClick={() => setFilter('low')}
             >
               Легкие
             </button>
             <button 
-              className={`filter-btn ${filter === 'средняя' ? 'active' : ''}`}
-              onClick={() => setFilter('средняя')}
+              className={`filter-btn ${filter === 'medium' ? 'active' : ''}`}
+              onClick={() => setFilter('medium')}
             >
               Средние
             </button>
             <button 
-              className={`filter-btn ${filter === 'высокая' ? 'active' : ''}`}
-              onClick={() => setFilter('высокая')}
+              className={`filter-btn ${filter === 'high' ? 'active' : ''}`}
+              onClick={() => setFilter('high')}
             >
               Сложные
             </button>
@@ -105,8 +107,8 @@ const Favorites = () => {
                   <div className="favorite-details">
                     <h3 className="favorite-title">{item.title}</h3>
                     <div className="favorite-meta">
-                      <span className={`difficulty-badge ${item.difficulty.toLowerCase()}`}>
-                        {item.difficulty}
+                      <span className={`difficulty-badge ${item.priority}`}>
+                        {priorityMap[item.priority]}
                       </span>
                       <span className="category-tag">{item.category}</span>
                       <span className="tech-tag">{item.tech}</span>
@@ -115,7 +117,7 @@ const Favorites = () => {
                 </div>
                 <button 
                   className="remove-favorite-btn"
-                  onClick={() => removeFromFavorites(item.id)}
+                  onClick={() => handleToggleFavorite(item)}
                   title="Удалить из избранного"
                 >
                   <FaTrash />

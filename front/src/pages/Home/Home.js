@@ -1,9 +1,13 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { FiClock, FiPlus } from 'react-icons/fi';
 import { FaChevronDown, FaCheck } from 'react-icons/fa';
+import { FaWhmcs, FaStar, FaRegStar, FaTimes, FaHeart } from "react-icons/fa";
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { getEvents } from '../../store/slices/eventSlice';
+import { getTasks, removeTask, updateExistingTask, addTask } from '../../store/slices/taskSlice';
+import { getProjects } from '../../store/slices/projectSlice';
+import { toast, ToastContainer } from 'react-toastify';
 import './Home.css';
 
 const Home = () => {
@@ -11,6 +15,212 @@ const Home = () => {
   const navigate = useNavigate();
   const { eventsByUser = {}, loading, error } = useSelector((state) => state.events);
   const user = useSelector((state) => state.auth.user);
+
+  // ================ Задачи ================
+  const { tasks, loadingTask, errorTask } = useSelector((state) => state.tasks);
+  const { projects, loadingProjects, errorProjects } = useSelector(state => state.projects)
+  const [filterTask, setFilterTask] = useState('all');
+
+  const filterTasks = (tasks) => {
+    const now = new Date();
+  
+    switch (filterTask) {
+      case 'overdue':
+        return tasks.filter(task => task.due_date && new Date(task.due_date) < now);
+      
+      case 'upcoming':
+        const today = new Date();
+        const weekLater = new Date();
+        weekLater.setDate(today.getDate() + 7);
+        return tasks.filter(
+          task =>
+            task.due_date &&
+            new Date(task.due_date) >= today &&
+            new Date(task.due_date) <= weekLater
+        );
+  
+      case 'open':
+        return tasks.filter(task => task.status && task.status.toLowerCase() === 'open');
+  
+      case 'closed':
+        return tasks.filter(task => task.status && task.status.toLowerCase() === 'closed');
+  
+      case 'in_test':
+        return tasks.filter(task => task.status && task.status.toLowerCase() === 'in_test');
+  
+      case 'in_development':
+        return tasks.filter(task => task.status && task.status.toLowerCase() === 'in_development');
+
+      case 'high-priority':
+        return tasks.filter(task => task.priority && task.priority.toLowerCase() === 'high');
+
+      case 'medium-priority':
+        return tasks.filter(task => task.priority && task.priority.toLowerCase() === 'medium');
+
+      case 'low-priority':
+        return tasks.filter(task => task.priority && task.priority.toLowerCase() === 'low');
+  
+      default:
+        return tasks;
+    }
+  };
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const tasksPerPage = 3;
+
+  const indexOfLastTask = currentPage * tasksPerPage;
+  const indexOfFirstTask = indexOfLastTask - tasksPerPage;
+  const currentTasks = filterTasks(tasks).slice(indexOfFirstTask, indexOfLastTask);
+
+  const totalPages = Math.ceil(filterTasks(tasks).length / tasksPerPage);
+
+  const renderPagination = () => {
+    const pages = [];
+    const maxPages = 5;
+  
+    if (totalPages <= maxPages) {
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      pages.push(1);
+  
+      const start = Math.max(2, currentPage - 1);
+      const end = Math.min(totalPages - 1, currentPage + 1);
+  
+      if (start > 2) pages.push('...');
+      for (let i = start; i <= end; i++) pages.push(i);
+      if (end < totalPages - 1) pages.push('...');
+      
+      pages.push(totalPages);
+    }
+  
+    return pages;
+  };
+
+  useEffect(() => {
+    dispatch(getTasks());
+  }, [dispatch])
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filterTask]);
+
+  useEffect(() => {
+    dispatch(getProjects());
+  }, [dispatch]);
+
+
+  const priorityMap = {
+    low: 'Низкая',
+    medium: 'Средняя',
+    high: 'Высокая',
+  };
+  // Для круговой диаграммы
+  const completedCount = tasks.filter(task => task?.status === 'closed').length;
+  const inProgressCount = tasks.filter(task =>
+    ['in_test', 'in_development'].includes(task?.status)
+  ).length;
+  const notStartedCount = tasks.filter(task => task?.status === 'open').length;
+
+
+  const total = completedCount + inProgressCount + notStartedCount;
+  const completedPercent = (completedCount / total) * 100;
+  const inProgressPercent = (inProgressCount / total) * 100;
+  const notStartedPercent = (notStartedCount / total) * 100;
+  const CIRCLE_LENGTH = 2 * Math.PI * 45;
+
+  const completedLength = (completedPercent / 100) * CIRCLE_LENGTH;
+  const inProgressLength = (inProgressPercent / 100) * CIRCLE_LENGTH;
+  const notStartedLength = (notStartedPercent / 100) * CIRCLE_LENGTH;
+  const percent = total > 0 ? Math.round((completedCount / total) * 100) : 0;
+
+  const [showTaskModal, setShowTaskModal] = useState(false);
+
+  const [formTask, setFormTask] = useState({
+    id: "",
+    title: "",
+    description: "",
+    due_date: "",
+    priority: "low",
+    project_id: "",
+  });
+
+  const resetFormTask = () => {
+    setFormTask({
+      id: "",
+      title: "",
+      description: "",
+      due_date: "",
+      priority: "low",
+      project_id: "",
+    });
+  };
+  
+  const handleCreateTask = async () => {
+    try {
+      await dispatch(addTask({ ...formTask, creator_id: user.id, status: "open" })).unwrap();
+      setShowTaskModal(false);
+      resetFormTask();
+      toast.success('Задача создана');
+    } catch (error) {
+      console.error("Ошибка при создании задачи:", error);
+      toast.error(error[0].msg || 'Ошибка создания задачи');
+    }
+  };
+  
+  const handleUpdateTask = async () => {
+    try {
+      await dispatch(updateExistingTask({ taskId: formTask.id, taskData: formTask })).unwrap();
+      setShowTaskModal(false);
+      resetFormTask();
+      toast.success('Задача обновлена');
+    } catch (error) {
+      console.error("Ошибка при обновлении задачи:", error);
+      toast.error(error[0].msg || 'Ошибка редактирования задачи');
+    }
+  };
+
+  const FAVORITES_KEY = 'favoriteTasks';
+
+  const getFavoriteTasks = () => {
+    const data = localStorage.getItem(FAVORITES_KEY);
+    try {
+      const parsed = JSON.parse(data);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  };
+
+  const setFavoriteTasks = (favorites) => {
+    localStorage.setItem(FAVORITES_KEY, JSON.stringify(favorites));
+  };
+
+  const toggleFavoriteTask = (task) => {
+    let favorites = getFavoriteTasks();
+    const exists = favorites.some(t => t.id === task.id);
+  
+    if (exists) {
+      favorites = favorites.filter(t => t.id !== task.id);
+      toast.success('Задача удалена из избранного');
+    } else {
+      favorites.push(task);
+      toast.success('Задача добавлена в избранное');
+    }
+  
+    setFavoriteTasks(favorites);
+    return favorites;
+  };
+
+  const [favoriteTasks, setFavoriteTasksState] = useState(getFavoriteTasks());
+
+  const handleToggleFavorite = (task) => {
+    const updated = toggleFavoriteTask(task);
+    setFavoriteTasksState(updated);
+  };
+
+  // ================ Задачи ================
 
   // Получаем события только для текущего пользователя
   const events = useMemo(() => {
@@ -30,26 +240,25 @@ const Home = () => {
   const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
 
   // Состояния для задач
-  const [tasks, setTasks] = useState([
-    { id: 1, text: 'Have an in-depth look at the metrics of the Playground project', completed: false },
-    { id: 2, text: 'Review Calendar Prototype and get an approval', completed: false },
-    { id: 3, text: 'Call with the PM', completed: false },
-    { id: 4, text: 'Share component access with Rohan', completed: false },
-  ]);
-  const [newTaskText, setNewTaskText] = useState('');
+  // const [tasks, setTasks] = useState([
+  //   { id: 1, text: 'Have an in-depth look at the metrics of the Playground project', completed: false },
+  //   { id: 2, text: 'Review Calendar Prototype and get an approval', completed: false },
+  //   { id: 3, text: 'Call with the PM', completed: false },
+  //   { id: 4, text: 'Share component access with Rohan', completed: false },
+  // ]);
+  const [newTaskText, setFormTaskText] = useState('');
 
   // Данные для диаграммы прогресса
   const projectProgressData = {
-    completed: 35,
-    inProgress: 45,
-    notStarted: 20,
+    completed: 40,
+    inProgress: 40,
+    notStarted: 0,
   };
 
   // Константы календаря
   const monthNames = ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь",
     "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"];
   const days = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
-
 
 // In Home.js, update the getEventsForDay function:
 const getEventsForDay = (day, month, year) => {
@@ -132,32 +341,14 @@ const getEventsForDay = (day, month, year) => {
     }
   };
 
-  // Обработчики для задач
-  const handleAddTask = () => {
-    if (newTaskText.trim()) {
-      setTasks([...tasks, {
-        id: Date.now(),
-        text: newTaskText,
-        completed: false
-      }]);
-      setNewTaskText('');
-    }
-  };
-
-  const handleTaskComplete = (taskId) => {
-    setTasks(tasks.map(task => 
-      task.id === taskId ? { ...task, completed: !task.completed } : task
-    ));
-  };
-
-  const handleManageTasks = () => {
-    navigate('/tasks'); // Переход на страницу задач
-  };
-
   const dates = generateCalendar();
 
   return (
+    
     <div className="home-container">
+      <div>
+        <ToastContainer />
+      </div>
       <div className="main-content">
         <div className="breadcrumb">Домашняя</div>
         <h1 className="dashboard-title">Панель просмотра проекта</h1>
@@ -171,83 +362,68 @@ const getEventsForDay = (day, month, year) => {
           <div className="dashboard-card progress-card" style={{ backgroundColor: "rgba(255, 255, 255, 0.1)" }}>
             <div className="progress-header">
               <h3 className="card-title">Прогресс проекта</h3>
-              <button className="manage-btn">Управлять</button>
+              {/* <button className="manage-btn">Управлять</button> */}
             </div>
-            
+
             <div className="circular-progress-wrapper">
               <div className="circular-progress">
                 <svg viewBox="0 0 100 100">
-                  {/* Фоновый круг */}
                   <circle 
                     cx="50" 
                     cy="50" 
                     r="45" 
-                    fill="none" 
-                    stroke="#2a2a2a" 
+                    stroke="#db163a" 
                     strokeWidth="8"
-                  />
-                  {/* Не начатые задачи */}
-                  <circle 
-                    cx="50" 
-                    cy="50" 
-                    r="45" 
-                    fill="none" 
-                    stroke="#1b8df7" 
-                    strokeWidth="8"
-                    strokeDasharray={`${20 * 2.83} 283`}
+                    strokeDasharray={`${notStartedLength} ${CIRCLE_LENGTH}`}
                     strokeDashoffset="0"
-                    strokeLinecap="round"
                     transform="rotate(-90 50 50)"
+                    fill="none"
                   />
-                  {/* Задачи в работе */}
                   <circle 
                     cx="50" 
                     cy="50" 
                     r="45" 
-                    fill="none" 
                     stroke="#9A48EA" 
                     strokeWidth="8"
-                    strokeDasharray={`${45 * 2.83} 283`}
-                    strokeDashoffset={`${-20 * 2.83}`}
-                    strokeLinecap="round"
+                    strokeDasharray={`${inProgressLength} ${CIRCLE_LENGTH}`}
+                    strokeDashoffset={`-${notStartedLength}`}
                     transform="rotate(-90 50 50)"
+                    fill="none"
                   />
-                  {/* Выполненные задачи */}
                   <circle 
                     cx="50" 
                     cy="50" 
                     r="45" 
-                    fill="none" 
                     stroke="#59b25c" 
                     strokeWidth="8"
-                    strokeDasharray={`${35 * 2.83} 283`}
-                    strokeDashoffset={`${-65 * 2.83}`}
-                    strokeLinecap="round"
+                    strokeDasharray={`${completedLength} ${CIRCLE_LENGTH}`}
+                    strokeDashoffset={`-${notStartedLength + inProgressLength}`}
                     transform="rotate(-90 50 50)"
+                    fill="none"
                   />
                 </svg>
-                <div className="progress-percent">80%</div>
+                <div className="progress-percent">{percent}%</div>
               </div>
-              
+
               <div className="progress-stats-row">
                 <div className="stat-item">
                   <div className="stat-color" style={{backgroundColor: '#59b25c'}}></div>
                   <div>
-                    <div className="stat-value">32</div>
+                    <div className="stat-value">{completedCount}</div>
                     <div className="stat-label">Выполнено</div>
                   </div>
                 </div>
                 <div className="stat-item">
                   <div className="stat-color" style={{backgroundColor: '#9A48EA'}}></div>
                   <div>
-                    <div className="stat-value">12</div>
+                    <div className="stat-value">{inProgressCount}</div>
                     <div className="stat-label">В работе</div>
                   </div>
                 </div>
                 <div className="stat-item">
-                  <div className="stat-color" style={{backgroundColor: '#1b8df7'}}></div>
+                  <div className="stat-color" style={{backgroundColor: '#db163a'}}></div>
                   <div>
-                    <div className="stat-value">16</div>
+                    <div className="stat-value">{notStartedCount}</div>
                     <div className="stat-label">Не начато</div>
                   </div>
                 </div>
@@ -259,31 +435,96 @@ const getEventsForDay = (day, month, year) => {
           <div className="dashboard-card tasks-card" style={{ backgroundColor: "rgba(255, 255, 255, 0.1)" }}>
             <div className="tasks-header">
               <div className="tasks-header-content">
-                <h3 className="card-title">Задачи на сегодня</h3>
+                <h3 className="card-title">Задачи</h3>
                 <span className="tasks-count">{tasks.length}</span>
               </div>
-              <button className="manage-btn" onClick={handleManageTasks}>Управлять</button>
             </div>
+
+            <select
+              value={filterTask}
+              onChange={(e) => setFilterTask(e.target.value)}
+              className="filter-select"
+            >
+              <option value="all">Все</option>
+              <option value="overdue">Просроченные</option>
+              <option value="upcoming">Ближайшие</option>
+              <option value="open">Открытые</option>
+              <option value="closed">Завершённые</option>
+              <option value="in_test">В тестировании</option>
+              <option value="in_development">В разработке</option>
+              <option value="low-priority">Малый приоритет</option>
+              <option value="medium-priority">Средний приоритет</option>
+              <option value="high-priority">Высокий приоритет</option>
+            </select>
             
             <div className="add-task-container">
-              <button className="add-task-btn">
+              <button
+                className="add-task-btn"
+                onClick={() => {
+                  resetFormTask();
+                  setShowTaskModal(true);
+                }}
+              >
                 <FiPlus className="plus-icon" />
                 <span className="add-task-text">Добавить задачу</span>
               </button>
             </div>
-            
+
             <div className="tasks-list">
-              {tasks.map(task => (
-                <div key={task.id} className={`task-item ${task.completed ? 'completed' : ''}`}>
-                  <div 
-                    className="task-checkbox"
-                    onClick={() => handleTaskComplete(task.id)}
-                  >
-                    {task.completed && <FaCheck className="check-icon" />}
-                  </div>
-                  <div className="task-text">{task.text}</div>
+              {filterTasks(currentTasks).map(task => (task?.id && (
+                <div key={task.id} className='task-item'>
+                    <div className="task-main">
+                      <div className={`task-text ${task.status === 'closed' ? 'text-muted text-line-through' : ''}`}>{task.title}</div>
+                      <span className={`difficulty-badge ${task.priority}`}>{priorityMap[task.priority]}</span>
+                      <span className='text-muted ms-2'>
+                        дедлайн {new Date(task.due_date).toLocaleDateString('ru-RU', {
+                          day: '2-digit',
+                          month: 'long',
+                          year: 'numeric',
+                        })}
+                      </span>
+                    </div>
+                    <div className="task-icons">
+                      {favoriteTasks.some(fav => fav.id === task.id) ? (
+                        <FaStar
+                          className="tasks-icon mx-2"
+                          title="Убрать из избранного"
+                          onClick={() => handleToggleFavorite(task)}
+                        />
+                      ) : (
+                        <FaRegStar
+                          className="tasks-icon mx-2"
+                          title="Добавить в избранное"
+                          onClick={() => handleToggleFavorite(task)}
+                        />
+                      )}
+                      <FaWhmcs 
+                        className="tasks-icon" 
+                        onClick={() => {
+                          setFormTask(task);
+                          setShowTaskModal(true);
+                        }}
+                        style={{ cursor: 'pointer' }}
+                        title="Редактировать задачу"
+                      />
+                    </div>
                 </div>
-              ))}
+              )))}
+            </div>
+            <div className="pagination mt-auto justify-content-center">
+              {renderPagination().map((page, index) =>
+                page === '...' ? (
+                  <span key={index} className="dots">...</span>
+                ) : (
+                  <button
+                    key={index}
+                    className={page === currentPage ? 'active' : ''}
+                    onClick={() => setCurrentPage(page)}
+                  >
+                    {page}
+                  </button>
+                )
+              )}
             </div>
           </div>
 
@@ -374,6 +615,119 @@ const getEventsForDay = (day, month, year) => {
           </div>
         </div> */}
       </div>
+
+      {/* Модальное окно для создания задач */}
+      {showTaskModal && (
+        <div className="event-modal-overlay">
+          <div className="event-modal">
+            <div className="event-modal-header">
+              <h3>{formTask.id ? 'Редактирование задачи' : 'Создание новой задачи'}</h3>
+              <button
+                className="close-modal"
+                onClick={() => {
+                  setShowTaskModal(false);
+                  resetFormTask();
+                }}
+              >
+                <FaTimes />
+              </button>
+            </div>
+
+            <div className="event-form">
+              <div className="form-group">
+                <label>Название</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={formTask.title}
+                  onChange={(e) => setFormTask({ ...formTask, title: e.target.value })}
+                />
+              </div>
+
+              <div className="form-group">
+                <label>Описание</label>
+                <textarea
+                  className="form-control"
+                  value={formTask.description}
+                  onChange={(e) => setFormTask({ ...formTask, description: e.target.value })}
+                />
+              </div>
+
+              <div className="form-group">
+                <label>Срок выполнения</label>
+                <input
+                  type="date"
+                  className="form-control"
+                  value={formTask.due_date}
+                  onChange={(e) => setFormTask({ ...formTask, due_date: e.target.value })}
+                />
+              </div>
+
+              <div className="form-group">
+                <label>Приоритет</label>
+                <select
+                  className="form-select"
+                  value={formTask.priority}
+                  onChange={(e) => setFormTask({ ...formTask, priority: e.target.value })}
+                >
+                  <option value="low">Низкий</option>
+                  <option value="medium">Средний</option>
+                  <option value="high">Высокий</option>
+                </select>
+              </div>
+
+              <div className="form-group">
+                <label>Проект</label>
+                <select
+                  className="form-select"
+                  value={formTask.project_id}
+                  onChange={(e) => setFormTask({ ...formTask, project_id: e.target.value })}
+                >
+                  <option value="">Выберите проект</option>
+                  {projects.map((project) => (
+                    <option key={project.id} value={project.id}>
+                      {project.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {formTask.id && (
+                <div className="form-group">
+                  <label>Статус</label>
+                  <select
+                    className="form-select"
+                    value={formTask.status}
+                    onChange={(e) => setFormTask({ ...formTask, status: e.target.value })}
+                  >
+                    <option value="open">Открыта</option>
+                    <option value="in_development">В разработке</option>
+                    <option value="in_test">В тестировании</option>
+                    <option value="closed">Закрыта</option>
+                  </select>
+                </div>
+              )}
+
+              <div className="form-actions">
+                <button
+                  className="save-event-button"
+                  onClick={formTask.id ? handleUpdateTask : handleCreateTask}
+                  disabled={
+                    !formTask.title.trim() ||
+                    !formTask.project_id ||
+                    !formTask.description ||
+                    !formTask.due_date ||
+                    !formTask.priority
+                  }
+                >
+                  {formTask.id ? 'Сохранить изменения' : 'Создать задачу'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
 
       {/* Тултип события */}
       {hoveredDate?.events?.[0] && (

@@ -2,7 +2,7 @@ import taskService from '../services/taskService.js';
 
 const getAllTasks = async (req, res, next) => {
   try {
-    const tasks = await taskService.getAllTasks(req.body, req.user);
+    const tasks = await taskService.getAllTasks(req.user);
     res.json(tasks);
   } catch (err) {
     next(err);

@@ -383,14 +383,13 @@
   padding: 20px;
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 5px;
 }
 
 .tasks-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 10px;
 }
 
 .tasks-header-content {
@@ -411,7 +410,7 @@
 .manage-btn {
   background: none;
   border: none;
-  color: #9A48EA;
+  /* color: #9A48EA; */
   font-size: 15px;
   font-weight: 500;
   margin-bottom: 10px;
@@ -421,21 +420,21 @@
 .add-task-container {
   display: flex;
   justify-content: center;
-  margin: 15px 0;
+  margin: 10px 0;
 }
 
 .add-task-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 5px;
   background: none;
   border: 1px dashed #9A48EA;
   color: #9A48EA;
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
-  padding: 8px 16px;
+  padding: 8px 8px;
   border-radius: 8px;
   width: 100%;
   transition: all 0.2s ease;
@@ -450,58 +449,180 @@
   font-size: 16px;
 }
 
-.tasks-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
 .task-item {
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  gap: 12px;
+  gap: 16px;
   padding: 12px;
-  background: rgb(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.05);
   border-radius: 8px;
 }
 
-.task-checkbox {
-  width: 16px;
-  height: 16px;
-  border: 2px solid #9A48EA;
-  border-radius: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  flex-shrink: 0;
-  transition: all 0.2s ease;
-}
-
-.task-checkbox:hover {
-  background: rgba(94, 53, 177, 0.1);
+.task-text {
+  font-size: 18px;
+  font-weight: bold;
+  line-height: 1.4;
+  color: #ffffff;
+  flex-grow: 1;
 }
 
 .check-icon {
   color: #5e35b1;
   font-size: 10px;
 }
+.tasks-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.tasks-icon {
+  color: #bdbac1;
+  font-size: 32px;
+  cursor: pointer;
+  padding: 6px;
+  border: 1px solid #bdbac1;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  /* width: 24px;
+  height: 24px; 
+  */
+}
 
-.task-text {
-  font-size: 14px;
-  line-height: 1.4;
-  color: #ffffff;
+.tasks-icon:hover {
+  background: rgba(255, 255, 255, 0.167);
+  border-style: solid;
 }
 
 .task-item.completed .task-text {
   text-decoration: line-through;
-  color: rgb(255, 255, 255, 0.29);
+  color: rgba(255, 255, 255, 0.29);
 }
 
-.task-item.completed .task-checkbox {
-  background: #5e35b1;
+.difficulty-badge.low {
+  background-color: rgba(46, 204, 113, 0.2);
+  color: #2ecc71;
 }
 
-.task-item.completed .task-checkbox .check-icon {
+.difficulty-badge.medium {
+  background-color: rgba(241, 196, 15, 0.2);
+  color: #f1c40f;
+}
+
+.difficulty-badge.high {
+  background-color: rgba(231, 76, 60, 0.2);
+  color: #e74c3c;
+}
+
+.pagination {
+  margin-top: 16px;
+  display: flex;
+  gap: 8px;
+}
+
+.pagination button {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  background-color: #222222;
   color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  text-align: center;
+  line-height: 36px;
+}
+
+.pagination button.active {
+  background-color: #5e35b1;
+  color: white;
+}
+
+.pagination .dots {
+  color: white;
+  background-color: #222222;
+  border-radius: 4px;
+  padding: 6px 10px;
+}
+
+.filter-select {
+  background-color: #2a2a2a;
+  color: white;
+  border: 1px solid #5e35b1;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 14px;
+  outline: none;
+  appearance: none;
+  cursor: pointer;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg viewBox='0 0 140 140' width='12' height='12' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M10 50 L70 110 L130 50' stroke='%23ffffff' stroke-width='20' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 12px;
+}
+
+.filter-select option {
+  background-color: #2a2a2a;
+  color: white;
+}
+
+.text-line-through {
+  text-decoration: line-through;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: #fff;
+  padding: 2rem;
+  border-radius: 12px;
+  width: 400px;
+  max-width: 90%;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.modal-content h2 {
+  margin-top: 0;
+}
+
+.modal-content input,
+.modal-content textarea {
+  width: 100%;
+  margin-bottom: 1rem;
+  padding: 0.75rem;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.submit-btn {
+  background-color: #1b8df7;
+  color: white;
+  border: none;
+  padding: 0.6rem 1rem;
+  border-radius: 6px;
+}
+
+.cancel-btn {
+  background: none;
+  border: none;
+  color: #555;
 }

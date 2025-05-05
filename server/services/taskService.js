@@ -3,6 +3,7 @@ import Project from '../models/Project.js';
 import User from '../models/User.js';
 import Tag from '../models/Tag.js';
 import projectService from './projectService.js';
+import { Sequelize } from 'sequelize';
 
 const getTasksByCreator = async (userId) => {
   return await Task.findAll({
@@ -17,13 +18,32 @@ const getTasksByCreator = async (userId) => {
   });
 };
 
-const getAllTasks = async () => {
+const getAllTasks = async (user) => {
+  const projects = await projectService.getAllProjects(user);
+  const projectIds = projects.map(p => p.id);
+
   return await Task.findAll({
+    where: {
+      project_id: projectIds,
+    },
     include: [
       { model: Project, as: 'project', attributes: ['name'] },
       { model: User, as: 'creator', attributes: ['username'] },
       { model: Tag, as: 'tags', attributes: ['name'] },
     ],
+    // order: [ MySQL
+    //   [Sequelize.literal(`FIELD(priority, 'low', 'medium', 'high')`)]
+    // ]
+    order: [
+      [Sequelize.literal(`
+        CASE
+          WHEN priority = 'low' THEN 1
+          WHEN priority = 'medium' THEN 2
+          WHEN priority = 'high' THEN 3
+          ELSE 4
+        END
+      `), 'ASC']
+    ]
   });
 };
 
