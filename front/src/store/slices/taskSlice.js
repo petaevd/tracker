@@ -13,10 +13,8 @@ export const getTasks = createAsyncThunk('tasks/fetchTasks', async (_, { rejectW
 export const addTask = createAsyncThunk('tasks/createTask', async (taskData, { rejectWithValue }) => {
   try {
     const response = await createTask(taskData);
-    console.log(response)
     return response.task;
   } catch (error) {
-    console.log(error.response)
     return rejectWithValue(error.response?.data?.errors || 'Failed to create task');
   }
 });
@@ -26,7 +24,7 @@ export const updateExistingTask = createAsyncThunk('tasks/updateTask', async ({ 
     const response = await updateTask(taskId, taskData);
     return response.task;
   } catch (error) {
-    return rejectWithValue(error.response?.data?.message || 'Failed to update task');
+    return rejectWithValue(error.response?.data?.errors || 'Failed to update task');
   }
 });
 

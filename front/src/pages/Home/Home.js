@@ -6,8 +6,9 @@ import { FaTimes } from "react-icons/fa";
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { getEvents } from '../../store/slices/eventSlice';
-import { getTasks, removeTask, updateTask, addTask } from '../../store/slices/taskSlice';
+import { getTasks, removeTask, updateExistingTask, addTask } from '../../store/slices/taskSlice';
 import { getProjects } from '../../store/slices/projectSlice';
+import { toast, ToastContainer } from 'react-toastify';
 import './Home.css';
 
 const Home = () => {
@@ -137,16 +138,18 @@ const Home = () => {
 
   const [showTaskModal, setShowTaskModal] = useState(false);
 
-  const [newTask, setNewTask] = useState({
+  const [formTask, setFormTask] = useState({
+    id: "",
     title: "",
     description: "",
     due_date: "",
     priority: "low",
     project_id: "",
   });
-  
-  const resetNewTask = () => {
-    setNewTask({
+
+  const resetFormTask = () => {
+    setFormTask({
+      id: "",
       title: "",
       description: "",
       due_date: "",
@@ -155,20 +158,28 @@ const Home = () => {
     });
   };
   
-  const handleCreateTask = () => {
-    console.log("handleCreateTask вызвана")
-    console.log("Создана задача:", newTask);
-    dispatch(addTask({ ...newTask, creator_id: user.id, status: "open",  }))
-    .unwrap()
-    .then(() => {
+  const handleCreateTask = async () => {
+    try {
+      await dispatch(addTask({ ...formTask, creator_id: user.id, status: "open" })).unwrap();
       setShowTaskModal(false);
-      resetNewTask();
-      console.log('Данные отправлены')
-    })
-    .catch((error) => {
+      resetFormTask();
+      toast.success('Задача создана');
+    } catch (error) {
       console.error("Ошибка при создании задачи:", error);
-      console.log('Данные отправлены')
-    });
+      toast.error(error[0].msg || 'Ошибка создания задачи');
+    }
+  };
+  
+  const handleUpdateTask = async () => {
+    try {
+      await dispatch(updateExistingTask({ taskId: formTask.id, taskData: formTask })).unwrap();
+      setShowTaskModal(false);
+      resetFormTask();
+      toast.success('Задача обновлена');
+    } catch (error) {
+      console.error("Ошибка при обновлении задачи:", error);
+      toast.error(error[0].msg || 'Ошибка редактирования задачи');
+    }
   };
 
   // ================ Задачи ================
@@ -197,7 +208,7 @@ const Home = () => {
   //   { id: 3, text: 'Call with the PM', completed: false },
   //   { id: 4, text: 'Share component access with Rohan', completed: false },
   // ]);
-  const [newTaskText, setNewTaskText] = useState('');
+  const [newTaskText, setFormTaskText] = useState('');
 
   // Данные для диаграммы прогресса
   const projectProgressData = {
@@ -295,7 +306,11 @@ const getEventsForDay = (day, month, year) => {
   const dates = generateCalendar();
 
   return (
+    
     <div className="home-container">
+      <div>
+        <ToastContainer />
+      </div>
       <div className="main-content">
         <div className="breadcrumb">Домашняя</div>
         <h1 className="dashboard-title">Панель просмотра проекта</h1>
@@ -405,16 +420,20 @@ const getEventsForDay = (day, month, year) => {
             </select>
             
             <div className="add-task-container">
-              <button className="add-task-btn" onClick={() => setShowTaskModal(true)}>
+              <button
+                className="add-task-btn"
+                onClick={() => {
+                  resetFormTask();
+                  setShowTaskModal(true);
+                }}
+              >
                 <FiPlus className="plus-icon" />
                 <span className="add-task-text">Добавить задачу</span>
               </button>
             </div>
 
-
-            
             <div className="tasks-list">
-              {filterTasks(currentTasks).map(task => (
+              {filterTasks(currentTasks).map(task => (task?.id && (
                 <div key={task.id} className='task-item'>
                     <div className="task-main">
                       <div className={`task-text ${task.status === 'closed' ? 'text-muted text-line-through' : ''}`}>{task.title}</div>
@@ -427,11 +446,19 @@ const getEventsForDay = (day, month, year) => {
                         })}
                       </span>
                     </div>
-                  <div className="task-icons">
-                    <FaWhmcs className="tasks-icon" />
-                  </div>
+                    <div className="task-icons">
+                      <FaWhmcs 
+                        className="tasks-icon" 
+                        onClick={() => {
+                          setFormTask(task);
+                          setShowTaskModal(true);
+                        }}
+                        style={{ cursor: 'pointer' }}
+                        title="Редактировать задачу"
+                      />
+                    </div>
                 </div>
-              ))}
+              )))}
             </div>
             <div className="pagination mt-auto justify-content-center">
               {renderPagination().map((page, index) =>
@@ -543,12 +570,12 @@ const getEventsForDay = (day, month, year) => {
         <div className="event-modal-overlay">
           <div className="event-modal">
             <div className="event-modal-header">
-              <h3>Создание новой задачи</h3>
-              <button 
+              <h3>{formTask.id ? 'Редактирование задачи' : 'Создание новой задачи'}</h3>
+              <button
                 className="close-modal"
                 onClick={() => {
                   setShowTaskModal(false);
-                  resetNewTask();
+                  resetFormTask();
                 }}
               >
                 <FaTimes />
@@ -557,89 +584,99 @@ const getEventsForDay = (day, month, year) => {
 
             <div className="event-form">
               <div className="form-group">
-                <label>Название задачи</label>
+                <label>Название</label>
                 <input
                   type="text"
-                  value={newTask.title}
-                  onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
-                  placeholder="Например, 'Подготовить отчёт'"
-                  required
+                  className="form-control"
+                  value={formTask.title}
+                  onChange={(e) => setFormTask({ ...formTask, title: e.target.value })}
                 />
               </div>
 
               <div className="form-group">
                 <label>Описание</label>
                 <textarea
-                  value={newTask.description}
-                  onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
-                  placeholder="Добавьте детали по задаче"
-                  rows="3"
+                  className="form-control"
+                  value={formTask.description}
+                  onChange={(e) => setFormTask({ ...formTask, description: e.target.value })}
                 />
               </div>
 
-              <div className="form-row">
-                <div className="form-group">
-                  <label>Срок выполнения</label>
-                  <input
-                    type="date"
-                    value={newTask.due_date}
-                    onChange={(e) => setNewTask({ ...newTask, due_date: e.target.value })}
-                    required
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label>Приоритет</label>
-                  <select
-                    className='form-select'
-                    value={newTask.priority}
-                    onChange={(e) => setNewTask({ ...newTask, priority: e.target.value })}
-                  >
-                    <option value="low">Низкий</option>
-                    <option value="medium">Средний</option>
-                    <option value="high">Высокий</option>
-                  </select>
-                </div>
-
-                <div className="form-group">
-                  <label>Проект</label>
-                  <select
-                    className="form-select"
-                    value={newTask.project_id}
-                    onChange={(e) => setNewTask({ ...newTask, project_id: e.target.value })}
-                  >
-                    <option value="">Выберите проект</option>
-                    {Array.isArray(projects) && projects.length > 0 ? (
-                      projects.map((project) => (
-                        <option key={project.id} value={project.id}>
-                          {project.name}
-                        </option>
-                      ))
-                    ) : (
-                      <option disabled>Загрузка...</option>
-                    )}
-                  </select>
-                </div>
+              <div className="form-group">
+                <label>Срок выполнения</label>
+                <input
+                  type="date"
+                  className="form-control"
+                  value={formTask.due_date}
+                  onChange={(e) => setFormTask({ ...formTask, due_date: e.target.value })}
+                />
               </div>
 
+              <div className="form-group">
+                <label>Приоритет</label>
+                <select
+                  className="form-select"
+                  value={formTask.priority}
+                  onChange={(e) => setFormTask({ ...formTask, priority: e.target.value })}
+                >
+                  <option value="low">Низкий</option>
+                  <option value="medium">Средний</option>
+                  <option value="high">Высокий</option>
+                </select>
+              </div>
+
+              <div className="form-group">
+                <label>Проект</label>
+                <select
+                  className="form-select"
+                  value={formTask.project_id}
+                  onChange={(e) => setFormTask({ ...formTask, project_id: e.target.value })}
+                >
+                  <option value="">Выберите проект</option>
+                  {projects.map((project) => (
+                    <option key={project.id} value={project.id}>
+                      {project.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {formTask.id && (
+                <div className="form-group">
+                  <label>Статус</label>
+                  <select
+                    className="form-select"
+                    value={formTask.status}
+                    onChange={(e) => setFormTask({ ...formTask, status: e.target.value })}
+                  >
+                    <option value="open">Открыта</option>
+                    <option value="in_development">В разработке</option>
+                    <option value="in_test">В тестировании</option>
+                    <option value="closed">Закрыта</option>
+                  </select>
+                </div>
+              )}
+
               <div className="form-actions">
-                <button 
+                <button
                   className="save-event-button"
-                  onClick={handleCreateTask}
+                  onClick={formTask.id ? handleUpdateTask : handleCreateTask}
                   disabled={
-                    !newTask.title.trim() ||
-                    !newTask.project_id ||
-                    !newTask.priority ||
-                    !newTask.due_date
+                    !formTask.title.trim() ||
+                    !formTask.project_id ||
+                    !formTask.description ||
+                    !formTask.due_date ||
+                    !formTask.priority
                   }
                 >
-                  Добавить задачу
+                  {formTask.id ? 'Сохранить изменения' : 'Создать задачу'}
                 </button>
               </div>
             </div>
           </div>
         </div>
       )}
+
 
       {/* Тултип события */}
       {hoveredDate?.events?.[0] && (
