@@ -596,7 +596,7 @@ const Settings = () => {
                     </div>
                   </div>
                 </div>
-                <div className="appearance-item">
+                {/* <div className="appearance-item">
                   <h3>Акцентный цвет</h3>
                   <div className="color-picker">
                     {['#9A48EA', '#FF5252', '#4CAF50', '#2196F3', '#FFC107'].map((color) => (
@@ -615,7 +615,7 @@ const Settings = () => {
                       disabled={isLoading}
                     />
                   </div>
-                </div>
+                </div> */}
               </div>
             )}
 

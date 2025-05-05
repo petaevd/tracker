@@ -51,8 +51,7 @@ const Login = () => {
           <div className="error-message">
             <p>{errorMessage}</p>
             <p className="error-hint">
-              Проверьте правильность email и пароля. Если проблема сохраняется,
-              <Link to="/contact"> обратитесь в поддержку</Link>.
+              Проверьте правильность email и пароля
             </p>
           </div>
         )}
@@ -94,7 +93,6 @@ const Login = () => {
 
         <div className="auth-links">
           <Link to="/register">Создать аккаунт</Link>
-          <Link to="/forgot-password">Забыли пароль?</Link>
         </div>
       </div>
     </div>
