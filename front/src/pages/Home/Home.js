@@ -144,6 +144,7 @@ const Home = () => {
     due_date: "",
     priority: "low",
     project_id: "",
+    tags: "",
   });
 
   const resetFormTask = () => {
@@ -154,12 +155,28 @@ const Home = () => {
       due_date: "",
       priority: "low",
       project_id: "",
+    tags: "",
     });
+  };
+
+  const normalizeTags = (tagString) => {
+    if (typeof tagString !== 'string') return [];
+    const array = Array.from(
+      new Set(
+        tagString
+          .split(',')
+          .map(tag => tag.trim())
+          .filter(tag => tag.length > 0)
+      )
+    );
+    console.log(array.join(', '))
+    return array
   };
   
   const handleCreateTask = async () => {
+    const normalizedTags = normalizeTags(formTask.tags);
     try {
-      await dispatch(addTask({ ...formTask, creator_id: user.id, status: "open" })).unwrap();
+      await dispatch(addTask({ ...formTask, tags: normalizedTags.length === 0 ? null : normalizedTags.join(', '), creator_id: user.id, status: "open" })).unwrap();
       setShowTaskModal(false);
       resetFormTask();
       toast.success('Задача создана');
@@ -170,8 +187,17 @@ const Home = () => {
   };
   
   const handleUpdateTask = async () => {
+    const normalizedTags = normalizeTags(formTask.tags);
+  
     try {
-      await dispatch(updateExistingTask({ taskId: formTask.id, taskData: formTask })).unwrap();
+      await dispatch(updateExistingTask({
+        taskId: formTask.id,
+        taskData: {
+          ...formTask,
+          tags: normalizedTags.length === 0 ? null : normalizedTags.join(', ')
+        }
+      })).unwrap();
+  
       setShowTaskModal(false);
       resetFormTask();
       toast.success('Задача обновлена');
@@ -475,6 +501,16 @@ const getEventsForDay = (day, month, year) => {
                 <div key={task.id} className='task-item'>
                     <div className="task-main">
                       <div className={`task-text ${task.status === 'closed' ? 'text-muted text-line-through' : ''}`}>{task.title}</div>
+                        {/* Теги */}
+                        {task.tags && (
+                          <div className="task-tags">
+                            {task.tags.split(',').map((tag, index) => (
+                              <span key={index} className="badge mx-1">
+                                {tag.trim()}
+                              </span>
+                            ))}
+                          </div>
+                        )}
                       <span className={`difficulty-badge ${task.priority}`}>{priorityMap[task.priority]}</span>
                       <span className='text-muted ms-2'>
                         дедлайн {new Date(task.due_date).toLocaleDateString('ru-RU', {
@@ -690,6 +726,18 @@ const getEventsForDay = (day, month, year) => {
                     </option>
                   ))}
                 </select>
+              </div>
+
+              <div className="form-group">
+                <label>Теги</label>
+                <textarea
+                  className="form-control"
+                  value={formTask.tags}
+                  onChange={(e) => setFormTask({ ...formTask, tags: e.target.value })}
+                />
+                <small className="form-text text-muted">
+                  Введите теги через запятую, например: дизайн, фронтенд, срочно
+                </small>
               </div>
 
               {formTask.id && (

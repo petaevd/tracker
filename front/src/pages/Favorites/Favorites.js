@@ -106,6 +106,15 @@ const Favorites = () => {
                   </div>
                   <div className="favorite-details">
                     <h3 className="favorite-title">{item.title}</h3>
+                    {typeof item.tags === 'string' && item.tags.trim() && (
+                      <div className="task-tags my-1">
+                        {item.tags.split(',').map((tag, index) => (
+                          <span key={index} className="badge mx-1">
+                            {tag.trim()}
+                          </span>
+                        ))}
+                      </div>
+                    )}
                     <div className="favorite-meta">
                       <span className={`difficulty-badge ${item.priority}`}>
                         {priorityMap[item.priority]}

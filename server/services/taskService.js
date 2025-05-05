@@ -1,7 +1,6 @@
 import Task from '../models/Task.js';
 import Project from '../models/Project.js';
 import User from '../models/User.js';
-import Tag from '../models/Tag.js';
 import projectService from './projectService.js';
 import { Sequelize } from 'sequelize';
 
@@ -13,7 +12,6 @@ const getTasksByCreator = async (userId) => {
     include: [
       { model: Project, as: 'project', attributes: ['name'] },
       { model: User, as: 'creator', attributes: ['username'] },
-      { model: Tag, as: 'tags', attributes: ['name'] },
     ],
   });
 };
@@ -29,7 +27,6 @@ const getAllTasks = async (user) => {
     include: [
       { model: Project, as: 'project', attributes: ['name'] },
       { model: User, as: 'creator', attributes: ['username'] },
-      { model: Tag, as: 'tags', attributes: ['name'] },
     ],
     // order: [ MySQL
     //   [Sequelize.literal(`FIELD(priority, 'low', 'medium', 'high')`)]
@@ -47,7 +44,7 @@ const getAllTasks = async (user) => {
   });
 };
 
-const createTask = async ({ title, project_id, status, priority, due_date, description }, user) => {
+const createTask = async ({ title, project_id, status, priority, due_date, description, tags }, user) => {
   const projects = await projectService.getAllProjects(user);
   const creator_id = user.id
 
@@ -66,11 +63,12 @@ const createTask = async ({ title, project_id, status, priority, due_date, descr
     creator_id, 
     priority, 
     due_date, 
-    description 
+    description,
+    tags
   });
 };
 
-const updateTask = async ({ title, project_id, status, priority, due_date, description }, user, task_id) => {
+const updateTask = async ({ title, project_id, status, priority, due_date, description, tags }, user, task_id) => {
   const projects = await projectService.getAllProjects(user);
   const task = await Task.findByPk(task_id);
   const hasAccess = projects.some(p => p.id == project_id);
@@ -93,6 +91,7 @@ const updateTask = async ({ title, project_id, status, priority, due_date, descr
   if (priority) updatableFields.priority = priority;
   if (due_date) updatableFields.due_date = due_date;
   if (description) updatableFields.description = description;
+  updatableFields.tags = tags;
 
   await task.update(updatableFields);
 

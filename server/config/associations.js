@@ -3,8 +3,6 @@ import Team from '../models/Team.js';
 import TeamMember from '../models/TeamMember.js';
 import Project from '../models/Project.js';
 import Task from '../models/Task.js';
-import TaskStatus from '../models/TaskStatus.js';
-import Tag from '../models/Tag.js';
 import Event from '../models/Event.js';
 
 const setupAssociations = () => {
@@ -27,14 +25,6 @@ const setupAssociations = () => {
   // Project -> Task
   Project.hasMany(Task, { foreignKey: 'project_id', as: 'tasks' });
   Task.belongsTo(Project, { foreignKey: 'project_id', as: 'project' });
-
-  // TaskStatus -> Task
-  // TaskStatus.hasMany(Task, { foreignKey: 'status_id', as: 'tasks' });
-  // Task.belongsTo(TaskStatus, { foreignKey: 'status_id', as: 'status' });
-
-  // Task <-> Tag (many-to-many)
-  Task.belongsToMany(Tag, { through: 'TaskTag', foreignKey: 'task_id', otherKey: 'tag_id', as: 'taskTags' });
-  Tag.belongsToMany(Task, { through: 'TaskTag', foreignKey: 'tag_id', otherKey: 'task_id', as: 'taggedTasks' });
 
   // User -> Event
   User.hasMany(Event, { foreignKey: 'user_id', as: 'events' });
