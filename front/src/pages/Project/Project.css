@@ -380,6 +380,8 @@
   background-color: #9A48EA;
   color: white;
   border: none;
+  margin-top: -0px;
+  margin-bottom: 15px;
 }
 
 .input-group .btn:hover {

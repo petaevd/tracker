@@ -187,7 +187,17 @@ const Home = () => {
       toast.error(error[0].msg || 'Ошибка создания задачи');
     }
   };
-  
+
+  const handleTaskStatusChange = (taskId, currentStatus) => {
+    console.log('Current status:', currentStatus);
+    const newStatus = currentStatus === 'closed' ? 'open' : 'closed';
+    console.log('New status:', newStatus);
+    dispatch(updateExistingTask({ 
+      taskId, 
+      taskData: { status: newStatus } 
+    }));
+  };
+
   const handleUpdateTask = async () => {
     const normalizedTags = normalizeTags(formTask.tags);
   
@@ -478,12 +488,12 @@ const getEventsForDay = (day, month, year) => {
           
           {/* Плашка "Задания" */}
           <div className="dashboard-card tasks-card" style={{ backgroundColor: "rgba(255, 255, 255, 0.1)" }}>
-            <div className="tasks-header">
-              <div className="tasks-header-content">
-                <h3 className="card-title">Задачи</h3>
-                <span className="tasks-count">{tasks.length}</span>
-              </div>
-            </div>
+  <div className="tasks-header">
+    <div className="tasks-header-content">
+      <h3 className="card-title">Задачи</h3>
+      <span className="tasks-count">{tasks.length}</span>
+    </div>
+  </div>
 
             <select
               value={filterTask}
@@ -515,74 +525,71 @@ const getEventsForDay = (day, month, year) => {
               </button>
             </div>
 
-            <div className="tasks-list">
-              {filterTasks(currentTasks).map(task => (task?.id && (
-                <div key={task.id} className='task-item'>
-                    <div className="task-main">
-                      <div className={`task-text ${task.status === 'closed' ? 'text-muted text-line-through' : ''}`}>{task.title}</div>
-                        {/* Теги */}
-                        {task.tags && (
-                          <div className="task-tags">
-                            {task.tags.split(',').map((tag, index) => (
-                              <span key={index} className="badge mx-1 bg-dark">
-                                {tag.trim()}
-                              </span>
-                            ))}
-                          </div>
-                        )}
-                      <span className={`difficulty-badge ${task.priority}`}>{priorityMap[task.priority]}</span>
-                      <span className='text-muted ms-2'>
-                        дедлайн {new Date(task.due_date).toLocaleDateString('ru-RU', {
-                          day: '2-digit',
-                          month: 'long',
-                          year: 'numeric',
-                        })}
-                      </span>
-                    </div>
-                    <div className="task-icons">
-                      {favoriteTasks.some(fav => fav.id === task.id) ? (
-                        <FaStar
-                          className="tasks-icon mx-2"
-                          title="Убрать из избранного"
-                          onClick={() => handleToggleFavorite(task)}
-                        />
-                      ) : (
-                        <FaRegStar
-                          className="tasks-icon mx-2"
-                          title="Добавить в избранное"
-                          onClick={() => handleToggleFavorite(task)}
-                        />
-                      )}
-                      <FaWhmcs 
-                        className="tasks-icon" 
-                        onClick={() => {
-                          setFormTask(task);
-                          setShowTaskModal(true);
-                        }}
-                        style={{ cursor: 'pointer' }}
-                        title="Редактировать задачу"
-                      />
-                    </div>
-                </div>
-              )))}
-            </div>
-            <div className="pagination mt-auto justify-content-center">
-              {renderPagination().map((page, index) =>
-                page === '...' ? (
-                  <span key={index} className="dots">...</span>
-                ) : (
-                  <button
-                    key={index}
-                    className={page === currentPage ? 'active' : ''}
-                    onClick={() => setCurrentPage(page)}
-                  >
-                    {page}
-                  </button>
-                )
+  <div className="tasks-list">
+    {filterTasks(tasks)
+      .slice((currentPage - 1) * 2, currentPage * 2) // Показываем по 2 задачи
+      .map(task => (
+        <div key={task.id} className={`task-item ${task.status === 'closed' ? 'completed' : ''}`}>
+          <div className="task-content">
+          <input
+              type="checkbox"
+              checked={task.status === 'closed'}
+              onChange={() => handleTaskStatusChange(task.id, task.status)}
+              className="task-checkbox"
+            />
+            <div className="task-text-container">
+              <div className="task-title">{task.title}</div>
+              {task.description && (
+                <div className="task-description">{task.description}</div>
               )}
             </div>
           </div>
+          <div className="task-actions">
+            {favoriteTasks.some(fav => fav.id === task.id) ? (
+              <FaStar
+                className="task-action-icon"
+                onClick={() => handleToggleFavorite(task)}
+                title="Убрать из избранного"
+              />
+            ) : (
+              <FaRegStar
+                className="task-action-icon"
+                onClick={() => handleToggleFavorite(task)}
+                title="Добавить в избранное"
+              />
+            )}
+            <FaWhmcs
+              className="task-action-icon"
+              onClick={() => {
+                setFormTask(task);
+                setShowTaskModal(true);
+              }}
+              title="Редактировать задачу"
+            />
+          </div>
+        </div>
+      ))}
+  </div>
 
+  {filterTasks(tasks).length > 2 && (
+  <div className="pagination">
+    <button
+      onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+      disabled={currentPage === 1}
+      className="pagination-btn"
+    >
+      &lt;
+    </button>
+    <span>Страница {currentPage}</span>
+    <button
+      onClick={() => setCurrentPage(prev => prev + 1)}
+      className="pagination-btn"
+    >
+      &gt;
+    </button>
+  </div>
+)}
+</div>
           {/* Плашка "Календарь" */}
           <div className="dashboard-card calendar-card" style={{ backgroundColor: "rgba(255, 255, 255, 0.1)" }}>
             <div className="calendar-header">
