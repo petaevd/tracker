@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { FiClock, FiPlus } from 'react-icons/fi';
 import { FaChevronDown, FaCheck } from 'react-icons/fa';
-import { FaWhmcs } from "react-icons/fa";
-import { FaTimes } from "react-icons/fa";
+import { FaWhmcs, FaStar, FaRegStar, FaTimes, FaHeart } from "react-icons/fa";
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { getEvents } from '../../store/slices/eventSlice';
@@ -180,6 +179,45 @@ const Home = () => {
       console.error("Ошибка при обновлении задачи:", error);
       toast.error(error[0].msg || 'Ошибка редактирования задачи');
     }
+  };
+
+  const FAVORITES_KEY = 'favoriteTasks';
+
+  const getFavoriteTasks = () => {
+    const data = localStorage.getItem(FAVORITES_KEY);
+    try {
+      const parsed = JSON.parse(data);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  };
+
+  const setFavoriteTasks = (favorites) => {
+    localStorage.setItem(FAVORITES_KEY, JSON.stringify(favorites));
+  };
+
+  const toggleFavoriteTask = (task) => {
+    let favorites = getFavoriteTasks();
+    const exists = favorites.some(t => t.id === task.id);
+  
+    if (exists) {
+      favorites = favorites.filter(t => t.id !== task.id);
+      toast.success('Задача удалена из избранного');
+    } else {
+      favorites.push(task);
+      toast.success('Задача добавлена в избранное');
+    }
+  
+    setFavoriteTasks(favorites);
+    return favorites;
+  };
+
+  const [favoriteTasks, setFavoriteTasksState] = useState(getFavoriteTasks());
+
+  const handleToggleFavorite = (task) => {
+    const updated = toggleFavoriteTask(task);
+    setFavoriteTasksState(updated);
   };
 
   // ================ Задачи ================
@@ -447,6 +485,19 @@ const getEventsForDay = (day, month, year) => {
                       </span>
                     </div>
                     <div className="task-icons">
+                      {favoriteTasks.some(fav => fav.id === task.id) ? (
+                        <FaStar
+                          className="tasks-icon mx-2"
+                          title="Убрать из избранного"
+                          onClick={() => handleToggleFavorite(task)}
+                        />
+                      ) : (
+                        <FaRegStar
+                          className="tasks-icon mx-2"
+                          title="Добавить в избранное"
+                          onClick={() => handleToggleFavorite(task)}
+                        />
+                      )}
                       <FaWhmcs 
                         className="tasks-icon" 
                         onClick={() => {
