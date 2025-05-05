@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { FiClock, FiPlus } from 'react-icons/fi';
 import { FaChevronDown, FaCheck } from 'react-icons/fa';
 import { FaWhmcs, FaStar, FaRegStar, FaTimes, FaHeart } from "react-icons/fa";
@@ -8,7 +8,9 @@ import { getEvents } from '../../store/slices/eventSlice';
 import { getTasks, removeTask, updateExistingTask, addTask } from '../../store/slices/taskSlice';
 import { getProjects } from '../../store/slices/projectSlice';
 import { toast, ToastContainer } from 'react-toastify';
+import { Gantt, Task, ViewMode } from 'gantt-task-react';
 import './Home.css';
+import './gant.css';
 
 const Home = () => {
   const dispatch = useDispatch();
@@ -246,6 +248,23 @@ const Home = () => {
     setFavoriteTasksState(updated);
   };
 
+  const ganttTaskColorMapping = {
+    'high': '#FF5733',
+    'medium': '#FFFF00',
+    'low': '#33FF57',
+  }
+
+  const ganttTasks = tasks.map(task => ({
+    id: task.id.toString(),
+    name: task.title,
+    start: new Date(task.createdAt),
+    end: new Date(task.due_date),
+    type: 'task',
+    className: `task-${task.priority}`,
+    progress: 0,
+    isDisabled: false,
+  }));
+
   // ================ Задачи ================
 
   // Получаем события только для текущего пользователя
@@ -272,8 +291,8 @@ const Home = () => {
   //   { id: 3, text: 'Call with the PM', completed: false },
   //   { id: 4, text: 'Share component access with Rohan', completed: false },
   // ]);
-  const [newTaskText, setFormTaskText] = useState('');
 
+  const [view, setView] = useState(ViewMode.Day);
   // Данные для диаграммы прогресса
   const projectProgressData = {
     completed: 40,
@@ -505,7 +524,7 @@ const getEventsForDay = (day, month, year) => {
                         {task.tags && (
                           <div className="task-tags">
                             {task.tags.split(',').map((tag, index) => (
-                              <span key={index} className="badge mx-1">
+                              <span key={index} className="badge mx-1 bg-dark">
                                 {tag.trim()}
                               </span>
                             ))}
@@ -636,6 +655,15 @@ const getEventsForDay = (day, month, year) => {
               </div>
             </div>
           </div>
+        </div>
+
+        <div>
+          <h2 className='mb-5'>Диаграмма Ганта</h2>
+          {ganttTasks.length === 0 ? (
+            <p>Задачи загружаются...</p>
+          ) : (
+            <Gantt tasks={ganttTasks} viewMode={ViewMode.Day} listCellWidth='' />
+          )}
         </div>
 
         {/* Вторая строка карточек
