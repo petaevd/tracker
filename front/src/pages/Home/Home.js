@@ -188,14 +188,20 @@ const Home = () => {
     }
   };
 
-  const handleTaskStatusChange = (taskId, currentStatus) => {
+  const handleTaskStatusChange = async (taskId, currentStatus, projectId) => {
     console.log('Current status:', currentStatus);
+    console.log('Current status:', taskId);
     const newStatus = currentStatus === 'closed' ? 'open' : 'closed';
     console.log('New status:', newStatus);
-    dispatch(updateExistingTask({ 
-      taskId, 
-      taskData: { status: newStatus } 
-    }));
+    try {
+      await dispatch(updateExistingTask({ 
+        taskId: taskId, 
+        taskData: { status: newStatus, project_id: projectId } 
+      })).unwrap();
+    } catch (error) {
+      console.error("Ошибка при обновлении задачи:", error);
+      toast.error(error[0].msg || 'Ошибка редактирования задачи');
+    }
   };
 
   const handleUpdateTask = async () => {
@@ -534,7 +540,7 @@ const getEventsForDay = (day, month, year) => {
           <input
               type="checkbox"
               checked={task.status === 'closed'}
-              onChange={() => handleTaskStatusChange(task.id, task.status)}
+              onChange={() => handleTaskStatusChange(task.id, task.status, task.project_id)}
               className="task-checkbox"
             />
             <div className="task-text-container">
