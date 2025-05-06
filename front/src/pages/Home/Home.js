@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { FiClock, FiPlus } from 'react-icons/fi';
 import { FaChevronDown, FaCheck } from 'react-icons/fa';
 import { FaWhmcs, FaStar, FaRegStar, FaTimes, FaHeart } from "react-icons/fa";
@@ -8,7 +8,9 @@ import { getEvents } from '../../store/slices/eventSlice';
 import { getTasks, removeTask, updateExistingTask, addTask } from '../../store/slices/taskSlice';
 import { getProjects } from '../../store/slices/projectSlice';
 import { toast, ToastContainer } from 'react-toastify';
+import { Gantt, Task, ViewMode } from 'gantt-task-react';
 import './Home.css';
+import './gant.css';
 
 const Home = () => {
   const dispatch = useDispatch();
@@ -144,6 +146,7 @@ const Home = () => {
     due_date: "",
     priority: "low",
     project_id: "",
+    tags: "",
   });
 
   const resetFormTask = () => {
@@ -154,12 +157,28 @@ const Home = () => {
       due_date: "",
       priority: "low",
       project_id: "",
+    tags: "",
     });
+  };
+
+  const normalizeTags = (tagString) => {
+    if (typeof tagString !== 'string') return [];
+    const array = Array.from(
+      new Set(
+        tagString
+          .split(',')
+          .map(tag => tag.trim())
+          .filter(tag => tag.length > 0)
+      )
+    );
+    console.log(array.join(', '))
+    return array
   };
   
   const handleCreateTask = async () => {
+    const normalizedTags = normalizeTags(formTask.tags);
     try {
-      await dispatch(addTask({ ...formTask, creator_id: user.id, status: "open" })).unwrap();
+      await dispatch(addTask({ ...formTask, tags: normalizedTags.length === 0 ? null : normalizedTags.join(', '), creator_id: user.id, status: "open" })).unwrap();
       setShowTaskModal(false);
       resetFormTask();
       toast.success('Задача создана');
@@ -169,19 +188,34 @@ const Home = () => {
     }
   };
 
-  const handleTaskStatusChange = (taskId, currentStatus) => {
+  const handleTaskStatusChange = async (taskId, currentStatus, projectId) => {
     console.log('Current status:', currentStatus);
+    console.log('Current status:', taskId);
     const newStatus = currentStatus === 'closed' ? 'open' : 'closed';
     console.log('New status:', newStatus);
-    dispatch(updateExistingTask({ 
-      taskId, 
-      taskData: { status: newStatus } 
-    }));
+    try {
+      await dispatch(updateExistingTask({ 
+        taskId: taskId, 
+        taskData: { status: newStatus, project_id: projectId } 
+      })).unwrap();
+    } catch (error) {
+      console.error("Ошибка при обновлении задачи:", error);
+      toast.error(error[0].msg || 'Ошибка редактирования задачи');
+    }
   };
 
   const handleUpdateTask = async () => {
+    const normalizedTags = normalizeTags(formTask.tags);
+  
     try {
-      await dispatch(updateExistingTask({ taskId: formTask.id, taskData: formTask })).unwrap();
+      await dispatch(updateExistingTask({
+        taskId: formTask.id,
+        taskData: {
+          ...formTask,
+          tags: normalizedTags.length === 0 ? null : normalizedTags.join(', ')
+        }
+      })).unwrap();
+  
       setShowTaskModal(false);
       resetFormTask();
       toast.success('Задача обновлена');
@@ -230,6 +264,23 @@ const Home = () => {
     setFavoriteTasksState(updated);
   };
 
+  const ganttTaskColorMapping = {
+    'high': '#FF5733',
+    'medium': '#FFFF00',
+    'low': '#33FF57',
+  }
+
+  const ganttTasks = tasks.map(task => ({
+    id: task.id.toString(),
+    name: task.title,
+    start: new Date(task.createdAt),
+    end: new Date(task.due_date),
+    type: 'task',
+    className: `task-${task.priority}`,
+    progress: 0,
+    isDisabled: false,
+  }));
+
   // ================ Задачи ================
 
   // Получаем события только для текущего пользователя
@@ -256,8 +307,8 @@ const Home = () => {
   //   { id: 3, text: 'Call with the PM', completed: false },
   //   { id: 4, text: 'Share component access with Rohan', completed: false },
   // ]);
-  const [newTaskText, setFormTaskText] = useState('');
 
+  const [view, setView] = useState(ViewMode.Day);
   // Данные для диаграммы прогресса
   const projectProgressData = {
     completed: 40,
@@ -489,7 +540,7 @@ const getEventsForDay = (day, month, year) => {
           <input
               type="checkbox"
               checked={task.status === 'closed'}
-              onChange={() => handleTaskStatusChange(task.id, task.status)}
+              onChange={() => handleTaskStatusChange(task.id, task.status, task.project_id)}
               className="task-checkbox"
             />
             <div className="task-text-container">
@@ -619,6 +670,15 @@ const getEventsForDay = (day, month, year) => {
           </div>
         </div>
 
+        <div>
+          <h2 className='mb-5'>Диаграмма Ганта</h2>
+          {ganttTasks.length === 0 ? (
+            <p>Задачи загружаются...</p>
+          ) : (
+            <Gantt tasks={ganttTasks} viewMode={ViewMode.Day} listCellWidth='' />
+          )}
+        </div>
+
         {/* Вторая строка карточек
         <div className="cards-row">
           <div className="dashboard-card" style={{ backgroundColor: "rgba(255, 255, 255, 0.1)" }}>
@@ -707,6 +767,18 @@ const getEventsForDay = (day, month, year) => {
                     </option>
                   ))}
                 </select>
+              </div>
+
+              <div className="form-group">
+                <label>Теги</label>
+                <textarea
+                  className="form-control"
+                  value={formTask.tags}
+                  onChange={(e) => setFormTask({ ...formTask, tags: e.target.value })}
+                />
+                <small className="form-text text-muted">
+                  Введите теги через запятую, например: дизайн, фронтенд, срочно
+                </small>
               </div>
 
               {formTask.id && (

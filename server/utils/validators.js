@@ -74,6 +74,7 @@ const taskSchema = {
     body('priority').isIn(['low', 'medium', 'high']).withMessage('Приоритет должен быть "low", "medium" или "high"'),
     body('due_date').optional().isISO8601().withMessage('Дата выполнения должна быть в формате ISO8601'),
     body('description').optional().isString().withMessage('Описание должно быть строкой'),
+    body('tags').optional().isString().withMessage('Теги должны быть строкой'),
   ],
   update: [
     param('id').isInt().withMessage('ID задачи должен быть целым числом'),
