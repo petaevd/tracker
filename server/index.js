@@ -20,7 +20,7 @@ const PORT = process.env.PORT || 8080;
 app.use(express.json());
 app.use(cors);
 app.use('/avatars', express.static(path.join(__dirname, 'public/avatars')));
-
+console.log('Serving static files from:', path.join(__dirname, 'public/avatars'));
 app.use('/api', router);
 app.use((req, res) => res.status(404).json({ error: 'Endpoint not found' }));
 app.use(errorHandler);

@@ -23,13 +23,14 @@ const Task = sequelize.define('Task', {
       key: 'id',
     },
   },
-  status_id: {
-    type: DataTypes.INTEGER,
+  tags: {
+    type: DataTypes.TEXT,
+    allowNull: true,
+  },
+  status: {
+    type: DataTypes.ENUM('open', 'closed', 'in_test', 'in_development'),
     allowNull: false,
-    references: {
-      model: 'task_status', 
-      key: 'id',
-    },
+    defaultValue: 'open',
   },
   creator_id: {
     type: DataTypes.INTEGER,
@@ -45,7 +46,7 @@ const Task = sequelize.define('Task', {
   },
   due_date: {
     type: DataTypes.DATEONLY,
-    allowNull: true,
+    allowNull: false,
   },
 }, {
   tableName: 'tasks',

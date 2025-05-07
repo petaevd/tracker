@@ -17,11 +17,31 @@ export const getUserTeams = async (userId) => {
 
 export const uploadAvatar = async (userId, file) => {
   const formData = new FormData();
-  formData.append('avatar', file);
-  const response = await api.post(`/users/${userId}/avatar`, formData, {
-    headers: { 'Content-Type': 'multipart/form-data' },
-  });
-  return response.data;
+  formData.append('avatar', file); // 'avatar' должно совпадать с multer.single('avatar')
+  
+  try {
+    const config = {
+      headers: { 
+        'Content-Type': `multipart/form-data; boundary=${formData._boundary}`,
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      }
+    };
+
+    const response = await api.post(`/users/${userId}/avatar`, formData, config);
+    
+    if (!response.data?.avatar_url) {
+      throw new Error('Сервер не вернул URL аватара');
+    }
+    
+    return response.data;
+  } catch (error) {
+    console.error('Upload error:', {
+      status: error.response?.status,
+      data: error.response?.data,
+      headers: error.response?.headers
+    });
+    throw error;
+  }
 };
 
 export const changePassword = async (userId, passwordData) => {
