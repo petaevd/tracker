@@ -11,6 +11,7 @@ import { toast, ToastContainer } from 'react-toastify';
 import { Gantt, Task, ViewMode } from 'gantt-task-react';
 import './Home.css';
 import './gant.css';
+import { fetchTasks } from '../../api/taskApi';
 
 const Home = () => {
   const dispatch = useDispatch();
@@ -270,16 +271,19 @@ const Home = () => {
     'low': '#33FF57',
   }
 
-  const ganttTasks = tasks.map(task => ({
+  const ganttTasks = tasks
+  .filter(task => task && task.id && task.title && task.createdAt && task.due_date)
+  .map(task => ({
     id: task.id.toString(),
     name: task.title,
     start: new Date(task.createdAt),
     end: new Date(task.due_date),
     type: 'task',
     className: `task-${task.priority}`,
-    progress: 0,
+    progress: 100,
     isDisabled: false,
   }));
+
 
   // ================ Задачи ================
 
@@ -535,6 +539,7 @@ const getEventsForDay = (day, month, year) => {
     {filterTasks(tasks)
       .slice((currentPage - 1) * 2, currentPage * 2) // Показываем по 2 задачи
       .map(task => (
+        
         <div key={task.id} className={`task-item ${task.status === 'closed' ? 'completed' : ''}`}>
           <div className="task-content">
           <input
