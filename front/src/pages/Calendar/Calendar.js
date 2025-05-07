@@ -171,14 +171,14 @@ const Calendar = () => {
   
     try {
       const eventData = {
+        userId: user.id,
         title: newEvent.title.trim(),
         description: newEvent.description,
-        event_date: newEvent.date,  // используем правильное имя поля
-        event_time: newEvent.time,  // используем правильное имя поля
+        eventDate: newEvent.date,  // используем правильное имя поля
+        eventTime: newEvent.time,  // используем правильное имя поля
         color: newEvent.color
       };
       
-      console.log('Creating event with data:', eventData);
       await dispatch(createEvent(eventData)).unwrap();
       
       setShowEventModal(false);
@@ -192,19 +192,25 @@ const Calendar = () => {
     }
   };
 
-  const handleUpdateEvent = () => {
+  const handleUpdateEvent = async () => {
     if (!selectedEvent || !selectedEvent.title.trim()) return;
-    
+  
     const eventData = {
+      userId: user.id,
       title: selectedEvent.title.trim(),
       description: selectedEvent.description,
       eventDate: selectedEvent.date,
       eventTime: selectedEvent.time,
-      color: selectedEvent.color
+      color: selectedEvent.color,
     };
-    
-    dispatch(updateEvent({ eventId: selectedEvent.id, eventData }));
-    setShowEventDetailsModal(false);
+  
+    try {
+      await dispatch(updateEvent({ eventId: selectedEvent.id, eventData })).unwrap();
+      setShowEventDetailsModal(false);
+      navigate(0);
+    } catch (error) {
+      console.error('Ошибка при обновлении события:', error);
+    }
   };
 
   const handleDeleteEvent = (id) => {
