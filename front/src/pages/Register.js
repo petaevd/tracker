@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { login } from '../store/slices/authSlice';
 import { registerUser, loginUser } from '../api/authApi';
 import './auth.css';
+import { useTranslation } from 'react-i18next';
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -17,6 +18,15 @@ const Register = () => {
   const [successMessage, setSuccessMessage] = useState('');
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  // ================ Перевод ================
+  const { t, i18n } = useTranslation();
+  useEffect(() => {
+    const savedLanguage = localStorage.getItem('language');
+    if (savedLanguage && savedLanguage !== i18n.language) {
+      i18n.changeLanguage(savedLanguage);
+    }
+  }, [i18n]);
+  // ================ Перевод ================
 
   const handleChange = (e) => {
     const { name, value } = e.target;

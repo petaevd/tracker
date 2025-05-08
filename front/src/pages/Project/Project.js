@@ -11,6 +11,7 @@ import { FaWhmcs, FaStar, FaRegStar, FaTimes, FaHeart } from "react-icons/fa";
 import { fetchProjects } from '../../api/projectApi';
 import { updateExistingEvent } from '../../store/slices/eventSlice';
 import { fetchTeams } from '../../api/teamApi';
+import { useTranslation } from 'react-i18next';
 
 const debounce = (func, wait) => {
   let timeout;
@@ -21,12 +22,21 @@ const debounce = (func, wait) => {
 };
 
 const Project = () => {
+
+  // ================ Перевод ================
+  const { t, i18n } = useTranslation();
+  useEffect(() => {
+    const savedLanguage = localStorage.getItem('language');
+    if (savedLanguage && savedLanguage !== i18n.language) {
+      i18n.changeLanguage(savedLanguage);
+    }
+  }, [i18n]);
+  // ================ Перевод ================
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { projects, loading: projectLoading, error: projectError } = useSelector((state) => state.projects);
   const { teams, searchResults, loading: teamLoading, error: teamError } = useSelector((state) => state.teams);
   const user = useSelector((state) => state.auth.user);
-  const [modalType, setModalType] = useState(null);
 
   // useState для форм
   const [showProjectModal, setShowProjectModal] = useState(false);
@@ -562,6 +572,8 @@ const [formProject, setFormProject] = useState({
                 onChange={(e) => setFormTeam({ ...formTeam, description: e.target.value })}
               />
             </div>
+
+            
 
             <div className="form-actions">
               <button

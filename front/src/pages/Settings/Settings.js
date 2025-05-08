@@ -7,12 +7,28 @@ import { getUserById, updateUser, uploadAvatar, changePassword } from '../../api
 import { getAvatarLetter } from '../../utils';
 import './Settings.css';
 import useAssetUrl from '../../hooks/useAssetUrl';
+import { useTranslation } from 'react-i18next';
 
 const Settings = () => {
   const getAssetUrl = useAssetUrl();
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { user, token } = useSelector((state) => state.auth);
+
+  // ================ Перевод ================
+  const { i18n } = useTranslation();
+  const handleLanguageChange = (event) => {
+    const selectedLanguage = event.target.value;
+    i18n.changeLanguage(selectedLanguage);
+    localStorage.setItem('language', selectedLanguage);
+  };
+  useEffect(() => {
+    const savedLanguage = localStorage.getItem('language');
+    if (savedLanguage && savedLanguage !== i18n.language) {
+      i18n.changeLanguage(savedLanguage);
+    }
+  }, [i18n]);
+  // ================ Перевод ================
 
   const [activeTab, setActiveTab] = useState('profile');
   const [settings, setSettings] = useState({
@@ -625,8 +641,8 @@ const Settings = () => {
                 <div className="form-group">
                   <label>Язык интерфейса</label>
                   <select
-                    value={settings.language}
-                    onChange={(e) => handleSettingChange('language', e.target.value)}
+                    value={i18n.language}
+                    onChange={handleLanguageChange} defaultValue={i18n.language}
                     className="settings-select"
                     disabled={isLoading}
                   >
