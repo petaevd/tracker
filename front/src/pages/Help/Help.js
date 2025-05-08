@@ -151,23 +151,30 @@ const Help = () => {
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.4 }}
               >
-                Основные вопросы
+                Управление проектами
               </motion.span>
             </h2>
             <motion.div className="help-item" variants={questionVariants}>
               <motion.h3 className="help-question" whileHover="hover">
-                Как создать новый проект?
+                Как создать проект?
               </motion.h3>
               <motion.p className="help-answer" variants={answerVariants}>
-                Перейдите в раздел "Проекты" и нажмите кнопку "Создать проект". Заполните необходимые поля и сохраните.
+                1. Перейдите во вкладку "Проекты"<br />
+                2. Выберите "Команды"<br />
+                3. Нажмите "Создать команду" и добавьте участников<br />
+                4. Вернитесь в "Проекты" и создайте новый проект<br />
+                5. Добавьте команду, которая будет работать над проектом
               </motion.p>
             </motion.div>
             <motion.div className="help-item" variants={questionVariants}>
               <motion.h3 className="help-question" whileHover="hover">
-                Как пригласить участников?
+                Как создать задачу?
               </motion.h3>
               <motion.p className="help-answer" variants={answerVariants}>
-                В настройках проекта есть раздел "Участники", где вы можете отправить приглашения по email.
+                1. На главном экране нажмите "Добавить задачу"<br />
+                2. Введите параметры задачи (название, описание, сроки)<br />
+                3. Выберите проект, в который должна попасть задача<br />
+                4. Нажмите "Создать"
               </motion.p>
             </motion.div>
           </AnimatedSection>
@@ -187,7 +194,7 @@ const Help = () => {
                 Как изменить пароль?
               </motion.h3>
               <motion.p className="help-answer" variants={answerVariants}>
-                В разделе "Настройки" - "Безопасность" вы можете изменить ваш пароль.
+                В разделе "Настройки" → "Безопасность" вы можете изменить ваш пароль.
               </motion.p>
             </motion.div>
             <motion.div className="help-item" variants={questionVariants}>
@@ -195,7 +202,7 @@ const Help = () => {
                 Как обновить профиль?
               </motion.h3>
               <motion.p className="help-answer" variants={answerVariants}>
-                Перейдите в "Настройки" - "Профиль" для изменения информации о себе.
+                Перейдите в "Настройки" → "Профиль" для изменения информации о себе.
               </motion.p>
             </motion.div>
           </AnimatedSection>
@@ -207,23 +214,30 @@ const Help = () => {
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.6 }}
               >
-                Горячие клавиши
+                Визуализация данных
               </motion.span>
             </h2>
             <motion.div className="help-item" variants={questionVariants}>
               <motion.h3 className="help-question" whileHover="hover">
-                Быстрый поиск
+                Диаграмма Ганта
               </motion.h3>
               <motion.p className="help-answer" variants={answerVariants}>
-                Используйте Ctrl+F (Cmd+F на Mac) для быстрого доступа к поиску.
+                На главном экране вы можете просмотреть диаграмму Ганта, которая отображает:<br />
+                - Все текущие задачи<br />
+                - Сроки их выполнения<br />
+                - Прогресс выполнения<br />
+                - Зависимости между задачами
               </motion.p>
             </motion.div>
             <motion.div className="help-item" variants={questionVariants}>
               <motion.h3 className="help-question" whileHover="hover">
-                Навигация
+                Круговая диаграмма
               </motion.h3>
               <motion.p className="help-answer" variants={answerVariants}>
-                Alt+Стрелки для быстрой навигации между разделами.
+                На главном экране доступна круговая диаграмма, показывающая:<br />
+                - Распределение задач по статусам<br />
+                - Процент выполненных задач<br />
+                - Соотношение задач между проектами
               </motion.p>
             </motion.div>
           </AnimatedSection>
