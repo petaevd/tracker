@@ -16,10 +16,11 @@ export const createEvent = async (eventData) => {
   try {
     // Приводим данные к единому формату перед отправкой
     const payload = {
+      userId: eventData.userId,
       title: eventData.title,
       description: eventData.description,
-      event_date: eventData.eventDate || eventData.event_date,
-      event_time: formatTimeForAPI(eventData.eventTime || eventData.event_time),
+      eventDate: eventData.eventDate || eventData.event_date,
+      eventTime: formatTimeForAPI(eventData.eventTime || eventData.event_time),
       color: eventData.color
     };
 
@@ -42,8 +43,8 @@ export const updateEvent = async (eventId, eventData) => {
     const formattedData = {
       title: eventData.title,
       description: eventData.description,
-      event_date: eventData.eventDate,
-      event_time: eventData.eventTime,
+      eventDate: eventData.eventDate,
+      eventTime: eventData.eventTime,
       color: eventData.color
     };
 
