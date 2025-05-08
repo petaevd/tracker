@@ -7,6 +7,10 @@ import { getTeams, addTeam, addMember, removeMember, editTeam, removeTeam, searc
 import { toast } from 'react-toastify';
 import './Project.css';
 import bootstrap from 'bootstrap/dist/js/bootstrap.bundle.min';
+import { FaWhmcs, FaStar, FaRegStar, FaTimes, FaHeart } from "react-icons/fa";
+import { fetchProjects } from '../../api/projectApi';
+import { updateExistingEvent } from '../../store/slices/eventSlice';
+import { fetchTeams } from '../../api/teamApi';
 
 const debounce = (func, wait) => {
   let timeout;
@@ -22,8 +26,93 @@ const Project = () => {
   const { projects, loading: projectLoading, error: projectError } = useSelector((state) => state.projects);
   const { teams, searchResults, loading: teamLoading, error: teamError } = useSelector((state) => state.teams);
   const user = useSelector((state) => state.auth.user);
-
   const [modalType, setModalType] = useState(null);
+
+  // useState для форм
+  const [showProjectModal, setShowProjectModal] = useState(false);
+  const [showTeamModal, setShowTeamModal] = useState(false);
+  const [formProject, setFormProject] = useState({
+    team_id: "",
+    status: "",
+    name: "",
+    description: "",
+    deadline: "",
+  });
+  const [formTeam, setFormTeam] = useState({
+    name: "",
+    description: "",
+    created_by: "",
+  });
+
+  // Сброс форм
+  const resetFormProject = () => {
+    setFormProject({
+      team_id: "",
+      status: "",
+      name: "",
+      description: "",
+      deadline: "",
+    });
+  };
+  const resetFormTeam = () => {
+    setFormTeam({
+      name: "",
+      description: "",
+      created_by: "",
+    });
+  };
+
+  // Хендлеры форм
+  const handleCreateProject = async () => {
+    try {
+      await dispatch(addProject({ ...formProject, creator_id: user.id})).unwrap();
+      setShowProjectModal(false);
+      resetFormProject();
+      toast.success('Проект создан');
+    } catch (error) {
+      console.error("Ошибка при создании проекта:", error);
+      toast.error(error[0]?.msg || 'Ошибка создания проекта');
+    }
+  };
+  const handleUpdateProject = async () => {
+    console.log(formProject)
+    try {
+      await dispatch(editProject({ id: formProject.id, projectData: { ...formProject, creator_id: user.id } })).unwrap();
+  
+      setShowProjectModal(false);
+      resetFormProject();
+      toast.success('Проект обновлен');
+    } catch (error) {
+      console.error("Ошибка при обновлении проекта:", error);
+      toast.error(error[0].msg || 'Ошибка редактирования проекта');
+    }
+  };
+  const handleCreateTeam = async () => {
+    try {
+      await dispatch(addTeam({ ...formTeam, created_by: user.id})).unwrap();
+      await dispatch(getTeams(user.id)).unwrap();
+      setShowTeamModal(false);
+      resetFormTeam();
+      toast.success('Команда создана');
+    } catch (error) {
+      console.error("Ошибка при создании команды:", error);
+      toast.error(error[0]?.msg || 'Ошибка создания команды');
+    }
+  };
+  const handleUpdateTeam = async () => {
+    console.log(formTeam)
+    try {
+      await dispatch(editTeam({ id: formTeam.id, teamData: formTeam })).unwrap();
+      await dispatch(getTeams(user.id)).unwrap();
+      setShowTeamModal(false);
+      resetFormTeam();
+      toast.success('Команда обновлен');
+    } catch (error) {
+      console.error("Ошибка при обновлении команды:", error);
+      toast.error(error[0].msg || 'Ошибка редактирования команды');
+    }
+  };
+
   const [projectName, setProjectName] = useState('');
   const [projectDescription, setProjectDescription] = useState('');
   const [projectTeamId, setProjectTeamId] = useState('');
@@ -96,97 +185,6 @@ const Project = () => {
     }, 300);
   }, [dispatch]);
 
-  const resetProjectForm = useCallback(() => {
-    setProjectName('');
-    setProjectDescription('');
-    setProjectTeamId('');
-    setStatus('active');
-    setDeadline('');
-  }, []);
-
-  const resetTeamForm = useCallback(() => {
-    setTeamId('');
-    setTeamName('');
-    setTeamDescription('');
-    setUserEmails('');
-    setSelectedUsers([]);
-    setAllSearchResults([]);
-    setEmailSuggestions([]);
-    dispatch(clearSearchResults());
-  }, [dispatch]);
-
-  const handleCreateProject = useCallback(async () => {
-    if (!projectName.trim() || !projectTeamId) {
-      toast.error('Название проекта и команда обязательны');
-      return;
-    }
-
-    try {
-      await dispatch(
-        addProject({
-          name: projectName,
-          description: projectDescription,
-          team_id: projectTeamId,
-          creator_id: user.id,
-          status,
-          deadline,
-        })
-      ).unwrap();
-      resetProjectForm();
-      setModalType(null);
-      // Закрываем модальное окно
-      const modal = document.getElementById('projectModal');
-      const modalInstance = bootstrap.Modal.getInstance(modal);
-      if (modalInstance) modalInstance.hide();
-      toast.success('Проект успешно создан');
-    } catch (err) {
-      toast.error(err || 'Ошибка создания проекта');
-    }
-  }, [projectName, projectDescription, projectTeamId, status, deadline, dispatch, resetProjectForm, user.id]);
-
-  const handleEditProject = useCallback(async () => {
-    if (!projectName.trim() || !projectTeamId) {
-      toast.error('Название проекта и команда обязательны');
-      return;
-    }
-  
-    try {
-      await dispatch(
-        editProject({
-          id: selectedProjectId,
-          projectData: {
-            name: projectName,
-            description: projectDescription,
-            team_id: projectTeamId,
-            status,
-            deadline,
-          },
-        })
-      ).unwrap();
-      
-      resetProjectForm();
-      setModalType(null);
-      setSelectedProjectId(null);
-      
-      // Закрываем модальное окно
-      const modal = document.getElementById('projectModal');
-      const modalInstance = bootstrap.Modal.getInstance(modal);
-      if (modalInstance) modalInstance.hide();
-      
-      toast.success('Проект успешно обновлён');
-      
-      // Обновляем данные проектов
-      await dispatch(getProjects(user.id));
-      
-      // Если проект переведен в архив, переключаемся на вкладку архива
-      if (status === 'archived') {
-        setActiveTab('archive');
-      }
-    } catch (err) {
-      toast.error(err || 'Ошибка редактирования проекта');
-    }
-  }, [selectedProjectId, projectName, projectDescription, projectTeamId, status, deadline, dispatch, resetProjectForm, user.id]);
-
   const handleDeleteProject = useCallback(async (projectId) => {
     if (window.confirm('Вы уверены, что хотите удалить проект?')) {
       try {
@@ -198,76 +196,6 @@ const Project = () => {
     }
   }, [dispatch]);
 
-  const handleCreateTeam = useCallback(async () => {
-    if (!teamName.trim()) {
-      toast.error('Название команды обязательно');
-      return;
-    }
-
-    try {
-      const response = await dispatch(
-        addTeam({
-          name: teamName,
-          description: teamDescription,
-          created_by: user.id,
-        })
-      ).unwrap();
-      resetTeamForm();
-      setModalType(null);
-      // Закрываем модальное окно
-      const modal = document.getElementById('teamModal');
-      const modalInstance = bootstrap.Modal.getInstance(modal);
-      if (modalInstance) modalInstance.hide();
-      toast.success('Команда успешно создана');
-    } catch (err) {
-      toast.error(err.message || 'Ошибка создания команды');
-    }
-  }, [teamName, teamDescription, user.id, dispatch, resetTeamForm]);
-
-  const handleEditTeam = useCallback(async () => {
-    if (!teamName.trim()) {
-      toast.error('Название команды обязательно');
-      return;
-    }
-
-    try {
-      await dispatch(
-        editTeam({
-          id: teamId,
-          teamData: {
-            name: teamName,
-            description: teamDescription,
-          },
-        })
-      ).unwrap();
-
-      const currentMembers = teams.find((t) => t.id === teamId)?.members?.map((m) => m.id) || [];
-      const membersToAdd = selectedUsers.filter((id) => !currentMembers.includes(id));
-      const membersToRemove = currentMembers.filter((id) => !selectedUsers.includes(id));
-
-      for (const userId of membersToAdd) {
-        const user = allSearchResults.find((u) => u.id === userId);
-        if (user) {
-          await dispatch(addMember({ teamId, user })).unwrap();
-        }
-      }
-
-      for (const userId of membersToRemove) {
-        await dispatch(removeMember({ teamId, userId })).unwrap();
-      }
-
-      resetTeamForm();
-      setModalType(null);
-      // Закрываем модальное окно
-      const modal = document.getElementById('teamModal');
-      const modalInstance = bootstrap.Modal.getInstance(modal);
-      if (modalInstance) modalInstance.hide();
-      toast.success('Команда успешно обновлена');
-    } catch (err) {
-      toast.error(err.message || 'Ошибка редактирования команды');
-    }
-  }, [teamId, teamName, teamDescription, selectedUsers, teams, allSearchResults, dispatch, resetTeamForm]);
-
   const handleDeleteTeam = useCallback(async (teamId) => {
     if (window.confirm('Вы уверены, что хотите удалить команду?')) {
       try {
@@ -278,71 +206,6 @@ const Project = () => {
       }
     }
   }, [dispatch]);
-
-  const handleSearchUsers = useCallback(async () => {
-    if (!userEmails.trim()) {
-      toast.error('Введите email для поиска');
-      return;
-    }
-
-    try {
-      await dispatch(searchUsers(userEmails)).unwrap();
-      setUserEmails('');
-    } catch (err) {
-      toast.error(err || 'Ошибка поиска пользователей');
-    }
-  }, [userEmails, dispatch]);
-
-  const handleEmailsInputChange = useCallback((e) => {
-    const input = e.target.value;
-    setUserEmails(input);
-    debouncedSearchRef.current(input);
-  }, []);
-
-  const handleSelectUser = useCallback((userId) => {
-    if (selectedUsers.includes(userId)) {
-      toast.warn('Пользователь уже добавлен');
-      return;
-    }
-    setSelectedUsers((prev) => [...prev, userId]);
-    setUserEmails('');
-  }, [selectedUsers]);
-
-  const handleRemoveUser = useCallback((userId) => {
-    setSelectedUsers((prev) => prev.filter((id) => id !== userId));
-  }, []);
-
-  const handleProjectClick = useCallback((projectId) => {
-    if (projectId) {
-      navigate(`/project/${projectId}/dashboard`);
-    }
-  }, [navigate]);
-
-  const openEditProjectModal = useCallback((project) => {
-    setSelectedProjectId(project.id);
-    setProjectName(project.name);
-    setProjectDescription(project.description || '');
-    setProjectTeamId(project.team_id);
-    setStatus(project.status || 'active');
-    setDeadline(project.deadline || '');
-    setModalType('edit');
-  }, []);
-
-  const openEditTeamModal = useCallback((team) => {
-    setTeamId(team.id);
-    setTeamName(team.name);
-    setTeamDescription(team.description || '');
-    setSelectedUsers(team.members?.map((m) => m.id) || []);
-    setModalType('editTeam');
-  }, []);
-
-  const closeModal = useCallback(() => {
-    setModalType(null);
-    setSelectedProjectId(null);
-    setTeamId('');
-    resetProjectForm();
-    resetTeamForm();
-  }, [resetProjectForm, resetTeamForm]);
 
   if (!user) {
     return <div className="loading-message">Загрузка...</div>;
@@ -397,9 +260,7 @@ const Project = () => {
               {activeTab === 'activeProjects' && (
                 <button
                   className="action-btn purple"
-                  data-bs-toggle="modal"
-                  data-bs-target="#projectModal"
-                  onClick={() => setModalType('create')}
+                  onClick={() => setShowProjectModal(true)}
                   disabled={projectLoading || teamLoading}
                 >
                   <FaPlus /> Создать проект
@@ -408,9 +269,7 @@ const Project = () => {
               {activeTab === 'teams' && (
                 <button
                   className="action-btn purple"
-                  data-bs-toggle="modal"
-                  data-bs-target="#teamModal"
-                  onClick={() => setModalType('createTeam')}
+                  onClick={() => setShowTeamModal(true)}
                   disabled={teamLoading}
                 >
                   <FaUsers /> Создать команду
@@ -435,9 +294,10 @@ const Project = () => {
                         <div className="team-actions">
                           <button
                             className="team-action-btn"
-                            data-bs-toggle="modal"
-                            data-bs-target="#teamModal"
-                            onClick={() => openEditTeamModal(team)}
+                            onClick={() => {
+                              setFormTeam(team);
+                              setShowTeamModal(true);
+                            }}
                           >
                             <FaEdit />
                           </button>
@@ -474,14 +334,15 @@ const Project = () => {
                 {activeProjects.map((project) => (
                   <div key={project.id} className="project-card">
                     <div className="project-card-header">
-                      <h3 onClick={() => handleProjectClick(project.id)}>{project.name}</h3>
+                      <h3 onClick=''>{project.name}</h3>
                       {user.role !== 'employee' && (
                         <div className="project-actions">
                           <button
                             className="project-action-btn"
-                            data-bs-toggle="modal"
-                            data-bs-target="#projectModal"
-                            onClick={() => openEditProjectModal(project)}
+                            onClick={() => {
+                              setFormProject(project);
+                              setShowProjectModal(true);
+                            }}
                           >
                             <FaEdit />
                           </button>
@@ -526,9 +387,10 @@ const Project = () => {
                         <div className="project-actions">
                           <button
                             className="project-action-btn"
-                            data-bs-toggle="modal"
-                            data-bs-target="#projectModal"
-                            onClick={() => openEditProjectModal(project)}
+                            onClick={() => {
+                              setFormProject(project);
+                              setShowProjectModal(true);
+                            }}
                           >
                             <FaEdit />
                           </button>
@@ -556,202 +418,165 @@ const Project = () => {
             )}
           </div>
         )}
+{/* 
+const [formProject, setFormProject] = useState({
+    team_id: "",
+    status: "",
+    name: "",
+    description: "",
+    creator_id: user.id,
+    deadline: "",
+  }); */}
 
-        {/* Модальные окна создания/редактирования проекта */}
-        <div className="modal fade" id="projectModal" tabIndex="-1" aria-hidden="true">
-          <div className="modal-dialog">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title">
-                  {modalType === 'create' ? 'Создать новый проект' : 'Редактировать проект'}
-                </h5>
-                <button type="button" className="btn-close" onClick={closeModal}></button>
-              </div>
-              <div className="modal-body">
-                <div className="mb-3">
-                  <label className="form-label">Название проекта</label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    value={projectName}
-                    onChange={(e) => setProjectName(e.target.value)}
-                    disabled={projectLoading}
-                  />
-                </div>
-                <div className="mb-3">
-                  <label className="form-label">Описание проекта</label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    value={projectDescription}
-                    onChange={(e) => setProjectDescription(e.target.value)}
-                    disabled={projectLoading}
-                  />
-                </div>
-                <div className="mb-3">
-                  <label className="form-label">Статус проекта</label>
-                  <select
-                    className="form-select"
-                    value={status}
-                    onChange={(e) => setStatus(e.target.value)}
-                    disabled={projectLoading}
-                  >
-                    <option value="active">Активный</option>
-                    <option value="archived">Архивный</option>
-                  </select>
-                </div>
-                <div className="mb-3">
-                  <label className="form-label">Дедлайн</label>
-                  <input
-                    type="date"
-                    className="form-control"
-                    value={deadline}
-                    onChange={(e) => setDeadline(e.target.value)}
-                    disabled={projectLoading}
-                  />
-                </div>
-                <div className="mb-3">
-                  <label className="form-label">Команда</label>
-                  <select
-                    className="form-select"
-                    value={projectTeamId}
-                    onChange={(e) => setProjectTeamId(e.target.value)}
-                    disabled={projectLoading}
-                  >
-                    <option value="">Выберите команду</option>
-                    {filteredTeams.map((team) => (
-                      <option key={team.id} value={team.id}>{team.name}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-              <div className="modal-footer">
-                <button className="btn btn-secondary" onClick={closeModal} disabled={projectLoading}>
-                  Отмена
-                </button>
-                <button
-                  className="btn btn-primary"
-                  onClick={modalType === 'create' ? handleCreateProject : handleEditProject}
-                  disabled={projectLoading}
-                >
-                  {projectLoading ? 'Сохранение...' : modalType === 'create' ? 'Создать' : 'Сохранить'}
-                </button>
-              </div>
+      {showProjectModal && (
+        <div className="event-modal-overlay">
+          <div className="event-modal">
+            <div className="event-modal-header">
+              <h3>{formProject.id ? 'Редактирование проекта' : 'Создание нового проекта'}</h3>
+              <button
+                className="close-modal"
+                onClick={() => {
+                  setShowProjectModal(false);
+                  resetFormProject();
+                }}
+              >
+                <FaTimes />
+              </button>
+            </div>
+
+            <div className="form-group">
+              <label>Название</label>
+              <input
+                type="text"
+                className="form-control"
+                value={formProject.name}
+                onChange={(e) => setFormProject({ ...formProject, name: e.target.value })}
+              />
+            </div>
+
+            <div className="form-group">
+              <label>Описание</label>
+              <textarea
+                className="form-control"
+                value={formProject.description}
+                onChange={(e) => setFormProject({ ...formProject, description: e.target.value })}
+              />
+            </div>
+
+            <div className="form-group">
+              <label>Проект</label>
+              <select
+                className="form-select"
+                value={formProject.team_id}
+                onChange={(e) => {
+                  setFormProject({ ...formProject , team_id: e.target.value});
+                  console.log(formProject);
+                }}
+              >
+                <option value="">Выберите команду</option>
+                {teams.map((team) => (
+                  <option key={team.id} value={team.id}>
+                    {team.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="form-group">
+              <label>Статус</label>
+              <select
+                className="form-select"
+                value={formProject.status}
+                onChange={(e) => setFormProject({ ...formProject, status: e.target.value })}
+              >
+                <option value="">Выберите статус</option>
+                <option value="active">Активный</option>
+                <option value="archived">Архивный</option>
+              </select>
+            </div>
+
+            <div className="form-group">
+              <label>Дедлайн</label>
+              <input
+                type="date"
+                className="form-control"
+                value={formProject.deadline}
+                onChange={(e) => setFormProject({ ...formProject, deadline: e.target.value })}
+              />
+            </div>
+
+            <div className="form-actions">
+              <button
+                className="save-event-button"
+                onClick={formProject.id ? handleUpdateProject : handleCreateProject}
+                disabled={
+                  !formProject.team_id ||
+                  !formProject.status ||
+                  !formProject.name ||
+                  !formProject.deadline
+                }
+              >
+                {formProject.id ? 'Сохранить изменения' : 'Создать проект'}
+              </button>
             </div>
           </div>
         </div>
+      )}
 
-        {/* Модальные окна создания/редактирования команды */}
-        <div className="modal fade" id="teamModal" tabIndex="-1" aria-hidden="true">
-          <div className="modal-dialog">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title">
-                  {modalType === 'createTeam' ? 'Создать новую команду' : 'Редактировать команду'}
-                </h5>
-                <button type="button" className="btn-close" onClick={closeModal}></button>
-              </div>
-              <div className="modal-body">
-                <div className="mb-3">
-                  <label className="form-label">Название команды</label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    value={teamName}
-                    onChange={(e) => setTeamName(e.target.value)}
-                    disabled={teamLoading}
-                  />
-                </div>
-                <div className="mb-3">
-                  <label className="form-label">Описание команды</label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    value={teamDescription}
-                    onChange={(e) => setTeamDescription(e.target.value)}
-                    disabled={teamLoading}
-                  />
-                </div>
-                {modalType === 'editTeam' && (
-                  <>
-                    <div className="mb-3">
-                      <label className="form-label">Поиск участников</label>
-                      <div className="input-group">
-                        <input
-                          type="text"
-                          className="form-control"
-                          value={userEmails}
-                          onChange={handleEmailsInputChange}
-                          placeholder="Email участника"
-                          disabled={teamLoading}
-                        />
-                        <button
-                          className="btn btn-outline-secondary"
-                          onClick={handleSearchUsers}
-                          disabled={teamLoading}
-                        >
-                          Поиск
-                        </button>
-                      </div>
-                    </div>
-                    {allSearchResults.length > 0 && (
-                      <div className="mb-3">
-                        <label className="form-label">Найденные пользователи</label>
-                        <ul className="list-group">
-                          {allSearchResults.map((user) => (
-                            <li key={user.id} className="list-group-item">
-                              {user.username} ({user.email})
-                              <button
-                                className="btn btn-sm btn-primary float-end"
-                                onClick={() => handleSelectUser(user.id)}
-                              >
-                                Добавить
-                              </button>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-                    {selectedUsers.length > 0 && (
-                      <div className="mb-3">
-                        <label className="form-label">Участники команды</label>
-                        <ul className="list-group">
-                          {selectedUsers.map((userId) => {
-                            const user = allSearchResults.find(u => u.id === userId) || 
-                                        teams.find(t => t.id === teamId)?.members?.find(m => m.id === userId);
-                            return user ? (
-                              <li key={user.id} className="list-group-item">
-                                {user.username} ({user.email})
-                                <button
-                                  className="btn btn-sm btn-danger float-end"
-                                  onClick={() => handleRemoveUser(user.id)}
-                                >
-                                  Удалить
-                                </button>
-                              </li>
-                            ) : null;
-                          })}
-                        </ul>
-                      </div>
-                    )}
-                  </>
-                )}
-              </div>
-              <div className="modal-footer">
-                <button className="btn btn-secondary" onClick={closeModal} disabled={teamLoading}>
-                  Отмена
-                </button>
-                <button
-                  className="btn btn-primary"
-                  onClick={modalType === 'createTeam' ? handleCreateTeam : handleEditTeam}
-                  disabled={teamLoading}
-                >
-                  {teamLoading ? 'Сохранение...' : modalType === 'createTeam' ? 'Создать' : 'Сохранить'}
-                </button>
-              </div>
+{/* const [formTeam, setFormTeam] = useState({
+    name: "",
+    description: "",
+    created_by: "",
+  }); */}
+      {showTeamModal && (
+        <div className="event-modal-overlay">
+          <div className="event-modal">
+            <div className="event-modal-header">
+              <h3>{formTeam.id ? 'Редактирование команды' : 'Создание новой команды'}</h3>
+              <button
+                className="close-modal"
+                onClick={() => {
+                  setShowTeamModal(false);
+                  resetFormTeam();
+                }}
+              >
+                <FaTimes />
+              </button>
+            </div>
+
+            <div className="form-group">
+              <label>Название</label>
+              <input
+                type="text"
+                className="form-control"
+                value={formTeam.name}
+                onChange={(e) => setFormTeam({ ...formTeam, name: e.target.value })}
+              />
+            </div>
+
+            <div className="form-group">
+              <label>Описание</label>
+              <textarea
+                className="form-control"
+                value={formTeam.description}
+                onChange={(e) => setFormTeam({ ...formTeam, description: e.target.value })}
+              />
+            </div>
+
+            <div className="form-actions">
+              <button
+                className="save-event-button"
+                onClick={formTeam.id ? handleUpdateTeam : handleCreateTeam}
+                disabled={
+                  !formTeam.name
+                }
+              >
+                {formTeam.id ? 'Сохранить изменения' : 'Создать команду'}
+              </button>
             </div>
           </div>
         </div>
+      )}
       </div>
     </div>
   );

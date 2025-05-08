@@ -207,7 +207,7 @@ const Calendar = () => {
     try {
       await dispatch(updateEvent({ eventId: selectedEvent.id, eventData })).unwrap();
       setShowEventDetailsModal(false);
-      navigate(0);
+      dispatch(fetchEvents(user.id));
     } catch (error) {
       console.error('Ошибка при обновлении события:', error);
     }
