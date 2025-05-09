@@ -262,8 +262,8 @@ const Project = () => {
           </button>
         </div>
 
-        {projectError && <div className="error-message">{projectError}</div>}
-        {teamError && <div className="error-message">{teamError}</div>}
+        {/* {projectError && <div className="error-message">{projectError}</div>} */}
+        {/* {teamError && <div className="error-message">{teamError}</div>} */}
 
         <div className="action-buttons">
           {user.role !== 'employee' && (
@@ -345,7 +345,7 @@ const Project = () => {
                 {activeProjects.map((project) => (
                   <div key={project.id} className="project-card">
                     <div className="project-card-header">
-                      <h3 onClick=''>{project.name}</h3>
+                      <h3>{project.name}</h3>
                       {user.role !== 'employee' && (
                         <div className="project-actions">
                           <button

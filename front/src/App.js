@@ -97,7 +97,7 @@ const App = () => {
             </ProtectedRoute>
           }
         />
-        <Route
+        {/* <Route
           path="/project/:projectId/dashboard"
           element={
             <ProtectedRoute>
@@ -106,7 +106,7 @@ const App = () => {
               </Layout>
             </ProtectedRoute>
           }
-        />
+        /> */}
         <Route
           path="/favorites"
           element={

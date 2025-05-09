@@ -8,7 +8,7 @@ import { getEvents } from '../../store/slices/eventSlice';
 import { getTasks, removeTask, updateExistingTask, addTask } from '../../store/slices/taskSlice';
 import { getProjects } from '../../store/slices/projectSlice';
 import { toast, ToastContainer } from 'react-toastify';
-import { Gantt, Task, ViewMode } from 'gantt-task-react';
+import { Gantt, Task, ViewMode } from '../../libs/gantt-task-react';
 import './Home.css';
 import './gant.css';
 import { useTranslation } from 'react-i18next';
