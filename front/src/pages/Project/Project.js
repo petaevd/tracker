@@ -12,6 +12,7 @@ import { fetchProjects } from '../../api/projectApi';
 import { updateExistingEvent } from '../../store/slices/eventSlice';
 import { fetchTeams } from '../../api/teamApi';
 import { useTranslation } from 'react-i18next';
+import SearchField from '../../components/Members/SearchField';
 
 const debounce = (func, wait) => {
   let timeout;
@@ -573,7 +574,7 @@ const [formProject, setFormProject] = useState({
               />
             </div>
 
-            
+            <SearchField teamID={formTeam.id}></SearchField>
 
             <div className="form-actions">
               <button
