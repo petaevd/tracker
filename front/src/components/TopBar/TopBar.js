@@ -1,4 +1,4 @@
-import Reac, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { FaShareAlt, FaSignOutAlt, FaUser } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';

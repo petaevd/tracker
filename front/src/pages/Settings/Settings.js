@@ -30,6 +30,15 @@ const Settings = () => {
   }, [i18n]);
   // ================ Перевод ================
 
+  // ================ Темы ================
+  const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
+  function changeTheme(themeName) {
+    document.documentElement.setAttribute('data-theme', themeName);
+    localStorage.setItem('theme', themeName);
+    setTheme(themeName);
+  }
+  // ================ Темы ================
+
   const [activeTab, setActiveTab] = useState('profile');
   const [settings, setSettings] = useState({
     darkMode: true,
@@ -593,8 +602,8 @@ const Settings = () => {
                   <h3>Цветовая тема</h3>
                   <div className="theme-options">
                     <div
-                      className={`theme-option ${settings.darkMode ? 'active' : ''}`}
-                      onClick={() => handleSettingChange('darkMode', true)}
+                      className={`theme-option ${theme == 'dark' ? 'active' : ''}`}
+                      onClick={() => {changeTheme('dark')}}
                     >
                       <div className="theme-preview dark-theme">
                         <FaPalette />
@@ -602,13 +611,22 @@ const Settings = () => {
                       <span>Тёмная</span>
                     </div>
                     <div
-                      className={`theme-option ${!settings.darkMode ? 'active' : ''}`}
-                      onClick={() => handleSettingChange('darkMode', false)}
+                      className={`theme-option ${theme == 'light' ? 'active' : ''}`}
+                      onClick={() => {changeTheme('light')}}
                     >
                       <div className="theme-preview light-theme">
                         <FaPalette />
                       </div>
                       <span>Светлая</span>
+                    </div>
+                    <div
+                      className={`theme-option ${theme == 'raspberry' ? 'active' : ''}`}
+                      onClick={() => {changeTheme('raspberry')}}
+                    >
+                      <div className="theme-preview raspberry-theme">
+                        <FaPalette />
+                      </div>
+                      <span>Красная</span>
                     </div>
                   </div>
                 </div>
