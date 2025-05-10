@@ -3,14 +3,10 @@ import { FaPlus, FaEdit, FaTrash, FaUsers, FaArchive } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { getProjects, addProject, editProject, removeProject } from '../../store/slices/projectSlice';
-import { getTeams, addTeam, addMember, removeMember, editTeam, removeTeam, searchUsers, clearSearchResults } from '../../store/slices/teamSlice';
+import { getTeams, addTeam, editTeam, removeTeam, searchUsers, clearSearchResults } from '../../store/slices/teamSlice';
 import { toast } from 'react-toastify';
 import './Project.css';
-import bootstrap from 'bootstrap/dist/js/bootstrap.bundle.min';
-import { FaWhmcs, FaStar, FaRegStar, FaTimes, FaHeart } from "react-icons/fa";
-import { fetchProjects } from '../../api/projectApi';
-import { updateExistingEvent } from '../../store/slices/eventSlice';
-import { fetchTeams } from '../../api/teamApi';
+import {  FaTimes, } from "react-icons/fa";
 import { useTranslation } from 'react-i18next';
 import SearchField from '../../components/Members/SearchField';
 

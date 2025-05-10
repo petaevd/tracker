@@ -1,4 +1,4 @@
-import React from 'react';
+
 import './TeamMembers.css';
 
 const TeamMembers = ({ teamMembers }) => {
