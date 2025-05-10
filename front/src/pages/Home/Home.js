@@ -8,10 +8,10 @@ import { getEvents } from '../../store/slices/eventSlice';
 import { getTasks, removeTask, updateExistingTask, addTask } from '../../store/slices/taskSlice';
 import { getProjects } from '../../store/slices/projectSlice';
 import { toast, ToastContainer } from 'react-toastify';
-import { Gantt, Task, ViewMode } from 'gantt-task-react';
+import { Gantt, Task, ViewMode } from '../../libs/gantt-task-react';
 import './Home.css';
 import './gant.css';
-import { fetchTasks } from '../../api/taskApi';
+import { useTranslation } from 'react-i18next';
 
 const Home = () => {
   const dispatch = useDispatch();
@@ -19,6 +19,15 @@ const Home = () => {
   const { eventsByUser = {}, loading, error } = useSelector((state) => state.events);
   const user = useSelector((state) => state.auth.user);
 
+  // ================ Перевод ================
+  const { t, i18n } = useTranslation();
+  useEffect(() => {
+    const savedLanguage = localStorage.getItem('language');
+    if (savedLanguage && savedLanguage !== i18n.language) {
+      i18n.changeLanguage(savedLanguage);
+    }
+  }, [i18n]);
+  // ================ Перевод ================
   // ================ Задачи ================
   const { tasks, loadingTask, errorTask } = useSelector((state) => state.tasks);
   const { projects, loadingProjects, errorProjects } = useSelector(state => state.projects)
@@ -415,8 +424,8 @@ const getEventsForDay = (day, month, year) => {
         <ToastContainer />
       </div>
       <div className="main-content">
-        <div className="breadcrumb">Домашняя</div>
-        <h1 className="dashboard-title">Панель просмотра проекта</h1>
+        <div className="breadcrumb">{t('breadcrump_home')}</div>
+        <h1 className="dashboard-title">{t('project_view_panel')}</h1>
         
         {error && <div className="error-message">{error}</div>}
         {loading && <div className="loading-message">Загрузка событий...</div>}

@@ -17,7 +17,19 @@ import {
 import { useNavigate } from 'react-router-dom';
 import './Calendar.css';
 
+import { useTranslation } from 'react-i18next';
 const Calendar = () => {
+
+    
+  // ================ Перевод ================
+  const { t, i18n } = useTranslation();
+  useEffect(() => {
+    const savedLanguage = localStorage.getItem('language');
+    if (savedLanguage && savedLanguage !== i18n.language) {
+      i18n.changeLanguage(savedLanguage);
+    }
+  }, [i18n]);
+  // ================ Перевод ================
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const user = useSelector((state) => state.auth.user);
@@ -168,6 +180,13 @@ const Calendar = () => {
       alert('Please enter event title');
       return;
     }
+
+    const now = new Date();
+  
+    if (new Date(newEvent.date) <= now) {
+      alert('Дата и время события должны быть в будущем');
+      return;
+    }
   
     try {
       const eventData = {
@@ -203,6 +222,13 @@ const Calendar = () => {
       eventTime: selectedEvent.time,
       color: selectedEvent.color,
     };
+
+    const now = new Date();
+  
+    if (new Date(selectedEvent.date) <= now) {
+      alert('Дата и время события должны быть в будущем');
+      return;
+    }
   
     try {
       await dispatch(updateEvent({ eventId: selectedEvent.id, eventData })).unwrap();

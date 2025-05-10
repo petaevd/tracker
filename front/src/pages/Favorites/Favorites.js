@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FaBookmark, FaTrash } from 'react-icons/fa';
 import { useSelector } from 'react-redux';
 import './Favorites.css';
+import { useTranslation } from 'react-i18next';
 
 const Favorites = () => {
 
@@ -58,6 +59,18 @@ const Favorites = () => {
   const filteredFavorites = favoriteTasks.filter(item => {
     return filter === 'all' || item.priority === filter;
   });
+
+
+  
+  // ================ Перевод ================
+  const { t, i18n } = useTranslation();
+  useEffect(() => {
+    const savedLanguage = localStorage.getItem('language');
+    if (savedLanguage && savedLanguage !== i18n.language) {
+      i18n.changeLanguage(savedLanguage);
+    }
+  }, [i18n]);
+  // ================ Перевод ================
 
   return (
     <div className="dashboard-container">

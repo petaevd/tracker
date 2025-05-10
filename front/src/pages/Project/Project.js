@@ -11,6 +11,8 @@ import { FaWhmcs, FaStar, FaRegStar, FaTimes, FaHeart } from "react-icons/fa";
 import { fetchProjects } from '../../api/projectApi';
 import { updateExistingEvent } from '../../store/slices/eventSlice';
 import { fetchTeams } from '../../api/teamApi';
+import { useTranslation } from 'react-i18next';
+import SearchField from '../../components/Members/SearchField';
 
 const debounce = (func, wait) => {
   let timeout;
@@ -21,12 +23,21 @@ const debounce = (func, wait) => {
 };
 
 const Project = () => {
+
+  // ================ Перевод ================
+  const { t, i18n } = useTranslation();
+  useEffect(() => {
+    const savedLanguage = localStorage.getItem('language');
+    if (savedLanguage && savedLanguage !== i18n.language) {
+      i18n.changeLanguage(savedLanguage);
+    }
+  }, [i18n]);
+  // ================ Перевод ================
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { projects, loading: projectLoading, error: projectError } = useSelector((state) => state.projects);
   const { teams, searchResults, loading: teamLoading, error: teamError } = useSelector((state) => state.teams);
   const user = useSelector((state) => state.auth.user);
-  const [modalType, setModalType] = useState(null);
 
   // useState для форм
   const [showProjectModal, setShowProjectModal] = useState(false);
@@ -251,8 +262,8 @@ const Project = () => {
           </button>
         </div>
 
-        {projectError && <div className="error-message">{projectError}</div>}
-        {teamError && <div className="error-message">{teamError}</div>}
+        {/* {projectError && <div className="error-message">{projectError}</div>} */}
+        {/* {teamError && <div className="error-message">{teamError}</div>} */}
 
         <div className="action-buttons">
           {user.role !== 'employee' && (
@@ -334,7 +345,7 @@ const Project = () => {
                 {activeProjects.map((project) => (
                   <div key={project.id} className="project-card">
                     <div className="project-card-header">
-                      <h3 onClick=''>{project.name}</h3>
+                      <h3>{project.name}</h3>
                       {user.role !== 'employee' && (
                         <div className="project-actions">
                           <button
@@ -562,6 +573,8 @@ const [formProject, setFormProject] = useState({
                 onChange={(e) => setFormTeam({ ...formTeam, description: e.target.value })}
               />
             </div>
+
+            <SearchField teamID={formTeam.id}></SearchField>
 
             <div className="form-actions">
               <button

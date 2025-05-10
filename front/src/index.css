@@ -3,3 +3,31 @@
 body {
   font-family: 'Inter', sans-serif;
 }
+
+:root {
+  --accent-color: #9A48EA;
+  --font-size: 16px;
+  --bg-color: #000000;
+  --text-color: #ffffff;
+  --secondary-text: rgba(255, 255, 255, 0.7);
+  --card-bg: rgba(255, 255, 255, 0.05);
+  --border-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme='dark'] {
+  --bg-color: #121212;
+  --text-color: #ffffff;
+  --accent-color: #bb86fc;
+  --secondary-text: rgba(255, 255, 255, 0.7);
+  --card-bg: rgba(255, 255, 255, 0.05);
+  --border-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme='raspberry'] {
+  --bg-color: #ffe6f0;
+  --text-color: #490028;
+  --accent-color: #e91e63;
+  --secondary-text: rgba(73, 0, 40, 0.7);
+  --card-bg: rgba(255, 0, 125, 0.05);
+  --border-color: rgba(255, 0, 125, 0.1);
+}

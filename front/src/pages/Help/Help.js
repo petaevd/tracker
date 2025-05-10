@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { motion, useAnimation } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
 import './Help.css';
+import { useTranslation } from 'react-i18next';
 
 // Анимации для заголовка
 const titleVariants = {
@@ -107,6 +108,17 @@ const AnimatedSection = ({ children, delay = 0 }) => {
 };
 
 const Help = () => {
+
+
+  // ================ Перевод ================
+  const { t, i18n } = useTranslation();
+  useEffect(() => {
+    const savedLanguage = localStorage.getItem('language');
+    if (savedLanguage && savedLanguage !== i18n.language) {
+      i18n.changeLanguage(savedLanguage);
+    }
+  }, [i18n]);
+  // ================ Перевод ================
   const user = useSelector((state) => state.auth.user);
   
   return (

@@ -7,12 +7,37 @@ import { getUserById, updateUser, uploadAvatar, changePassword } from '../../api
 import { getAvatarLetter } from '../../utils';
 import './Settings.css';
 import useAssetUrl from '../../hooks/useAssetUrl';
+import { useTranslation } from 'react-i18next';
 
 const Settings = () => {
   const getAssetUrl = useAssetUrl();
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { user, token } = useSelector((state) => state.auth);
+
+  // ================ Перевод ================
+  const { i18n } = useTranslation();
+  const handleLanguageChange = (event) => {
+    const selectedLanguage = event.target.value;
+    i18n.changeLanguage(selectedLanguage);
+    localStorage.setItem('language', selectedLanguage);
+  };
+  useEffect(() => {
+    const savedLanguage = localStorage.getItem('language');
+    if (savedLanguage && savedLanguage !== i18n.language) {
+      i18n.changeLanguage(savedLanguage);
+    }
+  }, [i18n]);
+  // ================ Перевод ================
+
+  // ================ Темы ================
+  const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
+  function changeTheme(themeName) {
+    document.documentElement.setAttribute('data-theme', themeName);
+    localStorage.setItem('theme', themeName);
+    setTheme(themeName);
+  }
+  // ================ Темы ================
 
   const [activeTab, setActiveTab] = useState('profile');
   const [settings, setSettings] = useState({
@@ -577,8 +602,8 @@ const Settings = () => {
                   <h3>Цветовая тема</h3>
                   <div className="theme-options">
                     <div
-                      className={`theme-option ${settings.darkMode ? 'active' : ''}`}
-                      onClick={() => handleSettingChange('darkMode', true)}
+                      className={`theme-option ${theme == 'dark' ? 'active' : ''}`}
+                      onClick={() => {changeTheme('dark')}}
                     >
                       <div className="theme-preview dark-theme">
                         <FaPalette />
@@ -586,13 +611,22 @@ const Settings = () => {
                       <span>Тёмная</span>
                     </div>
                     <div
-                      className={`theme-option ${!settings.darkMode ? 'active' : ''}`}
-                      onClick={() => handleSettingChange('darkMode', false)}
+                      className={`theme-option ${theme == 'light' ? 'active' : ''}`}
+                      onClick={() => {changeTheme('light')}}
                     >
                       <div className="theme-preview light-theme">
                         <FaPalette />
                       </div>
                       <span>Светлая</span>
+                    </div>
+                    <div
+                      className={`theme-option ${theme == 'raspberry' ? 'active' : ''}`}
+                      onClick={() => {changeTheme('raspberry')}}
+                    >
+                      <div className="theme-preview raspberry-theme">
+                        <FaPalette />
+                      </div>
+                      <span>Красная</span>
                     </div>
                   </div>
                 </div>
@@ -625,8 +659,8 @@ const Settings = () => {
                 <div className="form-group">
                   <label>Язык интерфейса</label>
                   <select
-                    value={settings.language}
-                    onChange={(e) => handleSettingChange('language', e.target.value)}
+                    value={i18n.language}
+                    onChange={handleLanguageChange} defaultValue={i18n.language}
                     className="settings-select"
                     disabled={isLoading}
                   >

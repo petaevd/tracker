@@ -42,6 +42,7 @@ export const addMember = createAsyncThunk('teams/addMember', async ({ teamId, us
     await addTeamMember(teamId, user.id);
     return { teamId, user };
   } catch (error) {
+    console.log(error)
     return rejectWithValue(error.response?.data?.message || 'Не удалось добавить участника');
   }
 });

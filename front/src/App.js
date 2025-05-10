@@ -15,11 +15,23 @@ import Register from './pages/Register';
 import TaskListPage from './components/TaskList/TaskList';
 import ProtectedRoute from './components/shared/ProtectedRoute';
 import Layout from './components/Layout/Layout';
+import './index.css';
 
 const App = () => {
   const dispatch = useDispatch();
   const { isAuthenticated } = useSelector((state) => state.auth);
   const [isLoading, setIsLoading] = useState(true);
+
+  // ================ Темы ================
+  function setTheme(themeName) {
+    document.documentElement.setAttribute('data-theme', themeName);
+    localStorage.setItem('theme', themeName);
+  }
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    setTheme(savedTheme);
+  }, []);
+  // ================ Темы ================
 
   useEffect(() => {
     const checkAuth = () => {
@@ -97,7 +109,7 @@ const App = () => {
             </ProtectedRoute>
           }
         />
-        <Route
+        {/* <Route
           path="/project/:projectId/dashboard"
           element={
             <ProtectedRoute>
@@ -106,7 +118,7 @@ const App = () => {
               </Layout>
             </ProtectedRoute>
           }
-        />
+        /> */}
         <Route
           path="/favorites"
           element={
