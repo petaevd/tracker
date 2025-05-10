@@ -360,25 +360,37 @@ const Calendar = () => {
             
             <div className="calendar-actions">
               <div className="month-view-dropdown">
-                <button 
-                  className="calendar-view-button"
-                  onClick={() => setShowMonthDropdown(!showMonthDropdown)}
-                >
-                  Выбрать месяц<FaCaretDown />
-                </button>
-                {showMonthDropdown && (
-                  <div className="month-dropdown-menu">
-                    {monthNames.map((month, index) => (
-                      <div 
-                        key={month}
-                        className={`month-dropdown-item ${currentDate.getMonth() === index ? 'selected' : ''}`}
-                        onClick={() => changeMonth(index)}
-                      >
-                        {month}
-                      </div>
-                    ))}
-                  </div>
-                )}
+                {/* Кнопка выбора месяца */}
+                  <button 
+                    className="calendar-view-button"
+                    onClick={() => setShowMonthDropdown(!showMonthDropdown)}
+                    aria-haspopup="true"
+                    aria-expanded={showMonthDropdown}
+                    aria-label="Выбрать месяц"
+                  >
+                    Выбрать месяц<FaCaretDown />
+                  </button>
+                  {/* Выпадающий список месяцев */}
+                  {showMonthDropdown && (
+                    <div 
+                      className="month-dropdown-menu"
+                      role="menu"
+                      aria-labelledby="month-dropdown-button"
+                    >
+                      {monthNames.map((month, index) => (
+                        <div 
+                          key={month}
+                          role="menuitem"
+                          tabIndex="0"
+                          className={`month-dropdown-item ${currentDate.getMonth() === index ? 'selected' : ''}`}
+                          onClick={() => changeMonth(index)}
+                          onKeyDown={(e) => e.key === 'Enter' && changeMonth(index)}
+                        >
+                          {month}
+                        </div>
+                      ))}
+                    </div>
+                  )}
               </div>
               
               <button 

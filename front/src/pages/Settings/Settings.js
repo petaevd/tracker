@@ -417,26 +417,30 @@ const Settings = () => {
               </div>
 
                 <div className="form-group">
-                  <label>Имя пользователя</label>
-                  <input
-                    type="text"
-                    value={profileData.name}
-                    onChange={(e) => setProfileData({ ...profileData, name: e.target.value })}
-                    className="settings-input"
-                    disabled={isLoading}
-                  />
-                </div>
+                <label htmlFor="username">Имя пользователя</label>
+                <input
+                  id="username"
+                  type="text"
+                  value={profileData.name}
+                  onChange={(e) => setProfileData({ ...profileData, name: e.target.value })}
+                  className="settings-input"
+                  disabled={isLoading}
+                  aria-required="true"
+                />
+              </div>
 
                 <div className="form-group">
-                  <label>Email</label>
-                  <input
-                    type="email"
-                    value={profileData.email}
-                    onChange={(e) => setProfileData({ ...profileData, email: e.target.value })}
-                    className="settings-input"
-                    disabled={isLoading}
-                  />
-                </div>
+                <label htmlFor="email">Email:</label>
+                <input
+                  id="email"
+                  type="email"
+                  value={profileData.email}
+                  onChange={(e) => setProfileData({ ...profileData, email: e.target.value })}
+                  className="settings-input"
+                  disabled={isLoading}
+                  aria-required="true"
+                />
+              </div>
 
                 <button className="save-button" onClick={updateProfile} disabled={isLoading}>
                   {isLoading ? 'Сохранение...' : 'Сохранить изменения'}
@@ -450,9 +454,10 @@ const Settings = () => {
                 <div className="security-item">
                   <h3>Смена пароля</h3>
                   <div className="form-group">
-                    <label>Текущий пароль</label>
+                    <label htmlFor="currentPassword">Текущий пароль</label>
                     <div className="password-input">
                       <input
+                        id="currentPassword"
                         type={showPassword.current ? 'text' : 'password'}
                         value={passwordData.currentPassword}
                         onChange={(e) =>
@@ -460,6 +465,7 @@ const Settings = () => {
                         }
                         className="settings-input"
                         disabled={isLoading}
+                        aria-required="true"
                       />
                       <button
                         className="password-toggle"
@@ -657,13 +663,16 @@ const Settings = () => {
               <div className="settings-section">
                 <h2 className="section-title">Язык и регион</h2>
                 <div className="form-group">
-                  <label>Язык интерфейса</label>
-                  <select
-                    value={i18n.language}
-                    onChange={handleLanguageChange} defaultValue={i18n.language}
-                    className="settings-select"
-                    disabled={isLoading}
-                  >
+                      <label htmlFor="language-select">Язык интерфейса</label>
+                      <select
+                        id="language-select"
+                        value={i18n.language}
+                        onChange={handleLanguageChange}
+                        defaultValue={i18n.language}
+                        className="settings-select"
+                        disabled={isLoading}
+                        aria-required="true"
+                      >
                     <option value="ru">Русский</option>
                     <option value="en">English</option>
                   </select>
