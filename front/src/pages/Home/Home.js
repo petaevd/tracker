@@ -547,7 +547,7 @@ const getEventsForDay = (day, month, year) => {
   <div className="tasks-list">
     {filterTasks(tasks)
       .slice((currentPage - 1) * 2, currentPage * 2) // Показываем по 2 задачи
-      .map(task => (
+      .map(task => task && (
         
         <div key={task.id} className={`task-item ${task.status === 'closed' ? 'completed' : ''}`}>
           <div className="task-content">
