@@ -279,7 +279,7 @@ const Calendar = () => {
       
       try {
         const eventDate = new Date(event.event_date);
-        if (isNaN(eventDate.getTime())) return false;
+        if (isNaN(eventDate)) return false;
         
         return (
           eventDate.getDate() === day.day && 
