@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { getProjects } from '../../store/slices/projectSlice';
-import { logout } from '../../store/slices/authSlice';
 import ProjectInfo from '../../components/ProjectInfo/ProjectInfo';
 import TaskList from '../../components//TaskList/TaskList';
 import TeamMembers from '../../components/TeamMembers/TeamMembers';

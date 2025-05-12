@@ -1,4 +1,4 @@
-import React from 'react';
+
 import './ProjectInfo.css';
 
 const ProjectInfo = ({ project, teamMembers }) => {

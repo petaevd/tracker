@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { FaBookmark, FaTrash } from 'react-icons/fa';
-import { useSelector } from 'react-redux';
 import './Favorites.css';
 import { useTranslation } from 'react-i18next';
 
