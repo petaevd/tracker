@@ -8,7 +8,7 @@ import { getEvents } from '../../store/slices/eventSlice';
 import { getTasks, removeTask, updateExistingTask, addTask } from '../../store/slices/taskSlice';
 import { getProjects } from '../../store/slices/projectSlice';
 import { toast, ToastContainer } from 'react-toastify';
-import { Gantt, Task, ViewMode } from '../../libs/gantt-task-react';
+// import { Gantt, Task, ViewMode } from '../../libs/gantt-task-react';
 import './Home.css';
 import './gant.css';
 import { useTranslation } from 'react-i18next';
@@ -29,8 +29,8 @@ const Home = () => {
   }, [i18n]);
   // ================ Перевод ================
   // ================ Задачи ================
-  const { tasks, loadingTask, errorTask } = useSelector((state) => state.tasks);
-  const { projects, loadingProjects, errorProjects } = useSelector(state => state.projects)
+  const { tasks = [], loadingTask, errorTask } = useSelector((state) => state.tasks);
+  const { projects = [], loadingProjects, errorProjects } = useSelector(state => state.projects)
   const [filterTask, setFilterTask] = useState('all');
 
   const filterTasks = (tasks) => {
@@ -321,7 +321,7 @@ const Home = () => {
   //   { id: 4, text: 'Share component access with Rohan', completed: false },
   // ]);
 
-  const [view, setView] = useState(ViewMode.Day);
+  // const [view, setView] = useState(ViewMode.Day);
   // Данные для диаграммы прогресса
   const projectProgressData = {
     completed: 40,
@@ -343,6 +343,7 @@ const getEventsForDay = (day, month, year) => {
     
     try {
       const eventDate = new Date(event.event_date);
+      console.log('Sad: ' + eventDate)
       if (isNaN(eventDate.getTime())) return false;
       
       // Compare dates without time components
@@ -684,14 +685,14 @@ const getEventsForDay = (day, month, year) => {
           </div>
         </div>
 
-        <div>
+        {/* <div>
           <h2 className='mb-5'>Диаграмма Ганта</h2>
           {ganttTasks.length === 0 ? (
             <p>Задачи загружаются...</p>
           ) : (
             <Gantt tasks={ganttTasks} viewMode={ViewMode.Day} listCellWidth='' />
           )}
-        </div>
+        </div> */}
 
         {/* Вторая строка карточек
         <div className="cards-row">
