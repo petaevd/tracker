@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { login } from '../store/slices/authSlice';
 import { registerUser, loginUser } from '../api/authApi';
+import { toast } from 'react-toastify';
 import './auth.css';
 import { useTranslation } from 'react-i18next';
 
@@ -45,18 +46,18 @@ const Register = () => {
       await registerUser(formData);
       setSuccessMessage('Регистрация прошла успешно!');
   
-      const loginResponse = await loginUser({
-        email: formData.email,
-        password: formData.password,
-      });
+      // const loginResponse = await loginUser({
+      //   email: formData.email,
+      //   password: formData.password,
+      // });
   
-      dispatch(login({
-        userId: loginResponse.userId,
-        token: loginResponse.token,
-        email: formData.email,
-        username: formData.username,
-        role: formData.role,
-      }));
+      // dispatch(login({
+      //   userId: loginResponse.userId,
+      //   token: loginResponse.token,
+      //   email: formData.email,
+      //   username: formData.username,
+      //   role: formData.role,
+      // }));
       navigate('/');
     } catch (error) {
       console.error('Ошибка регистрации:', error);
