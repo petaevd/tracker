@@ -7,7 +7,11 @@ export default function SearchField ({ teamID }) {
 
     const dispatch = useDispatch()
     const searchResults = useSelector(state => state.teams.searchResults)
-    const currentMembers = useSelector(state => state.teams.teams.find(team => team.id === teamID).members)
+    const currentTeam = useSelector(state =>
+        state.teams.teams.find(team => team.id === teamID)
+      );
+      
+    const currentMembers = currentTeam?.members || [];
     const filteredSearchResults = searchResults.filter(user => 
         !currentMembers.some(member => member.id === user.id)
     );
