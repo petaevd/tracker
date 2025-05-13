@@ -8,7 +8,7 @@ import { getEvents } from '../../store/slices/eventSlice';
 import { getTasks, updateExistingTask, addTask } from '../../store/slices/taskSlice';
 import { getProjects } from '../../store/slices/projectSlice';
 import { toast, ToastContainer } from 'react-toastify';
-// import { Gantt, Task, ViewMode } from '../../libs/gantt-task-react';
+import { Gantt, Task, ViewMode } from 'gantt-task-react';
 import './Home.css';
 import './gant.css';
 import { useTranslation } from 'react-i18next';
@@ -181,7 +181,6 @@ const Home = () => {
           .filter(tag => tag.length > 0)
       )
     );
-    console.log(array.join(', '))
     return array
   };
   
@@ -280,18 +279,35 @@ const Home = () => {
     'low': '#33FF57',
   }
 
+  const isValidDate = (date) => {
+    const d = new Date(date);
+    return d instanceof Date && !isNaN(d.getTime());
+  };
+  
   const ganttTasks = tasks
-  .filter(task => task && task.id && task.title && task.createdAt && task.due_date)
-  .map(task => ({
-    id: task.id.toString(),
-    name: task.title,
-    start: new Date(task.createdAt),
-    end: new Date(task.due_date),
-    type: 'task',
-    className: `task-${task.priority}`,
-    progress: 100,
-    isDisabled: false,
-  }));
+    .filter(task => {
+      const valid = task &&
+        task.id &&
+        task.title &&
+        isValidDate(task.createdAt) &&
+        isValidDate(task.due_date);
+      
+      if (!valid) {
+        console.warn('❌ Invalid task skipped:', task);
+      }
+      return valid;
+    })
+    .map(task => ({
+      id: task.id.toString(),
+      name: task.title,
+      start: new Date(task.createdAt),
+      end: new Date(task.due_date),
+      type: 'task',
+      className: `task-${task.priority}`,
+      progress: 100,
+      isDisabled: false,
+    }));
+  
 
 
   // ================ Задачи ================
@@ -343,7 +359,6 @@ const getEventsForDay = (day, month, year) => {
     
     try {
       const eventDate = new Date(event.event_date);
-      console.log('Sad: ' + eventDate)
       if (isNaN(eventDate.getTime())) return false;
       
       // Compare dates without time components
@@ -685,14 +700,14 @@ const getEventsForDay = (day, month, year) => {
           </div>
         </div>
 
-        {/* <div>
+        <div>
           <h2 className='mb-5'>Диаграмма Ганта</h2>
           {ganttTasks.length === 0 ? (
             <p>Задачи загружаются...</p>
           ) : (
             <Gantt tasks={ganttTasks} viewMode={ViewMode.Day} listCellWidth='' />
           )}
-        </div> */}
+        </div>
 
         {/* Вторая строка карточек
         <div className="cards-row">
