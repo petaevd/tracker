@@ -198,10 +198,7 @@ const Home = () => {
   };
 
   const handleTaskStatusChange = async (taskId, currentStatus, projectId) => {
-    console.log('Current status:', currentStatus);
-    console.log('Current status:', taskId);
     const newStatus = currentStatus === 'closed' ? 'open' : 'closed';
-    console.log('New status:', newStatus);
     try {
       await dispatch(updateExistingTask({ 
         taskId: taskId, 
