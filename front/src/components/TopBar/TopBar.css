@@ -6,7 +6,6 @@
   padding-left: 90px; /* Учитываем ширину Navbar */
   background-color: #000000; /* Синхронизировал с --bg-color */
   border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-  height: 50px;
   position: fixed;
   top: 0;
   width: 100%;
@@ -47,6 +46,7 @@
   width: 40px;
   height: 40px;
   border-radius: 50%;
+  overflow: hidden;
   background-color: #9A48EA; /* --accent-color */
   display: flex;
   align-items: center;

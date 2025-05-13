@@ -15,7 +15,7 @@ export const addTask = createAsyncThunk('tasks/createTask', async (taskData, { r
     const response = await createTask(taskData);
     return response.task;
   } catch (error) {
-    return rejectWithValue(error.response?.data?.message || 'Failed to create task');
+    return rejectWithValue(error.response?.data?.errors || 'Failed to create task');
   }
 });
 
@@ -24,7 +24,7 @@ export const updateExistingTask = createAsyncThunk('tasks/updateTask', async ({ 
     const response = await updateTask(taskId, taskData);
     return response.task;
   } catch (error) {
-    return rejectWithValue(error.response?.data?.message || 'Failed to update task');
+    return rejectWithValue(error.response?.data?.errors || 'Failed to update task');
   }
 });
 

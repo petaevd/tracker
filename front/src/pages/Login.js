@@ -1,15 +1,26 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { login } from '../store/slices/authSlice';
 import { loginUser } from '../api/authApi';
 import './auth.css';
+import { useTranslation } from 'react-i18next';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+
+  // ================ Перевод ================
+  const { t, i18n } = useTranslation();
+  useEffect(() => {
+    const savedLanguage = localStorage.getItem('language');
+    if (savedLanguage && savedLanguage !== i18n.language) {
+      i18n.changeLanguage(savedLanguage);
+    }
+  }, [i18n]);
+  // ================ Перевод ================
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -51,8 +62,7 @@ const Login = () => {
           <div className="error-message">
             <p>{errorMessage}</p>
             <p className="error-hint">
-              Проверьте правильность email и пароля. Если проблема сохраняется,
-              <Link to="/contact"> обратитесь в поддержку</Link>.
+              Проверьте правильность email и пароля
             </p>
           </div>
         )}
@@ -94,7 +104,6 @@ const Login = () => {
 
         <div className="auth-links">
           <Link to="/register">Создать аккаунт</Link>
-          <Link to="/forgot-password">Забыли пароль?</Link>
         </div>
       </div>
     </div>
