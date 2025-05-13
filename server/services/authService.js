@@ -3,7 +3,7 @@ import User from '../models/User.js';
 import { hashPassword, comparePassword } from '../utils/hash.js';
 import { generateToken } from '../utils/jwt.js';
 
-const register = async ({ username, email, password, role }) => {
+const register = async ({ username, email, password, role,  }) => {
   const existingUser = await User.findOne({
     where: { [Op.or]: [{ username }, { email }] },
   });
@@ -22,7 +22,7 @@ const register = async ({ username, email, password, role }) => {
   const token = generateToken({ userId: user.id, role: user.role });
 
   return {
-    user: { id: user.id, username: user.username, email: user.email, role: user.role },
+    user: { id: user.id, username: user.username, email: user.email, role: user.role, email_confirmed: false },
     token,
   };
 };
@@ -34,6 +34,12 @@ const login = async ({ email, password }) => {
     err.status = 401;
     throw err;
   }
+
+  // if (!user.email_confirmed) {
+  //   const err = new Error('Email не подтвержден');
+  //   err.status = 401;
+  //   throw err;
+  // }
 
   const isPasswordValid = await comparePassword(password, user.password_hash);
   if (!isPasswordValid) {

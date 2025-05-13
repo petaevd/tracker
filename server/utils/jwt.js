@@ -1,9 +1,11 @@
 import jwt from 'jsonwebtoken';
 
+// Генерация общего JWT-токена
 const generateToken = (payload) => {
   return jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1d' });
 };
 
+// Проверка общего токена
 const verifyToken = (token) => {
   try {
     return jwt.verify(token, process.env.JWT_SECRET);
@@ -14,4 +16,19 @@ const verifyToken = (token) => {
   }
 };
 
-export { generateToken, verifyToken };
+// Генерация токена для подтверждения email
+const generateEmailToken = (email) => {
+  return jwt.sign({ email }, process.env.EMAIL_SECRET, { expiresIn: '15m' });
+};
+
+// Проверка токена подтверждения email
+const verifyEmailToken = (token) => {
+  return jwt.verify(token, process.env.EMAIL_SECRET);
+};
+
+export {
+  generateToken,
+  verifyToken,
+  generateEmailToken,
+  verifyEmailToken
+};
