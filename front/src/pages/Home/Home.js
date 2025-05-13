@@ -805,9 +805,9 @@ const getEventsForDay = (day, month, year) => {
                   value={formTask.tags}
                   onChange={(e) => setFormTask({ ...formTask, tags: e.target.value })}
                 />
-                <small className="form-text text-muted">
+                {/* <small className="form-text text-muted">
                   Введите теги через запятую, например: дизайн, фронтенд, срочно
-                </small>
+                </small> */}
               </div>
 
               {formTask.id && (
