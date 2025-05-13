@@ -310,15 +310,17 @@ const Home = () => {
   // ================ Задачи ================
 
   // Получаем события только для текущего пользователя
-  const events = useMemo(() => {
-    return user?.id ? eventsByUser[user.id] || [] : [];
-  }, [user?.id, eventsByUser]);
+  const userId = user?.id;
 
+  const events = useMemo(() => {
+    return userId ? eventsByUser[userId] || [] : [];
+  }, [userId, eventsByUser]);
+  
   useEffect(() => {
-    if (user?.id) {
-      dispatch(getEvents(user.id));
+    if (userId && !eventsByUser[userId]) {
+      dispatch(getEvents(userId));
     }
-  }, [dispatch, user]);
+  }, [dispatch, userId, eventsByUser, loading]);
 
   // Состояния календаря
   const [currentDate, setCurrentDate] = useState(new Date());
