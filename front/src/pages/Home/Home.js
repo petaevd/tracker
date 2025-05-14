@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { FiClock, FiPlus } from 'react-icons/fi';
 import { FaChevronDown } from 'react-icons/fa';
 import { FaWhmcs, FaStar, FaRegStar, FaTimes } from "react-icons/fa";
@@ -316,8 +316,15 @@ const Home = () => {
     return userId ? eventsByUser[userId] || [] : [];
   }, [userId, eventsByUser]);
   
+  const isMounted = useRef(false);
+
   useEffect(() => {
-    if (userId && !eventsByUser[userId]) {
+    isMounted.current = true;
+    return () => { isMounted.current = false; };
+  }, []);
+
+  useEffect(() => {
+    if (isMounted.current && userId && !eventsByUser[userId] && !loading) {
       dispatch(getEvents(userId));
     }
   }, [dispatch, userId, eventsByUser, loading]);
@@ -345,9 +352,33 @@ const Home = () => {
   };
 
   // Константы календаря
-  const monthNames = ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь",
-    "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"];
-  const days = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
+
+  const getTranslatedMonths = () => [
+    t('calendar_january'),
+    t('calendar_february'),
+    t('calendar_march'),
+    t('calendar_april'),
+    t('calendar_may'),
+    t('calendar_june'),
+    t('calendar_july'),
+    t('calendar_august'),
+    t('calendar_september'),
+    t('calendar_october'),
+    t('calendar_november'),
+    t('calendar_december')
+  ];
+  
+  const getTranslatedDays = () => [
+    t('calendar_monday'),
+    t('calendar_tuesday'),
+    t('calendar_wednesday'),
+    t('calendar_thursday'),
+    t('calendar_friday'),
+    t('calendar_saturday'),
+    t('calendar_sunday')
+  ];
+  const monthNames = getTranslatedMonths();
+  const days = getTranslatedDays();
 
 // In Home.js, update the getEventsForDay function:
 const getEventsForDay = (day, month, year) => {
@@ -433,7 +464,6 @@ const getEventsForDay = (day, month, year) => {
   const dates = generateCalendar();
 
   return (
-    
     <div className="home-container">
       <div>
         <ToastContainer />
@@ -443,17 +473,16 @@ const getEventsForDay = (day, month, year) => {
         <h1 className="dashboard-title">{t('project_view_panel')}</h1>
         
         {error && <div className="error-message">{error}</div>}
-        {loading && <div className="loading-message">Загрузка событий...</div>}
+        {loading && <div className="loading-message">{t('loading_events')}</div>}
         
-        {/* Первая строка карточек */}
+        {/* First row of cards */}
         <div className="cards-row">
-          {/* Плашка "Прогресс проекта" */}
+          {/* Progress card */}
           <div className="dashboard-card progress-card" style={{ backgroundColor: "rgba(255, 255, 255, 0.1)" }}>
             <div className="progress-header">
-              <h3 className="card-title">Прогресс проекта</h3>
-              {/* <button className="manage-btn">Управлять</button> */}
+              <h3 className="card-title">{t('progress_card_title')}</h3>
             </div>
-
+  
             <div className="circular-progress-wrapper">
               <div className="circular-progress">
                 <svg viewBox="0 0 100 100">
@@ -493,57 +522,57 @@ const getEventsForDay = (day, month, year) => {
                 </svg>
                 <div className="progress-percent">{percent}%</div>
               </div>
-
+  
               <div className="progress-stats-row">
                 <div className="stat-item">
                   <div className="stat-color" style={{backgroundColor: '#59b25c'}}></div>
                   <div>
                     <div className="stat-value">{completedCount}</div>
-                    <div className="stat-label">Выполнено</div>
+                    <div className="stat-label">{t('progress_completed')}</div>
                   </div>
                 </div>
                 <div className="stat-item">
                   <div className="stat-color" style={{backgroundColor: '#9A48EA'}}></div>
                   <div>
                     <div className="stat-value">{inProgressCount}</div>
-                    <div className="stat-label">В работе</div>
+                    <div className="stat-label">{t('progress_in_work')}</div>
                   </div>
                 </div>
                 <div className="stat-item">
                   <div className="stat-color" style={{backgroundColor: '#db163a'}}></div>
                   <div>
                     <div className="stat-value">{notStartedCount}</div>
-                    <div className="stat-label">Не начато</div>
+                    <div className="stat-label">{t('progress_not_started')}</div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
           
-          {/* Плашка "Задания" */}
+          {/* Tasks card */}
           <div className="dashboard-card tasks-card" style={{ backgroundColor: "rgba(255, 255, 255, 0.1)" }}>
-  <div className="tasks-header">
-    <div className="tasks-header-content">
-      <h3 className="card-title">Задачи</h3>
-      <span className="tasks-count">{tasks.length}</span>
-    </div>
-  </div>
-
+            <div className="tasks-header">
+              <div className="tasks-header-content">
+                <h3 className="card-title">{t('tasks_card_title')}</h3>
+                <span className="tasks-count">{tasks.length}</span>
+              </div>
+            </div>
+  
             <select
               value={filterTask}
               onChange={(e) => setFilterTask(e.target.value)}
               className="filter-select"
             >
-              <option value="all">Все</option>
-              <option value="overdue">Просроченные</option>
-              <option value="upcoming">Ближайшие</option>
-              <option value="open">Открытые</option>
-              <option value="closed">Завершённые</option>
-              <option value="in_test">В тестировании</option>
-              <option value="in_development">В разработке</option>
-              <option value="low-priority">Малый приоритет</option>
-              <option value="medium-priority">Средний приоритет</option>
-              <option value="high-priority">Высокий приоритет</option>
+              <option value="all">{t('tasks_filter_all')}</option>
+              <option value="overdue">{t('tasks_filter_overdue')}</option>
+              <option value="upcoming">{t('tasks_filter_upcoming')}</option>
+              <option value="open">{t('tasks_filter_open')}</option>
+              <option value="closed">{t('tasks_filter_closed')}</option>
+              <option value="in_test">{t('tasks_filter_in_test')}</option>
+              <option value="in_development">{t('tasks_filter_in_development')}</option>
+              <option value="low-priority">{t('tasks_filter_low_priority')}</option>
+              <option value="medium-priority">{t('tasks_filter_medium_priority')}</option>
+              <option value="high-priority">{t('tasks_filter_high_priority')}</option>
             </select>
             
             <div className="add-task-container">
@@ -555,81 +584,82 @@ const getEventsForDay = (day, month, year) => {
                 }}
               >
                 <FiPlus className="plus-icon" />
-                <span className="add-task-text">Добавить задачу</span>
+                <span className="add-task-text">{t('tasks_add_button')}</span>
               </button>
             </div>
-
-  <div className="tasks-list">
-    {filterTasks(tasks)
-      .slice((currentPage - 1) * 2, currentPage * 2) // Показываем по 2 задачи
-      .map(task => task && (
-        
-        <div key={task.id} className={`task-item ${task.status === 'closed' ? 'completed' : ''}`}>
-          <div className="task-content">
-          <input
-              type="checkbox"
-              checked={task.status === 'closed'}
-              onChange={() => handleTaskStatusChange(task.id, task.status, task.project_id)}
-              className="task-checkbox"
-            />
-            <div className="task-text-container">
-              <div className="task-title">{task.title}</div>
-              {task.description && (
-                <div className="task-description">{task.description}</div>
-              )}
+  
+            <div className="tasks-list">
+              {filterTasks(tasks)
+                .slice((currentPage - 1) * 2, currentPage * 2)
+                .map(task => task && (
+                  <div key={task.id} className={`task-item ${task.status === 'closed' ? 'completed' : ''}`}>
+                    <div className="task-content">
+                      <input
+                        type="checkbox"
+                        checked={task.status === 'closed'}
+                        onChange={() => handleTaskStatusChange(task.id, task.status, task.project_id)}
+                        className="task-checkbox"
+                        data-testid={`status-checkbox-${task.id}`}
+                      />
+                      <div className="task-text-container">
+                        <div className="task-title">{task.title}</div>
+                        {task.description && (
+                          <div className="task-description">{task.description}</div>
+                        )}
+                      </div>
+                    </div>
+                    <div className="task-actions">
+                      {favoriteTasks.some(fav => fav.id === task.id) ? (
+                        <FaStar
+                          className="task-action-icon"
+                          onClick={() => handleToggleFavorite(task)}
+                          title={t('task_remove_favorite')}
+                        />
+                      ) : (
+                        <FaRegStar
+                          className="task-action-icon"
+                          onClick={() => handleToggleFavorite(task)}
+                          title={t('task_add_favorite')}
+                        />
+                      )}
+                      <FaWhmcs
+                        className="task-action-icon"
+                        onClick={() => {
+                          setFormTask(task);
+                          setShowTaskModal(true);
+                        }}
+                        title={t('task_edit')}
+                      />
+                    </div>
+                  </div>
+                ))}
             </div>
-          </div>
-          <div className="task-actions">
-            {favoriteTasks.some(fav => fav.id === task.id) ? (
-              <FaStar
-                className="task-action-icon"
-                onClick={() => handleToggleFavorite(task)}
-                title="Убрать из избранного"
-              />
-            ) : (
-              <FaRegStar
-                className="task-action-icon"
-                onClick={() => handleToggleFavorite(task)}
-                title="Добавить в избранное"
-              />
+  
+            {filterTasks(tasks).length > 2 && (
+              <div className="pagination">
+                <button
+                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                  disabled={currentPage === 1}
+                  className="pagination-btn"
+                >
+                  &lt;
+                </button>
+                <span>{t('tasks_page')} {currentPage}</span>
+                <button
+                  onClick={() => setCurrentPage(prev => prev + 1)}
+                  className="pagination-btn"
+                >
+                  &gt;
+                </button>
+              </div>
             )}
-            <FaWhmcs
-              className="task-action-icon"
-              onClick={() => {
-                setFormTask(task);
-                setShowTaskModal(true);
-              }}
-              title="Редактировать задачу"
-            />
           </div>
-        </div>
-      ))}
-  </div>
-
-  {filterTasks(tasks).length > 2 && (
-  <div className="pagination">
-    <button
-      onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-      disabled={currentPage === 1}
-      className="pagination-btn"
-    >
-      &lt;
-    </button>
-    <span>Страница {currentPage}</span>
-    <button
-      onClick={() => setCurrentPage(prev => prev + 1)}
-      className="pagination-btn"
-    >
-      &gt;
-    </button>
-  </div>
-)}
-</div>
-          {/* Плашка "Календарь" */}
+          
+          {/* Calendar card */}
           <div className="dashboard-card calendar-card" style={{ backgroundColor: "rgba(255, 255, 255, 0.1)" }}>
             <div className="calendar-header">
               <div className="calendar-title-container">
-                <h3 className="card-title">Календарь</h3>
+                <h3 className="card-title">{t('calendar_card_title')}</h3>
                 <div className="month-selector">
                   <span 
                     className="current-month"
@@ -642,7 +672,7 @@ const getEventsForDay = (day, month, year) => {
                     <div className="month-dropdown-menu">
                       {monthNames.map((month, index) => (
                         <div 
-                          key={month}
+                          key={index}
                           className={`month-dropdown-item ${currentDate.getMonth() === index ? 'selected' : ''}`}
                           onClick={() => changeMonth(index)}
                         >
@@ -658,8 +688,8 @@ const getEventsForDay = (day, month, year) => {
             <div className="calendar-grid-mini">
               <div className="calendar-days-container">
                 <div className="calendar-week-days">
-                  {days.map(day => (
-                    <div key={day} className="calendar-day-label">{day}</div>
+                  {days.map((day, index) => (
+                    <div key={index} className="calendar-day-label">{day}</div>
                   ))}
                 </div>
                 <div className="calendar-days-grid">
@@ -698,36 +728,23 @@ const getEventsForDay = (day, month, year) => {
             </div>
           </div>
         </div>
-
+  
         <div>
-          <h2 className='mb-5'>Диаграмма Ганта</h2>
+          <h2 className='mb-5'>{t('gantt_chart_title')}</h2>
           {ganttTasks.length === 0 ? (
-            <p>Задачи загружаются...</p>
+            <p>{t('gantt_loading')}</p>
           ) : (
             <Gantt tasks={ganttTasks} viewMode={ViewMode.Day} listCellWidth='' />
           )}
         </div>
-
-        {/* Вторая строка карточек
-        <div className="cards-row">
-          <div className="dashboard-card" style={{ backgroundColor: "rgba(255, 255, 255, 0.1)" }}>
-            <h3 className="card-title">Прогресс заданий</h3>
-          </div>
-          <div className="dashboard-card" style={{ backgroundColor: "rgba(255, 255, 255, 0.1)" }}>
-            <h3 className="card-title">Временная шкала выполнения задачи</h3>
-          </div>
-          <div className="dashboard-card" style={{ backgroundColor: "rgba(255, 255, 255, 0.1)" }}>
-            <h3 className="card-title">Сегодняшняя встреча</h3>
-          </div>
-        </div> */}
       </div>
-
-      {/* Модальное окно для создания задач */}
+  
+      {/* Task modal */}
       {showTaskModal && (
         <div className="event-modal-overlay">
           <div className="event-modal">
             <div className="event-modal-header">
-              <h3>{formTask.id ? 'Редактирование задачи' : 'Создание новой задачи'}</h3>
+              <h3>{formTask.id ? t('task_modal_title_edit') : t('task_modal_title_create')}</h3>
               <button
                 className="close-modal"
                 onClick={() => {
@@ -738,10 +755,10 @@ const getEventsForDay = (day, month, year) => {
                 <FaTimes />
               </button>
             </div>
-
+  
             <div className="event-form">
               <div className="form-group">
-                <label>Название</label>
+                <label>{t('task_label_title')}</label>
                 <input
                   type="text"
                   className="form-control"
@@ -749,18 +766,18 @@ const getEventsForDay = (day, month, year) => {
                   onChange={(e) => setFormTask({ ...formTask, title: e.target.value })}
                 />
               </div>
-
+  
               <div className="form-group">
-                <label>Описание</label>
+                <label>{t('task_label_description')}</label>
                 <textarea
                   className="form-control"
                   value={formTask.description}
                   onChange={(e) => setFormTask({ ...formTask, description: e.target.value })}
                 />
               </div>
-
+  
               <div className="form-group">
-                <label>Срок выполнения</label>
+                <label>{t('task_label_due_date')}</label>
                 <input
                   type="date"
                   className="form-control"
@@ -768,28 +785,28 @@ const getEventsForDay = (day, month, year) => {
                   onChange={(e) => setFormTask({ ...formTask, due_date: e.target.value })}
                 />
               </div>
-
+  
               <div className="form-group">
-                <label>Приоритет</label>
+                <label>{t('task_label_priority')}</label>
                 <select
                   className="form-select"
                   value={formTask.priority}
                   onChange={(e) => setFormTask({ ...formTask, priority: e.target.value })}
                 >
-                  <option value="low">Низкий</option>
-                  <option value="medium">Средний</option>
-                  <option value="high">Высокий</option>
+                  <option value="low">{t('task_priority_low')}</option>
+                  <option value="medium">{t('task_priority_medium')}</option>
+                  <option value="high">{t('task_priority_high')}</option>
                 </select>
               </div>
-
+  
               <div className="form-group">
-                <label>Проект</label>
+                <label>{t('task_label_project')}</label>
                 <select
                   className="form-select"
                   value={formTask.project_id}
                   onChange={(e) => setFormTask({ ...formTask, project_id: e.target.value })}
                 >
-                  <option value="">Выберите проект</option>
+                  <option value="">{t('task_select_project')}</option>
                   {projects.map((project) => (
                     <option key={project.id} value={project.id}>
                       {project.name}
@@ -797,35 +814,32 @@ const getEventsForDay = (day, month, year) => {
                   ))}
                 </select>
               </div>
-
+  
               <div className="form-group">
-                <label>Теги</label>
+                <label>{t('task_label_tags')}</label>
                 <textarea
                   className="form-control"
                   value={formTask.tags}
                   onChange={(e) => setFormTask({ ...formTask, tags: e.target.value })}
                 />
-                {/* <small className="form-text text-muted">
-                  Введите теги через запятую, например: дизайн, фронтенд, срочно
-                </small> */}
               </div>
-
+  
               {formTask.id && (
                 <div className="form-group">
-                  <label>Статус</label>
+                  <label>{t('task_label_status')}</label>
                   <select
                     className="form-select"
                     value={formTask.status}
                     onChange={(e) => setFormTask({ ...formTask, status: e.target.value })}
                   >
-                    <option value="open">Открыта</option>
-                    <option value="in_development">В разработке</option>
-                    <option value="in_test">В тестировании</option>
-                    <option value="closed">Закрыта</option>
+                    <option value="open">{t('task_status_open')}</option>
+                    <option value="in_development">{t('task_status_in_development')}</option>
+                    <option value="in_test">{t('task_status_in_test')}</option>
+                    <option value="closed">{t('task_status_closed')}</option>
                   </select>
                 </div>
               )}
-
+  
               <div className="form-actions">
                 <button
                   className="save-event-button"
@@ -838,16 +852,15 @@ const getEventsForDay = (day, month, year) => {
                     !formTask.priority
                   }
                 >
-                  {formTask.id ? 'Сохранить изменения' : 'Создать задачу'}
+                  {formTask.id ? t('task_button_save') : t('task_button_create')}
                 </button>
               </div>
             </div>
           </div>
         </div>
       )}
-
-
-      {/* Тултип события */}
+  
+      {/* Event tooltip */}
       {hoveredDate?.events?.[0] && (
         <div 
           className="event-tooltip" 

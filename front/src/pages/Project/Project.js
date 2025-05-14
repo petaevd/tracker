@@ -222,16 +222,27 @@ const Project = () => {
     <div className="project-container">
       <div className="main-content">
         <div className="breadcrumb">
-          Домашняя / {activeTab === 'activeProjects' ? 'Проекты' : activeTab === 'teams' ? 'Команды' : 'Архив'}
+          {t('project_breadcrumb_home')} / {activeTab === 'activeProjects' 
+            ? t('project_breadcrumb_projects') 
+            : activeTab === 'teams' 
+              ? t('project_breadcrumb_teams') 
+              : t('project_breadcrumb_archive')}
         </div>
         
         <h1 className="project-title">
-          {activeTab === 'activeProjects' ? 'Проекты' : activeTab === 'teams' ? 'Команды' : 'Архив'}
+          {activeTab === 'activeProjects' 
+            ? t('project_title_projects') 
+            : activeTab === 'teams' 
+              ? t('project_title_teams') 
+              : t('project_title_archive')}
         </h1>
         
         <p className="project-subtitle">
-          {activeTab === 'activeProjects' ? 'Управление активными проектами' : 
-           activeTab === 'teams' ? 'Управление командами' : 'Архивные проекты'}
+          {activeTab === 'activeProjects' 
+            ? t('project_subtitle_projects') 
+            : activeTab === 'teams' 
+              ? t('project_subtitle_teams') 
+              : t('project_subtitle_archive')}
         </p>
 
         <div className="tabs-container">
@@ -240,26 +251,23 @@ const Project = () => {
             onClick={() => setActiveTab('activeProjects')}
           >
             <FaPlus style={{marginRight: '8px'}} />
-            Активные проекты
+            {t('project_tab_active')}
           </button>
           <button
             className={`tab-btn ${activeTab === 'teams' ? 'active' : ''}`}
             onClick={() => setActiveTab('teams')}
           >
             <FaUsers style={{marginRight: '8px'}} />
-            Команды
+            {t('project_tab_teams')}
           </button>
           <button
             className={`tab-btn ${activeTab === 'archive' ? 'active' : ''}`}
             onClick={() => setActiveTab('archive')}
           >
             <FaArchive style={{marginRight: '8px'}} />
-            Архив
+            {t('project_tab_archive')}
           </button>
         </div>
-
-        {/* {projectError && <div className="error-message">{projectError}</div>} */}
-        {/* {teamError && <div className="error-message">{teamError}</div>} */}
 
         <div className="action-buttons">
           {user.role !== 'employee' && (
@@ -270,7 +278,7 @@ const Project = () => {
                   onClick={() => setShowProjectModal(true)}
                   disabled={projectLoading || teamLoading}
                 >
-                  <FaPlus /> Создать проект
+                  <FaPlus /> {t('project_button_create_project')}
                 </button>
               )}
               {activeTab === 'teams' && (
@@ -279,18 +287,18 @@ const Project = () => {
                   onClick={() => setShowTeamModal(true)}
                   disabled={teamLoading}
                 >
-                  <FaUsers /> Создать команду
+                  <FaUsers /> {t('project_button_create_team')}
                 </button>
               )}
             </>
           )}
         </div>
 
-        {(projectLoading || teamLoading) && <div className="loading-message">Загрузка...</div>}
+        {(projectLoading || teamLoading) && <div className="loading-message">{t('project_loading')}</div>}
 
         {activeTab === 'teams' && (
           <div className="teams-section">
-            <h2 className="section-title">Доступные команды</h2>
+            <h2 className="section-title">{t('project_section_teams')}</h2>
             {filteredTeams.length > 0 ? (
               <div className="teams-grid">
                 {filteredTeams.map((team) => (
@@ -305,29 +313,31 @@ const Project = () => {
                               setFormTeam(team);
                               setShowTeamModal(true);
                             }}
+                            title={t('project_button_edit')}
                           >
                             <FaEdit />
                           </button>
                           <button
                             className="team-action-btn"
                             onClick={() => handleDeleteTeam(team.id)}
+                            title={t('project_button_delete')}
                           >
                             <FaTrash />
                           </button>
                         </div>
                       )}
                     </div>
-                    <p>{team.description || 'Описание отсутствует'}</p>
+                    <p>{team.description || t('project_no_description')}</p>
                     <div className="team-meta">
-                      <span>Создатель: {team.creator?.username || 'Не указан'}</span>
-                      <span>Участников: {team.members?.length || 0}</span>
+                      <span>{t('project_creator')}: {team.creator?.username || t('project_no_creator')}</span>
+                      <span>{t('project_members_count')}: {team.members?.length || 0}</span>
                     </div>
                   </div>
                 ))}
               </div>
             ) : (
               <div className="empty-state">
-                <p>Нет доступных команд. {user.role !== 'employee' ? 'Создайте свою первую команду!' : ''}</p>
+                <p>{t('project_empty_teams')}</p>
               </div>
             )}
           </div>
@@ -335,7 +345,7 @@ const Project = () => {
 
         {activeTab === 'activeProjects' && (
           <div className="projects-section">
-            <h2 className="section-title">Активные проекты</h2>
+            <h2 className="section-title">{t('project_section_active')}</h2>
             {activeProjects.length > 0 ? (
               <div className="projects-grid">
                 {activeProjects.map((project) => (
@@ -350,29 +360,31 @@ const Project = () => {
                               setFormProject(project);
                               setShowProjectModal(true);
                             }}
+                            title={t('project_button_edit')}
                           >
                             <FaEdit />
                           </button>
                           <button
                             className="project-action-btn"
                             onClick={() => handleDeleteProject(project.id)}
+                            title={t('project_button_delete')}
                           >
                             <FaTrash />
                           </button>
                         </div>
                       )}
                     </div>
-                    <p>{project.description || 'Описание отсутствует'}</p>
+                    <p>{project.description || t('project_no_description')}</p>
                     <div className="project-meta">
-                      <span>Команда: {project.team?.name || 'Не указана'}</span>
-                      <span>Статус: Активный</span>
+                      <span>{t('project_form_team')}: {project.team?.name || t('project_no_team')}</span>
+                      <span>{t('project_form_status')}: {t('project_status_active')}</span>
                     </div>
                   </div>
                 ))}
               </div>
             ) : (
               <div className="empty-state">
-                <p>Нет активных проектов. {user.role !== 'employee' ? 'Создайте новый проект!' : ''}</p>
+                <p>{t('project_empty_projects')}</p>
               </div>
             )}
           </div>
@@ -380,13 +392,13 @@ const Project = () => {
 
         {activeTab === 'archive' && (
           <div className="projects-section">
-            <h2 className="section-title">Архивные проекты</h2>
+            <h2 className="section-title">{t('project_section_archive')}</h2>
             {archivedProjects.length > 0 ? (
               <div className="projects-grid">
                 {archivedProjects.map((project) => (
                   <div key={project.id} className="project-card">
                     <div className="archive-banner">
-                      <FaArchive /> Архив
+                      <FaArchive /> {t('project_archive_banner')}
                     </div>
                     <div className="project-card-header">
                       <h3>{project.name}</h3>
@@ -398,194 +410,179 @@ const Project = () => {
                               setFormProject(project);
                               setShowProjectModal(true);
                             }}
+                            title={t('project_button_edit')}
                           >
                             <FaEdit />
                           </button>
                           <button
                             className="project-action-btn"
                             onClick={() => handleDeleteProject(project.id)}
+                            title={t('project_button_delete')}
                           >
                             <FaTrash />
                           </button>
                         </div>
                       )}
                     </div>
-                    <p>{project.description || 'Описание отсутствует'}</p>
+                    <p>{project.description || t('project_no_description')}</p>
                     <div className="project-meta">
-                      <span>Команда: {project.team?.name || 'Не указана'}</span>
-                      <span>Статус: Архивный</span>
+                      <span>{t('project_form_team')}: {project.team?.name || t('project_no_team')}</span>
+                      <span>{t('project_form_status')}: {t('project_status_archived')}</span>
                     </div>
                   </div>
                 ))}
               </div>
             ) : (
               <div className="empty-state">
-                <p>Нет архивных проектов</p>
+                <p>{t('project_empty_archive')}</p>
               </div>
             )}
           </div>
         )}
-{/* 
-const [formProject, setFormProject] = useState({
-    team_id: "",
-    status: "",
-    name: "",
-    description: "",
-    creator_id: user.id,
-    deadline: "",
-  }); */}
 
-      {showProjectModal && (
-        <div className="event-modal-overlay">
-          <div className="event-modal">
-            <div className="event-modal-header">
-              <h3>{formProject.id ? 'Редактирование проекта' : 'Создание нового проекта'}</h3>
-              <button
-                className="close-modal"
-                onClick={() => {
-                  setShowProjectModal(false);
-                  resetFormProject();
-                }}
-              >
-                <FaTimes />
-              </button>
-            </div>
+        {showProjectModal && (
+          <div className="event-modal-overlay">
+            <div className="event-modal">
+              <div className="event-modal-header">
+                <h3>{formProject.id ? t('project_modal_edit_project') : t('project_modal_new_project')}</h3>
+                <button
+                  className="close-modal"
+                  onClick={() => {
+                    setShowProjectModal(false);
+                    resetFormProject();
+                  }}
+                >
+                  <FaTimes />
+                </button>
+              </div>
 
-            <div className="form-group">
-              <label>Название</label>
-              <input
-                type="text"
-                className="form-control"
-                value={formProject.name}
-                onChange={(e) => setFormProject({ ...formProject, name: e.target.value })}
-              />
-            </div>
+              <div className="form-group">
+                <label>{t('project_form_name')}</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={formProject.name}
+                  onChange={(e) => setFormProject({ ...formProject, name: e.target.value })}
+                />
+              </div>
 
-            <div className="form-group">
-              <label>Описание</label>
-              <textarea
-                className="form-control"
-                value={formProject.description}
-                onChange={(e) => setFormProject({ ...formProject, description: e.target.value })}
-              />
-            </div>
+              <div className="form-group">
+                <label>{t('project_form_description')}</label>
+                <textarea
+                  className="form-control"
+                  value={formProject.description}
+                  onChange={(e) => setFormProject({ ...formProject, description: e.target.value })}
+                />
+              </div>
 
-            <div className="form-group">
-              <label>Проект</label>
-              <select
-                className="form-select"
-                value={formProject.team_id}
-                onChange={(e) => {
-                  setFormProject({ ...formProject , team_id: e.target.value});
-                  console.log(formProject);
-                }}
-              >
-                <option value="">Выберите команду</option>
-                {teams.map((team) => (
-                  <option key={team.id} value={team.id}>
-                    {team.name}
-                  </option>
-                ))}
-              </select>
-            </div>
+              <div className="form-group">
+                <label>{t('project_form_team')}</label>
+                <select
+                  className="form-select"
+                  value={formProject.team_id}
+                  onChange={(e) => {
+                    setFormProject({ ...formProject, team_id: e.target.value});
+                  }}
+                >
+                  <option value="">{t('project_form_select_team')}</option>
+                  {teams.map((team) => (
+                    <option key={team.id} value={team.id}>
+                      {team.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-            <div className="form-group">
-              <label>Статус</label>
-              <select
-                className="form-select"
-                value={formProject.status}
-                onChange={(e) => setFormProject({ ...formProject, status: e.target.value })}
-              >
-                <option value="">Выберите статус</option>
-                <option value="active">Активный</option>
-                <option value="archived">Архивный</option>
-              </select>
-            </div>
+              <div className="form-group">
+                <label>{t('project_form_status')}</label>
+                <select
+                  className="form-select"
+                  value={formProject.status}
+                  onChange={(e) => setFormProject({ ...formProject, status: e.target.value })}
+                >
+                  <option value="">{t('project_form_select_status')}</option>
+                  <option value="active">{t('project_status_active')}</option>
+                  <option value="archived">{t('project_status_archived')}</option>
+                </select>
+              </div>
 
-            <div className="form-group">
-              <label>Дедлайн</label>
-              <input
-                type="date"
-                className="form-control"
-                value={formProject.deadline}
-                onChange={(e) => setFormProject({ ...formProject, deadline: e.target.value })}
-              />
-            </div>
+              <div className="form-group">
+                <label>{t('project_form_deadline')}</label>
+                <input
+                  type="date"
+                  className="form-control"
+                  value={formProject.deadline}
+                  onChange={(e) => setFormProject({ ...formProject, deadline: e.target.value })}
+                />
+              </div>
 
-            <div className="form-actions">
-              <button
-                className="save-event-button"
-                onClick={formProject.id ? handleUpdateProject : handleCreateProject}
-                disabled={
-                  !formProject.team_id ||
-                  !formProject.status ||
-                  !formProject.name ||
-                  !formProject.deadline
-                }
-              >
-                {formProject.id ? 'Сохранить изменения' : 'Создать проект'}
-              </button>
+              <div className="form-actions">
+                <button
+                  className="save-event-button"
+                  onClick={formProject.id ? handleUpdateProject : handleCreateProject}
+                  disabled={
+                    !formProject.team_id ||
+                    !formProject.status ||
+                    !formProject.name ||
+                    !formProject.deadline
+                  }
+                >
+                  {formProject.id ? t('project_button_save') : t('project_button_create_project')}
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
-{/* const [formTeam, setFormTeam] = useState({
-    name: "",
-    description: "",
-    created_by: "",
-  }); */}
-      {showTeamModal && (
-        <div className="event-modal-overlay">
-          <div className="event-modal">
-            <div className="event-modal-header">
-              <h3>{formTeam.id ? 'Редактирование команды' : 'Создание новой команды'}</h3>
-              <button
-                className="close-modal"
-                onClick={() => {
-                  setShowTeamModal(false);
-                  resetFormTeam();
-                }}
-              >
-                <FaTimes />
-              </button>
-            </div>
+        {showTeamModal && (
+          <div className="event-modal-overlay">
+            <div className="event-modal">
+              <div className="event-modal-header">
+                <h3>{formTeam.id ? t('project_modal_edit_team') : t('project_modal_new_team')}</h3>
+                <button
+                  className="close-modal"
+                  onClick={() => {
+                    setShowTeamModal(false);
+                    resetFormTeam();
+                  }}
+                >
+                  <FaTimes />
+                </button>
+              </div>
 
-            <div className="form-group">
-              <label>Название</label>
-              <input
-                type="text"
-                className="form-control"
-                value={formTeam.name}
-                onChange={(e) => setFormTeam({ ...formTeam, name: e.target.value })}
-              />
-            </div>
+              <div className="form-group">
+                <label>{t('project_form_name')}</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={formTeam.name}
+                  onChange={(e) => setFormTeam({ ...formTeam, name: e.target.value })}
+                />
+              </div>
 
-            <div className="form-group">
-              <label>Описание</label>
-              <textarea
-                className="form-control"
-                value={formTeam.description}
-                onChange={(e) => setFormTeam({ ...formTeam, description: e.target.value })}
-              />
-            </div>
+              <div className="form-group">
+                <label>{t('project_form_description')}</label>
+                <textarea
+                  className="form-control"
+                  value={formTeam.description}
+                  onChange={(e) => setFormTeam({ ...formTeam, description: e.target.value })}
+                />
+              </div>
 
-            <SearchField teamID={formTeam.id}></SearchField>
+              <SearchField teamID={formTeam.id}></SearchField>
 
-            <div className="form-actions">
-              <button
-                className="save-event-button"
-                onClick={formTeam.id ? handleUpdateTeam : handleCreateTeam}
-                disabled={
-                  !formTeam.name
-                }
-              >
-                {formTeam.id ? 'Сохранить изменения' : 'Создать команду'}
-              </button>
+              <div className="form-actions">
+                <button
+                  className="save-event-button"
+                  onClick={formTeam.id ? handleUpdateTeam : handleCreateTeam}
+                  disabled={!formTeam.name}
+                >
+                  {formTeam.id ? t('project_button_save') : t('project_button_create_team')}
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
       </div>
     </div>
   );

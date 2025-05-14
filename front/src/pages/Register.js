@@ -19,15 +19,14 @@ const Register = () => {
   const [successMessage, setSuccessMessage] = useState('');
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  // ================ Перевод ================
   const { t, i18n } = useTranslation();
+
   useEffect(() => {
     const savedLanguage = localStorage.getItem('language');
     if (savedLanguage && savedLanguage !== i18n.language) {
       i18n.changeLanguage(savedLanguage);
     }
   }, [i18n]);
-  // ================ Перевод ================
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -44,20 +43,7 @@ const Register = () => {
 
     try {
       await registerUser(formData);
-      setSuccessMessage('Регистрация прошла успешно!');
-  
-      // const loginResponse = await loginUser({
-      //   email: formData.email,
-      //   password: formData.password,
-      // });
-  
-      // dispatch(login({
-      //   userId: loginResponse.userId,
-      //   token: loginResponse.token,
-      //   email: formData.email,
-      //   username: formData.username,
-      //   role: formData.role,
-      // }));
+      setSuccessMessage(t('register_success'));
       navigate('/');
     } catch (error) {
       console.error('Ошибка регистрации:', error);
@@ -67,18 +53,18 @@ const Register = () => {
           const validationErrors = error.response.data.errors
             .map((err) => err.msg)
             .join(', ');
-          setErrorMessage(`Ошибки: ${validationErrors}`);
+          setErrorMessage(`${t('register_error_validation')} ${validationErrors}`);
         } else if (error.response.data.error === 'Пользователь уже существует') {
           const conflicts = error.response.data.conflicts;
-          let conflictMsg = 'Пользователь с такими данными уже существует: ';
-          if (conflicts.username) conflictMsg += 'имя пользователя, ';
-          if (conflicts.email) conflictMsg += 'email';
+          let conflictMsg = `${t('register_error_user_exists')} `;
+          if (conflicts.username) conflictMsg += t('register_error_username_conflict');
+          if (conflicts.email) conflictMsg += `, ${t('register_error_email_conflict')}`;
           setErrorMessage(conflictMsg);
         } else {
-          setErrorMessage(error.response.data.error || 'Ошибка регистрации');
+          setErrorMessage(error.response.data.error || t('register_error_general'));
         }
       } else {
-        setErrorMessage('Не удалось подключиться к серверу');
+        setErrorMessage(t('register_error_connection'));
       }
     }
   };
@@ -86,13 +72,13 @@ const Register = () => {
   return (
     <div className="auth-bg">
       <div className="auth-container">
-        <h2>Регистрация</h2>
+        <h2>{t('register_title')}</h2>
         {errorMessage && <div className="error-message">{errorMessage}</div>}
         {successMessage && <div className="success-message">{successMessage}</div>}
 
         <form onSubmit={handleSubmit}>
           <div className="form-group">
-            <label>Имя пользователя (обязательно):</label>
+            <label>{t('register_username_label')}</label>
             <input
               type="text"
               name="username"
@@ -100,22 +86,24 @@ const Register = () => {
               onChange={handleChange}
               required
               minLength="3"
+              placeholder={t('username_placeholder')}
             />
           </div>
 
           <div className="form-group">
-            <label>Email:</label>
+            <label>{t('register_email_label')}</label>
             <input
               type="email"
               name="email"
               value={formData.email}
               onChange={handleChange}
               required
+              placeholder={t('email_placeholder')}
             />
           </div>
 
           <div className="form-group">
-            <label>Пароль (минимум 6 символов):</label>
+            <label>{t('register_password_label')}</label>
             <input
               type="password"
               name="password"
@@ -123,24 +111,25 @@ const Register = () => {
               onChange={handleChange}
               required
               minLength="6"
+              placeholder={t('password_placeholder')}
             />
           </div>
 
           <div className="form-group">
-            <label>Роль:</label>
+            <label>{t('register_role_label')}</label>
             <select name="role" value={formData.role} onChange={handleChange}>
-              <option value="employee">Сотрудник</option>
-              <option value="manager">Менеджер</option>
+              <option value="employee">{t('register_role_employee')}</option>
+              <option value="manager">{t('register_role_manager')}</option>
             </select>
           </div>
 
           <button type="submit" className="submit-btn">
-            Зарегистрироваться
+            {t('register_submit_button')}
           </button>
         </form>
 
         <p className="auth-link">
-          Уже есть аккаунт? <Link to="/login">Войти</Link>
+          {t('register_login_text')} <Link to="/login">{t('register_login_link')}</Link>
         </p>
       </div>
     </div>

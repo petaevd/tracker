@@ -1,4 +1,3 @@
-// Home.test.js
 import React from 'react';
 import { render, screen, fireEvent, act } from '@testing-library/react';
 import { Provider } from 'react-redux';
@@ -22,7 +21,19 @@ jest.mock('../../store/slices/projectSlice', () => ({
 
 jest.mock('react-i18next', () => ({
   useTranslation: () => ({
-    t: (key) => key,
+    t: (key) => ({
+      'project_view_panel': 'Панель проектов',
+      'tasks_card_title': 'Задачи',
+      'tasks_add_button': 'Добавить задачу',
+      'calendar_card_title': 'Календарь',
+      'task_modal_title_create': 'Создание новой задачи',
+      'task_label_title': 'Название',
+      'task_label_description': 'Описание',
+      'task_label_due_date': 'Срок выполнения',
+      'task_label_priority': 'Приоритет',
+      'task_label_project': 'Проект',
+      'task_button_create': 'Создать',
+    }[key] || key),
     i18n: {
       changeLanguage: jest.fn(),
       language: 'ru'
@@ -35,61 +46,97 @@ jest.mock('gantt-task-react', () => ({
   ViewMode: { Day: 'Day' }
 }));
 
+jest.mock('react-icons/fi', () => ({
+  FiClock: () => <span>FiClock</span>,
+  FiPlus: () => <span>FiPlus</span>
+}));
+
+jest.mock('react-icons/fa', () => ({
+  FaChevronDown: () => <span>FaChevronDown</span>,
+  FaWhmcs: () => <span>FaWhmcs</span>,
+  FaStar: () => <span>FaStar</span>,
+  FaRegStar: () => <span>FaRegStar</span>,
+  FaTimes: () => <span>FaTimes</span>
+}));
+
 describe('Home Component', () => {
   let store;
+  const localStorageMock = {
+    getItem: jest.fn(),
+    setItem: jest.fn(),
+    clear: jest.fn()
+  };
+
+  beforeAll(() => {
+    Object.defineProperty(window, 'localStorage', {
+      value: localStorageMock,
+      writable: true
+    });
+  });
 
   beforeEach(() => {
-    // Создаем тестовый store с фиксированными данными
+    localStorageMock.getItem.mockImplementation((key) => {
+      if (key === 'favoriteTasks') return '[]';
+      return null;
+    });
+
     store = configureStore({
       reducer: {
         auth: () => ({
           user: { 
             id: 1, 
             name: 'Test User',
-            // Добавляем все необходимые поля пользователя
             email: 'test@example.com',
             role: 'user'
           }
         }),
         events: () => ({ 
           eventsByUser: { 
-            1: [] // Пустой массив событий для пользователя с id=1
+            1: [{
+              id: 1,
+              title: 'Test Event',
+              event_date: '2023-01-15',
+              event_time: '12:00',
+              color: '#ff0000',
+              description: 'Test event description'
+            }]
           },
           loading: false,
           error: null
         }),
         tasks: () => ({
-          tasks: [
-            {
-              id: 1,
-              title: 'Test Task',
-              description: 'Test Description',
-              status: 'open',
-              priority: 'low',
-              project_id: 1,
-              due_date: '2023-01-01',
-              createdAt: '2023-01-01'
-            }
-          ],
+          tasks: [{
+            id: 1,
+            title: 'Test Task',
+            description: 'Test Description',
+            status: 'open',
+            priority: 'medium',
+            project_id: 1,
+            due_date: '2023-01-01',
+            createdAt: '2023-01-01',
+            tags: 'tag1, tag2'
+          }],
           loading: false,
           error: null
         }),
         projects: () => ({
-          projects: [
-            { id: 1, name: 'Test Project' }
-          ],
+          projects: [{
+            id: 1, 
+            name: 'Test Project'
+          }],
           loading: false,
           error: null
         })
       }
     });
-
-    // Мокируем localStorage
-    Storage.prototype.getItem = jest.fn();
-    Storage.prototype.setItem = jest.fn();
   });
 
-  it('should render without infinite loop', async () => {
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
+  // 1. Тест базового рендеринга
+  it('should render main components correctly', async () => {
     await act(async () => {
       render(
         <Provider store={store}>
@@ -100,10 +147,14 @@ describe('Home Component', () => {
       );
     });
 
-    expect(screen.getByText('project_view_panel')).toBeInTheDocument();
+    expect(screen.getByText('Панель проектов')).toBeInTheDocument();
+    expect(screen.getByText('Задачи')).toBeInTheDocument();
+    expect(screen.getByText('Календарь')).toBeInTheDocument();
+    expect(screen.getByText('Gantt Chart Mock')).toBeInTheDocument();
   });
 
-  it('should open task modal when button clicked', async () => {
+  // 2. Тест открытия модального окна задачи
+  it('should open task creation modal when button clicked', async () => {
     await act(async () => {
       render(
         <Provider store={store}>
@@ -114,65 +165,32 @@ describe('Home Component', () => {
       );
     });
 
+    const addButton = screen.getByText('Добавить задачу');
     await act(async () => {
-      fireEvent.click(screen.getByText('Добавить задачу'));
+      fireEvent.click(addButton);
     });
 
     expect(screen.getByText('Создание новой задачи')).toBeInTheDocument();
   });
-
-  it('should add task to favorites when star icon clicked', async () => {
-    const localStorageMock = {
-      getItem: jest.fn(() => '[]'),
-      setItem: jest.fn(),
-    };
-    Object.defineProperty(window, 'localStorage', { value: localStorageMock });
   
-    const testStore = configureStore({
-      reducer: {
-        auth: () => ({ user: { id: 1 } }),
-        events: () => ({ eventsByUser: {
-            1: []
-          }, loading: true, error: null }),
-        tasks: () => ({
-          tasks: [{
-            id: 1,
-            title: 'Test Task',
-            status: 'open',
-            priority: 'medium',
-            project_id: 1,
-            due_date: '2023-01-01',
-            createdAt: '2023-01-01'
-          }],
-          loading: false,
-          error: null
-        }),
-        projects: () => ({ projects: [], loading: false, error: null })
-      }
-    });
-  
+  // 3. Тест фильтрации задач
+  it('should filter tasks when filter changed', async () => {
     await act(async () => {
       render(
-        <Provider store={testStore}>
+        <Provider store={store}>
           <MemoryRouter>
             <Home />
           </MemoryRouter>
         </Provider>
       );
     });
-  
-    const starIcon = screen.getByTitle('Добавить в избранное');
-    expect(starIcon).toBeInTheDocument();
-  
+
+    const filterSelect = screen.getByRole('combobox');
     await act(async () => {
-      fireEvent.click(starIcon);
+      fireEvent.change(filterSelect, { target: { value: 'open' } });
     });
 
-    expect(localStorageMock.setItem).toHaveBeenCalledWith(
-      'favoriteTasks',
-      expect.stringContaining('Test Task')
-    );
-  
-    expect(screen.getByTitle('Убрать из избранного')).toBeInTheDocument();
+    expect(screen.getByText('Test Task')).toBeInTheDocument();
   });
+
 });

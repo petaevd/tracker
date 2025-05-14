@@ -74,8 +74,10 @@ const Favorites = () => {
   return (
     <div className="dashboard-container">
       <div className="main-content">
-        <div className="breadcrumb">Главная / Избранное</div>
-        <h1 className="dashboard-title">Избранные задачи</h1>
+        <div className="breadcrumb">
+          {t('favorites_breadcrumb_home')} / {t('favorites_breadcrumb')}
+        </div>
+        <h1 className="dashboard-title">{t('favorites_title')}</h1>
         
         {/* Фильтры */}
         <div className="favorites-controls">
@@ -84,25 +86,25 @@ const Favorites = () => {
               className={`filter-btn ${filter === 'all' ? 'active' : ''}`}
               onClick={() => setFilter('all')}
             >
-              Все
+              {t('favorites_filter_all')}
             </button>
             <button 
               className={`filter-btn ${filter === 'low' ? 'active' : ''}`}
               onClick={() => setFilter('low')}
             >
-              Легкие
+              {t('favorites_filter_low')}
             </button>
             <button 
               className={`filter-btn ${filter === 'medium' ? 'active' : ''}`}
               onClick={() => setFilter('medium')}
             >
-              Средние
+              {t('favorites_filter_medium')}
             </button>
             <button 
               className={`filter-btn ${filter === 'high' ? 'active' : ''}`}
               onClick={() => setFilter('high')}
             >
-              Сложные
+              {t('favorites_filter_high')}
             </button>
           </div>
         </div>
@@ -139,7 +141,7 @@ const Favorites = () => {
                 <button 
                   className="remove-favorite-btn"
                   onClick={() => handleToggleFavorite(item)}
-                  title="Удалить из избранного"
+                  title={t('favorites_remove_tooltip')}
                 >
                   <FaTrash />
                 </button>
@@ -147,7 +149,7 @@ const Favorites = () => {
             ))
           ) : (
             <div className="empty-state">
-              <p>Нет избранных задач</p>
+              <p>{t('favorites_empty_state')}</p>
             </div>
           )}
         </div>

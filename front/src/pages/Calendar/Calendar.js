@@ -58,9 +58,16 @@ const Calendar = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [showMonthDropdown, setShowMonthDropdown] = useState(false);
   
-  const monthNames = ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь",
-    "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"];
-  const days = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
+  const monthNames = [
+    t('month_january'), t('month_february'), t('month_march'),
+    t('month_april'), t('month_may'), t('month_june'),
+    t('month_july'), t('month_august'), t('month_september'),
+    t('month_october'), t('month_november'), t('month_december')
+  ];
+  const days = [
+    t('day_monday'), t('day_tuesday'), t('day_wednesday'),
+    t('day_thursday'), t('day_friday'), t('day_saturday'), t('day_sunday')
+  ];
   
   // Generate calendar dates
   const generateCalendarDates = () => {
@@ -140,10 +147,10 @@ const Calendar = () => {
   const [selectedEvent, setSelectedEvent] = useState(null);
   
   const eventColors = [
-    { name: 'Green', value: '#59b25c' },
-    { name: 'White', value: '#E0C1FF' },
-    { name: 'Blue', value: '#1b8df7' },
-    { name: 'Purple', value: '#9A48EA' },
+    { name: t('color_green'), value: '#59b25c' },
+    { name: t('color_white'), value: '#E0C1FF' },
+    { name: t('color_blue'), value: '#1b8df7' },
+    { name: t('color_purple'), value: '#9A48EA' },
   ];
 
   const [newEvent, setNewEvent] = useState({
@@ -316,10 +323,10 @@ const Calendar = () => {
   };
 
   if (!user) {
-    return <div className="loading-message">Redirecting to login...</div>;
+    return <div className="loading-message">{t('calendar_redirecting')}</div>;
   }
 
-  if (loading) return <div className="loading-message">Loading events...</div>;
+  if (loading) return <div className="loading-message">{t('calendar_loading_events')}</div>;
   if (error) {
     const errorMessage = typeof error === 'object' 
       ? error.message || JSON.stringify(error)
@@ -330,16 +337,16 @@ const Calendar = () => {
   return (
     <div className="calendar-page">
       <div className="calendar-main-content">
-        <div className="calendar-breadcrumb">Домашняя / Календарь</div>
+        <div className="calendar-breadcrumb">{t('calendar_breadcrumb')}</div>
         
         <div className="calendar-header-with-search">
-          <h1 className="calendar-title">Календарь</h1>
+          <h1 className="calendar-title">{t('calendar_title')}</h1>
           <div className="calendar-date-search">
             <FaSearch className="calendar-date-search-icon" />
             <input
               id="calendar-date-search-input"
               type="text"
-              placeholder="Поиск дат, мероприятий, встреч и тд"
+              placeholder={t('calendar_search_placeholder')}
               className="calendar-date-search-input"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -366,9 +373,9 @@ const Calendar = () => {
                     onClick={() => setShowMonthDropdown(!showMonthDropdown)}
                     aria-haspopup="true"
                     aria-expanded={showMonthDropdown}
-                    aria-label="Выбрать месяц"
+                    aria-label={t('calendar_select_month')}
                   >
-                    Выбрать месяц<FaCaretDown />
+                    {t('calendar_select_month')} <FaCaretDown />
                   </button>
                   {/* Выпадающий список месяцев */}
                   {showMonthDropdown && (
@@ -397,7 +404,7 @@ const Calendar = () => {
                 className="calendar-add-button"
                 onClick={() => setShowEventModal(true)}
               >
-                <FaPlus /> Добавить событие
+                <FaPlus /> {t('calendar_add_event')}
               </button>
             </div>
           </div>
@@ -427,7 +434,7 @@ const Calendar = () => {
         <div className="event-modal-overlay">
           <div className="event-modal">
             <div className="event-modal-header">
-              <h3>Добавить новое событие</h3>
+              <h3>{t('event_add_title')}</h3>
               <button 
                 className="close-modal"
                 onClick={() => {
@@ -441,19 +448,19 @@ const Calendar = () => {
             
             <div className="event-form">
               <div className="form-group">
-                <label>Название*</label>
+                <label>{t('event_title_label')}</label>
                 <input
                   type="text"
                   value={newEvent.title}
                   onChange={(e) => setNewEvent({...newEvent, title: e.target.value})}
-                  placeholder="Встреча с командой"
+                  placeholder={t('event_title_placeholder')}
                   required
                 />
               </div>
               
               <div className="form-row">
                 <div className="form-group">
-                  <label>Дата*</label>
+                  <label>{t('event_date_label')}</label>
                   <input
                     type="date"
                     value={newEvent.date}
@@ -463,7 +470,7 @@ const Calendar = () => {
                 </div>
                 
                 <div className="form-group">
-                  <label>Время*</label>
+                  <label>{t('event_time_label')}</label>
                   <input
                     type="time"
                     value={newEvent.time}
@@ -474,7 +481,7 @@ const Calendar = () => {
               </div>
               
               <div className="form-group">
-                <label>Цвет события</label>
+                <label>{t('event_color_label')}</label>
                 <div className="color-picker">
                   {eventColors.map(color => (
                     <div 
@@ -488,11 +495,11 @@ const Calendar = () => {
               </div>
               
               <div className="form-group">
-                <label>Описание</label>
+                <label>{t('event_description_label')}</label>
                 <textarea
                   value={newEvent.description}
                   onChange={(e) => setNewEvent({...newEvent, description: e.target.value})}
-                  placeholder="Добавьте подробную информацию о мероприятии"
+                  placeholder={t('event_description_placeholder')}
                   rows="3"
                 />
               </div>
@@ -503,7 +510,7 @@ const Calendar = () => {
                   onClick={handleAddEvent}
                   disabled={!newEvent.title.trim()}
                 >
-                  Сохранить
+                  {t('event_save_button')}
                 </button>
               </div>
             </div>
@@ -516,7 +523,7 @@ const Calendar = () => {
         <div className="event-modal-overlay">
           <div className="event-modal">
             <div className="event-modal-header">
-              <h3>Детали события</h3>
+              <h3>{t('event_edit_title')}</h3>
               <button 
                 className="close-modal"
                 onClick={() => setShowEventDetailsModal(false)}
@@ -527,7 +534,7 @@ const Calendar = () => {
             
             <div className="event-form">
               <div className="form-group">
-                <label>Название*</label>
+                <label>{t('event_title_label')}</label>
                 <input
                   type="text"
                   value={selectedEvent.title}
@@ -538,7 +545,7 @@ const Calendar = () => {
               
               <div className="form-row">
                 <div className="form-group">
-                  <label>Дата*</label>
+                  <label>{t('event_date_label')}</label>
                   <input
                     type="date"
                     value={selectedEvent.date}
@@ -548,7 +555,7 @@ const Calendar = () => {
                 </div>
                 
                 <div className="form-group">
-                  <label>Время*</label>
+                  <label>{t('event_time_label')}</label>
                   <input
                     type="time"
                     value={selectedEvent.time}
@@ -559,7 +566,7 @@ const Calendar = () => {
               </div>
               
               <div className="form-group">
-                <label>Цвет события</label>
+                <label>{t('event_color_label')}</label>
                 <div className="color-picker">
                   {eventColors.map(color => (
                     <div 
@@ -573,7 +580,7 @@ const Calendar = () => {
               </div>
               
               <div className="form-group">
-                <label>Описание</label>
+                <label>{t('event_description_label')}</label>
                 <textarea
                   value={selectedEvent.description}
                   onChange={(e) => setSelectedEvent({...selectedEvent, description: e.target.value})}
@@ -586,7 +593,7 @@ const Calendar = () => {
                   className="delete-event-button"
                   onClick={() => handleDeleteEvent(selectedEvent.id)}
                 >
-                  <FaTrash /> Удалить
+                  <FaTrash /> {t('event_delete_button')}
                 </button>
                 <div className="right-actions">
                   <button 
@@ -594,7 +601,7 @@ const Calendar = () => {
                     onClick={handleUpdateEvent}
                     disabled={!selectedEvent.title.trim()}
                   >
-                    <FaEdit /> Сохранить
+                    <FaEdit /> {t('event_update_button')}
                   </button>
                 </div>
               </div>

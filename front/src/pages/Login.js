@@ -56,39 +56,39 @@ const Login = () => {
   return (
     <div className="auth-bg">
       <div className="auth-container">
-        <h2>Авторизация</h2>
+        <h2>{t('login_auth')}</h2>
 
         {errorMessage && (
           <div className="error-message">
             <p>{errorMessage}</p>
             <p className="error-hint">
-              Проверьте правильность email и пароля
+            {t('login_error_hint')}
             </p>
           </div>
         )}
 
         <form onSubmit={handleSubmit}>
           <div className="form-group">
-            <label>Email:</label>
+            <label>{t('login_email_label')}</label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
               autoComplete="username"
-              placeholder="Ваш email"
+              placeholder="Email"
             />
           </div>
 
           <div className="form-group">
-            <label>Пароль:</label>
+            <label>{t('login_password_label')}</label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
               autoComplete="current-password"
-              placeholder="Ваш пароль"
+              placeholder="Password"
               minLength="6"
             />
           </div>
@@ -98,12 +98,12 @@ const Login = () => {
             disabled={isLoading}
             className={isLoading ? 'loading' : ''}
           >
-            {isLoading ? 'Выполняется вход...' : 'Войти'}
+            {isLoading ? `${t('login_go_button_loading')}` : `${t('login_go_button')}`}
           </button>
         </form>
 
         <div className="auth-links">
-          <Link to="/register">Создать аккаунт</Link>
+          <Link to="/register">{t('login_create_link')}</Link>
         </div>
       </div>
     </div>
