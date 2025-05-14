@@ -124,7 +124,7 @@ const Help = () => {
   return (
     <div className="dashboard-container">
       <div className="main-content">
-        <div className="breadcrumb">Домашняя / Помощь</div>
+        <div className="breadcrumb">{t('help_breadcrumb')}</div>
         
         {/* Анимированный заголовок */}
         <motion.h1 
@@ -138,7 +138,7 @@ const Help = () => {
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.95 }}
           >
-            Помощь
+            {t('help_title')}
           </motion.span>
         </motion.h1>
         
@@ -151,30 +151,27 @@ const Help = () => {
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.4 }}
               >
-                Управление проектами
+                {t('help_section_projects')}
               </motion.span>
             </h2>
             <motion.div className="help-item" variants={questionVariants}>
               <motion.h3 className="help-question" whileHover="hover">
-                Как создать проект?
+                {t('help_question_create_project')}
               </motion.h3>
               <motion.p className="help-answer" variants={answerVariants}>
-                1. Перейдите во вкладку "Проекты"<br />
-                2. Выберите "Команды"<br />
-                3. Нажмите "Создать команду" и добавьте участников<br />
-                4. Вернитесь в "Проекты" и создайте новый проект<br />
-                5. Добавьте команду, которая будет работать над проектом
+                {t('help_answer_create_project').split('\n').map((line, i) => (
+                  <React.Fragment key={i}>{line}<br /></React.Fragment>
+                ))}
               </motion.p>
             </motion.div>
             <motion.div className="help-item" variants={questionVariants}>
               <motion.h3 className="help-question" whileHover="hover">
-                Как создать задачу?
+                {t('help_question_create_task')}
               </motion.h3>
               <motion.p className="help-answer" variants={answerVariants}>
-                1. На главном экране нажмите "Добавить задачу"<br />
-                2. Введите параметры задачи (название, описание, сроки)<br />
-                3. Выберите проект, в который должна попасть задача<br />
-                4. Нажмите "Создать"
+              {t('help_answer_create_task').split('\n').map((line, i) => (
+                <React.Fragment key={i}>{line}<br /></React.Fragment>
+              ))}
               </motion.p>
             </motion.div>
           </AnimatedSection>
@@ -186,23 +183,23 @@ const Help = () => {
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.5 }}
               >
-                Настройки аккаунта
+                {t('help_section_account')}
               </motion.span>
             </h2>
             <motion.div className="help-item" variants={questionVariants}>
               <motion.h3 className="help-question" whileHover="hover">
-                Как изменить пароль?
+                {t('help_question_change_password')}
               </motion.h3>
               <motion.p className="help-answer" variants={answerVariants}>
-                В разделе "Настройки" → "Безопасность" вы можете изменить ваш пароль.
+                {t('help_answer_change_password')}
               </motion.p>
             </motion.div>
             <motion.div className="help-item" variants={questionVariants}>
               <motion.h3 className="help-question" whileHover="hover">
-                Как обновить профиль?
+                {t('help_question_update_profile')}
               </motion.h3>
               <motion.p className="help-answer" variants={answerVariants}>
-                Перейдите в "Настройки" → "Профиль" для изменения информации о себе.
+                {t('help_answer_update_profile')}
               </motion.p>
             </motion.div>
           </AnimatedSection>
@@ -214,30 +211,27 @@ const Help = () => {
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.6 }}
               >
-                Визуализация данных
+                {t('help_section_visualization')}
               </motion.span>
             </h2>
             <motion.div className="help-item" variants={questionVariants}>
               <motion.h3 className="help-question" whileHover="hover">
-                Диаграмма Ганта
+              {t('help_question_gantt')}
               </motion.h3>
               <motion.p className="help-answer" variants={answerVariants}>
-                На главном экране вы можете просмотреть диаграмму Ганта, которая отображает:<br />
-                - Все текущие задачи<br />
-                - Сроки их выполнения<br />
-                - Прогресс выполнения<br />
-                - Зависимости между задачами
+                {t('help_answer_gantt').split('\n').map((line, i) => (
+                  <React.Fragment key={i}>{line}<br /></React.Fragment>
+                ))}
               </motion.p>
             </motion.div>
             <motion.div className="help-item" variants={questionVariants}>
               <motion.h3 className="help-question" whileHover="hover">
-                Круговая диаграмма
+              {t('help_question_pie_chart')}
               </motion.h3>
               <motion.p className="help-answer" variants={answerVariants}>
-                На главном экране доступна круговая диаграмма, показывающая:<br />
-                - Распределение задач по статусам<br />
-                - Процент выполненных задач<br />
-                - Соотношение задач между проектами
+                {t('help_answer_pie_chart').split('\n').map((line, i) => (
+                  <React.Fragment key={i}>{line}<br /></React.Fragment>
+                ))}
               </motion.p>
             </motion.div>
           </AnimatedSection>

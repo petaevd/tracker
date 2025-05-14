@@ -146,7 +146,7 @@ const authSchema = {
     body('username').isString().trim().isLength({ min: 3 }).withMessage('Имя пользователя должно содержать минимум 3 символа'),
     body('email').isEmail().normalizeEmail().withMessage('Некорректный email'),
     body('password').isLength({ min: 6 }).withMessage('Пароль должен содержать минимум 6 символов'),
-    body('role').optional().isIn(['manager', 'employee', 'admin']).withMessage('Недопустимая роль'),
+    body('role').optional().isIn(['manager', 'employee', 'admin']).withMessage('Недопустимая роsль'),
   ],
   login: [
     body('email').isEmail().normalizeEmail().withMessage('Некорректный email'),

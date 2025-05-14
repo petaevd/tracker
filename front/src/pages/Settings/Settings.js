@@ -16,7 +16,7 @@ const Settings = () => {
   const { user, token } = useSelector((state) => state.auth);
 
   // ================ Перевод ================
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
   const handleLanguageChange = (event) => {
     const selectedLanguage = event.target.value;
     i18n.changeLanguage(selectedLanguage);
@@ -333,128 +333,128 @@ const Settings = () => {
   return (
     <div className="dashboard-container">
       <div className="main-content">
-        <div className="breadcrumb">Домашняя / Настройки</div>
-        <h1 className="dashboard-title">Настройки</h1>
-        <p className="dashboard-subtitle">Управление настройками вашего аккаунта</p>
-
+        <div className="breadcrumb">{t('settings_breadcrumb')}</div>
+        <h1 className="dashboard-title">{t('settings_title')}</h1>
+        <p className="dashboard-subtitle">{t('settings_subtitle')}</p>
+  
         {error && <div className="error-message">{error}</div>}
-        {isLoading && <div className="loading-message">Загрузка...</div>}
-
+        {isLoading && <div className="loading-message">{t('settings_loading')}</div>}
+  
         <div className="settings-container">
           <div className="settings-sidebar">
             <button
               className={`settings-tab ${activeTab === 'profile' ? 'active' : ''}`}
               onClick={() => setActiveTab('profile')}
             >
-              Профиль
+              {t('settings_tab_profile')}
             </button>
             <button
               className={`settings-tab ${activeTab === 'security' ? 'active' : ''}`}
               onClick={() => setActiveTab('security')}
             >
-              Безопасность
+              {t('settings_tab_security')}
             </button>
             <button
               className={`settings-tab ${activeTab === 'accessibility' ? 'active' : ''}`}
               onClick={() => setActiveTab('accessibility')}
             >
-              Доступность
+              {t('settings_tab_accessibility')}
             </button>
             <button
               className={`settings-tab ${activeTab === 'appearance' ? 'active' : ''}`}
               onClick={() => setActiveTab('appearance')}
             >
-              Внешний вид
+              {t('settings_tab_appearance')}
             </button>
             <button
               className={`settings-tab ${activeTab === 'language' ? 'active' : ''}`}
               onClick={() => setActiveTab('language')}
             >
-              Язык и регион
+              {t('settings_tab_language')}
             </button>
           </div>
-
+  
           <div className="settings-content">
             {activeTab === 'profile' && (
               <div className="settings-section">
-                <h2 className="section-title">Настройки профиля</h2>
-               <div className="avatar-upload">
-               <div className="avatar-preview">
-                {profileData.avatar ? (
-                  <img
-                    src={getAssetUrl(profileData.avatar)}
-                    alt="Ваш аватар"
-                    className="avatar-image"
-                    onError={(e) => {
-                      e.target.onerror = null; // Предотвращаем бесконечный цикл
-                      e.target.src = ''; // Удаляем нерабочий URL
-                      setProfileData(prev => ({
-                        ...prev,
-                        avatar: prev.avatar || null
-                      }));
-                    }}
-                  />
-                ) : (
-                  <div className="avatar-placeholder">
-                    {getAvatarLetter(user?.username, user?.email)}
+                <h2 className="section-title">{t('profile_title')}</h2>
+                <div className="avatar-upload">
+                  <div className="avatar-preview">
+                    {profileData.avatar ? (
+                      <img
+                        src={getAssetUrl(profileData.avatar)}
+                        alt={t('profile_avatar_alt')}
+                        className="avatar-image"
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.src = '';
+                          setProfileData(prev => ({
+                            ...prev,
+                            avatar: prev.avatar || null
+                          }));
+                        }}
+                      />
+                    ) : (
+                      <div className="avatar-placeholder">
+                        {getAvatarLetter(user?.username, user?.email)}
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
-                <label className={`upload-button ${isLoading ? 'uploading' : ''}`}>
-                  {isLoading ? 'Загрузка...' : 'Выбрать файл'}
-                  <input
-                    type="file"
-                    accept="image/jpeg, image/png, image/webp"
-                    onChange={handleAvatarChange}
-                    disabled={isLoading}
-                    hidden
-                  />
-                </label>
-                
-                <div className="upload-hint">
-                  Максимальный размер: 2MB (JPEG, PNG, WebP)
+                  <label className={`upload-button ${isLoading ? 'uploading' : ''}`}>
+                    {isLoading ? t('settings_loading') : t('profile_avatar_upload')}
+                    <input
+                      type="file"
+                      accept="image/jpeg, image/png, image/webp"
+                      onChange={handleAvatarChange}
+                      disabled={isLoading}
+                      hidden
+                    />
+                  </label>
+                  
+                  <div className="upload-hint">
+                    {t('profile_avatar_hint')}
+                  </div>
                 </div>
-              </div>
-
+  
                 <div className="form-group">
-                <label htmlFor="username">Имя пользователя</label>
-                <input
-                  id="username"
-                  type="text"
-                  value={profileData.name}
-                  onChange={(e) => setProfileData({ ...profileData, name: e.target.value })}
-                  className="settings-input"
-                  disabled={isLoading}
-                  aria-required="true"
-                />
-              </div>
-
+                  <label htmlFor="username">{t('profile_username')}</label>
+                  <input
+                    id="username"
+                    type="text"
+                    value={profileData.name}
+                    onChange={(e) => setProfileData({ ...profileData, name: e.target.value })}
+                    className="settings-input"
+                    disabled={isLoading}
+                    aria-required="true"
+                  />
+                </div>
+  
                 <div className="form-group">
-                <label htmlFor="email">Email:</label>
-                <input
-                  id="email"
-                  type="email"
-                  value={profileData.email}
-                  onChange={(e) => setProfileData({ ...profileData, email: e.target.value })}
-                  className="settings-input"
-                  disabled={isLoading}
-                  aria-required="true"
-                />
-              </div>
-
+                  <label htmlFor="email">{t('profile_email')}</label>
+                  <input
+                    id="email"
+                    type="email"
+                    value={profileData.email}
+                    onChange={(e) => setProfileData({ ...profileData, email: e.target.value })}
+                    className="settings-input"
+                    disabled={isLoading}
+                    aria-required="true"
+                  />
+                </div>
+  
                 <button className="save-button" onClick={updateProfile} disabled={isLoading}>
-                  {isLoading ? 'Сохранение...' : 'Сохранить изменения'}
+                  {isLoading ? t('profile_saving') : t('profile_save_button')}
                 </button>
               </div>
             )}
-
+  
             {activeTab === 'security' && (
               <div className="settings-section">
-                <h2 className="section-title">Безопасность</h2>
+                <h2 className="section-title">{t('security_title')}</h2>
                 <div className="security-item">
-                  <h3>Смена пароля</h3>
+                  <h3>{t('security_password_title')}</h3>
                   <div className="form-group">
-                    <label htmlFor="currentPassword">Текущий пароль</label>
+                    <label htmlFor="currentPassword">{t('security_current_password')}</label>
                     <div className="password-input">
                       <input
                         id="currentPassword"
@@ -478,9 +478,9 @@ const Settings = () => {
                       </button>
                     </div>
                   </div>
-
+  
                   <div className="form-group">
-                    <label>Новый пароль</label>
+                    <label>{t('security_new_password')}</label>
                     <div className="password-input">
                       <input
                         type={showPassword.new ? 'text' : 'password'}
@@ -502,9 +502,9 @@ const Settings = () => {
                       </button>
                     </div>
                   </div>
-
+  
                   <div className="form-group">
-                    <label>Подтвердите новый пароль</label>
+                    <label>{t('security_confirm_password')}</label>
                     <div className="password-input">
                       <input
                         type={showPassword.confirm ? 'text' : 'password'}
@@ -526,19 +526,19 @@ const Settings = () => {
                       </button>
                     </div>
                   </div>
-
+  
                   <button className="save-button" onClick={handleChangePassword} disabled={isLoading}>
-                    {isLoading ? 'Изменение...' : 'Изменить пароль'}
+                    {isLoading ? t('security_changing') : t('security_change_button')}
                   </button>
                 </div>
               </div>
             )}
-
+  
             {activeTab === 'accessibility' && (
               <div className="settings-section">
-                <h2 className="section-title">Доступность</h2>
+                <h2 className="section-title">{t('accessibility_title')}</h2>
                 <div className="accessibility-item">
-                  <h3>Режим высокой контрастности</h3>
+                  <h3>{t('accessibility_contrast')}</h3>
                   <div className="toggle-switch">
                     <input
                       type="checkbox"
@@ -549,13 +549,13 @@ const Settings = () => {
                       disabled={isLoading}
                     />
                     <label htmlFor="contrast-toggle" className="toggle-label"></label>
-                    <span>{settings.highContrast ? 'Включено' : 'Выключено'}</span>
+                    <span>{settings.highContrast ? t('toggle_on') : t('toggle_off')}</span>
                   </div>
-                  <p className="hint-text">Улучшает видимость для пользователей с нарушением зрения</p>
+                  <p className="hint-text">{t('accessibility_contrast_hint')}</p>
                 </div>
-
+  
                 <div className="accessibility-item">
-                  <h3>Размер текста</h3>
+                  <h3>{t('accessibility_font')}</h3>
                   <div className="range-slider">
                     <input
                       type="range"
@@ -567,16 +567,16 @@ const Settings = () => {
                       disabled={isLoading}
                     />
                     <div className="slider-labels">
-                      <span>Мелкий</span>
-                      <span>Крупный</span>
+                      <span>{t('accessibility_font_small')}</span>
+                      <span>{t('accessibility_font_large')}</span>
                     </div>
                     <div className="slider-value">{settings.fontSize}px</div>
                   </div>
-                  <p className="hint-text">Изменяет размер текста на всём сайте</p>
+                  <p className="hint-text">{t('accessibility_font_hint')}</p>
                 </div>
-
+  
                 <div className="accessibility-item">
-                  <h3>Озвучивание интерфейса</h3>
+                  <h3>{t('accessibility_voice')}</h3>
                   <div className="toggle-switch">
                     <input
                       type="checkbox"
@@ -588,24 +588,24 @@ const Settings = () => {
                     />
                     <label htmlFor="voice-toggle" className="toggle-label"></label>
                     <span>
-                      {settings.voiceAssistant ? 'Включено' : 'Выключено'}
-                      {!('speechSynthesis' in window) && ' (недоступно)'}
+                      {settings.voiceAssistant ? t('toggle_on') : t('toggle_off')}
+                      {!('speechSynthesis' in window) && ` (${t('accessibility_voice_unavailable')})`}
                     </span>
                   </div>
                   <p className="hint-text">
                     {!('speechSynthesis' in window)
-                      ? 'Ваш браузер не поддерживает речевой синтез'
-                      : 'Озвучивает основные действия и элементы интерфейса'}
+                      ? t('accessibility_voice_unavailable')
+                      : t('accessibility_voice_hint')}
                   </p>
                 </div>
               </div>
             )}
-
+  
             {activeTab === 'appearance' && (
               <div className="settings-section">
-                <h2 className="section-title">Внешний вид</h2>
+                <h2 className="section-title">{t('appearance_title')}</h2>
                 <div className="appearance-item">
-                  <h3>Цветовая тема</h3>
+                  <h3>{t('appearance_theme')}</h3>
                   <div className="theme-options">
                     <div
                       className={`theme-option ${theme == 'dark' ? 'active' : ''}`}
@@ -614,7 +614,7 @@ const Settings = () => {
                       <div className="theme-preview dark-theme">
                         <FaPalette />
                       </div>
-                      <span>Тёмная</span>
+                      <span>{t('appearance_theme_dark')}</span>
                     </div>
                     <div
                       className={`theme-option ${theme == 'light' ? 'active' : ''}`}
@@ -623,7 +623,7 @@ const Settings = () => {
                       <div className="theme-preview light-theme">
                         <FaPalette />
                       </div>
-                      <span>Светлая</span>
+                      <span>{t('appearance_theme_light')}</span>
                     </div>
                     <div
                       className={`theme-option ${theme == 'raspberry' ? 'active' : ''}`}
@@ -632,78 +632,31 @@ const Settings = () => {
                       <div className="theme-preview raspberry-theme">
                         <FaPalette />
                       </div>
-                      <span>Красная</span>
+                      <span>{t('appearance_theme_raspberry')}</span>
                     </div>
                   </div>
                 </div>
-                {/* <div className="appearance-item">
-                  <h3>Акцентный цвет</h3>
-                  <div className="color-picker">
-                    {['#9A48EA', '#FF5252', '#4CAF50', '#2196F3', '#FFC107'].map((color) => (
-                      <div
-                        key={color}
-                        className={`color-option ${settings.accentColor === color ? 'active' : ''}`}
-                        style={{ backgroundColor: color }}
-                        onClick={() => handleSettingChange('accentColor', color)}
-                      />
-                    ))}
-                    <input
-                      type="color"
-                      value={settings.accentColor}
-                      onChange={(e) => handleSettingChange('accentColor', e.target.value)}
-                      className="color-custom"
-                      disabled={isLoading}
-                    />
-                  </div>
-                </div> */}
               </div>
             )}
-
+  
             {activeTab === 'language' && (
               <div className="settings-section">
-                <h2 className="section-title">Язык и регион</h2>
+                <h2 className="section-title">{t('language_title')}</h2>
                 <div className="form-group">
-                      <label htmlFor="language-select">Язык интерфейса</label>
-                      <select
-                        id="language-select"
-                        value={i18n.language}
-                        onChange={handleLanguageChange}
-                        defaultValue={i18n.language}
-                        className="settings-select"
-                        disabled={isLoading}
-                        aria-required="true"
-                      >
-                    <option value="ru">Русский</option>
-                    <option value="en">English</option>
+                  <label htmlFor="language-select">{t('language_select')}</label>
+                  <select
+                    id="language-select"
+                    value={i18n.language}
+                    onChange={handleLanguageChange}
+                    defaultValue={i18n.language}
+                    className="settings-select"
+                    disabled={isLoading}
+                    aria-required="true"
+                  >
+                    <option value="ru">{t('language_russian')}</option>
+                    <option value="en">{t('language_english')}</option>
                   </select>
                 </div>
-                {/* <div className="form-group">
-                  <label>Формат даты</label>
-                  <select
-                    value={settings.dateFormat}
-                    onChange={(e) => handleSettingChange('dateFormat', e.target.value)}
-                    className="settings-select"
-                    disabled={isLoading}
-                  >
-                    <option value="DD.MM.YYYY">DD.MM.YYYY</option>
-                    <option value="MM/DD/YYYY">MM/DD/YYYY</option>
-                    <option value="YYYY-MM-DD">YYYY-MM-DD</option>
-                  </select>
-                </div> */}
-                {/* <div className="form-group">
-                  <label>Часовой пояс</label>
-                  <select
-                    value={settings.timezone}
-                    onChange={(e) => handleSettingChange('timezone', e.target.value)}
-                    className="settings-select"
-                    disabled={isLoading}
-                  >
-                    <option value="Москва (UTC+3)">Москва (UTC+3)</option>
-                    <option value="Киев (UTC+2)">Киев (UTC+2)</option>
-                    <option value="Лондон (UTC+1)">Лондон (UTC+1)</option>
-                    <option value="Нью-Йорк (UTC-4)">Нью-Йорк (UTC-4)</option>
-                  </select>
-                </div> */}
               </div>
             )}
           </div>
