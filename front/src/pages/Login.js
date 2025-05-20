@@ -26,11 +26,18 @@ const Login = () => {
   const dispatch = useDispatch();
 
   const handleSubmit = async (e) => {
+    console.log("Form submitted!");
+    console.log(e);
     e.preventDefault();
+    e.stopPropagation();
     setErrorMessage('');
     setIsLoading(true);
   
     try {
+      const mockResponse = { // Тестовые данные
+        user: { id: 1, email: "test@test.com", username: "test", role: "user" },
+        token: "fake-token"
+      };
       const response = await loginUser({ email, password });
       dispatch(login({
         userId: response.user.id,
@@ -41,13 +48,15 @@ const Login = () => {
       }));
       localStorage.setItem('user', JSON.stringify(response.user));
       localStorage.setItem('token', response.token);
-      navigate('/');
+      console.log(localStorage.getItem('token'))
+      // navigate('/');
     } catch (error) {
       const errorMsg = error.response?.data?.message ||
                        error.response?.statusText ||
                        error.message ||
                        'Неизвестная ошибка';
       setErrorMessage(errorMsg);
+      console.log(localStorage.getItem('token'))
     } finally {
       setIsLoading(false);
     }

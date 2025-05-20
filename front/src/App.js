@@ -39,7 +39,7 @@ const App = () => {
       const token = localStorage.getItem('token');
 
       if (!storedUser || !token) {
-        dispatch(logout());
+        // dispatch(logout());
         setIsLoading(false);
         return;
       }
@@ -102,11 +102,11 @@ const App = () => {
         <Route
           path="/project"
           element={
-            <ProtectedRoute>
+            //<ProtectedRoute>
               <Layout>
                 <Project />
               </Layout>
-            </ProtectedRoute>
+            //</ProtectedRoute>
           }
         />
         {/* <Route
