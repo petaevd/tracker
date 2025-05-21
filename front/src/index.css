@@ -22,7 +22,7 @@ body {
   --toastify-text-color: var(--text-color);
   --toastify-accent: var(--accent-color);
   --toastify-border: var(--border-color);
-  --toastify-error-bg: var(--error-color);
+  --toastify-error-bg: var(--bg-color);
   --toastify-success-bg: var(--bg-color);
 }
 
@@ -54,7 +54,6 @@ body {
 
 .Toastify__toast--error {
   background: var(--toastify-error-bg);
-  color: #fff;
 }
 
 /* Прогресс-бар */

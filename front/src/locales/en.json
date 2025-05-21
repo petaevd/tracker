@@ -10,6 +10,7 @@
     "_comment2": "============== HOME ==============",
     "breadcrump_home": "Home",
     "project_view_panel": "Project Dashboard",
+    "home_error_date": "Due date is invalid",
     "_comment3": "============== REGISTER ==============",
     "register_title": "Registration",
     "register_username_label": "Username (required):",

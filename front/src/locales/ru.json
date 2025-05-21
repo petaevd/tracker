@@ -10,6 +10,7 @@
     "_comment2": "============== HOME ==============",
     "breadcrump_home": "Домашняя",
     "project_view_panel": "Панель просмотра проекта",
+    "home_error_date": "Некорректная дата дедлайна",
     "_comment3": "============== REGISTER ==============",
     "register_title": "Регистрация",
     "register_username_label": "Имя пользователя (обязательно):",

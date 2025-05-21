@@ -157,6 +157,7 @@ const Home = () => {
     priority: "low",
     project_id: "",
     tags: "",
+    createdAt: "",
   });
 
   const resetFormTask = () => {
@@ -167,7 +168,8 @@ const Home = () => {
       due_date: "",
       priority: "low",
       project_id: "",
-    tags: "",
+      createdAt: "",
+      tags: "",
     });
   };
 
@@ -186,6 +188,15 @@ const Home = () => {
   
   const handleCreateTask = async () => {
     const normalizedTags = normalizeTags(formTask.tags);
+    const dueDate = new Date(formTask.due_date);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+  
+    if (dueDate < today) {
+      toast.error(t(`home_error_date`));
+      return;
+    }
+  
     try {
       await dispatch(addTask({ ...formTask, tags: normalizedTags.length === 0 ? null : normalizedTags.join(', '), creator_id: user.id, status: "open" })).unwrap();
       setShowTaskModal(false);
@@ -212,6 +223,13 @@ const Home = () => {
 
   const handleUpdateTask = async () => {
     const normalizedTags = normalizeTags(formTask.tags);
+    const createdAt = new Date(formTask.createdAt);
+    const dueDate = new Date(formTask.due_date);
+  
+    if (dueDate < createdAt) {
+      toast.error(t(`home_error_date`));
+      return;
+    }
   
     try {
       await dispatch(updateExistingTask({
