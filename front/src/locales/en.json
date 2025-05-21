@@ -48,6 +48,8 @@
     "calendar_add_event": "Add event",
     "calendar_loading_events": "Loading events...",
     "calendar_redirecting": "Redirecting to login page...",
+    "calendar_error_title": "Fill in the title",
+    "calendar_error_date": "The date must be in the future",
     
     "_comment8": "============== MONTHS AND DAYS ==============",
     "month_january": "January",

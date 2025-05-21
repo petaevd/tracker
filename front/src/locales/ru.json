@@ -48,6 +48,8 @@
     "calendar_add_event": "Добавить событие",
     "calendar_loading_events": "Загрузка событий...",
     "calendar_redirecting": "Перенаправление на страницу входа...",
+    "calendar_error_title": "Заполните заголовок",
+    "calendar_error_date": "Дата уже прошла",
     
     "_comment8": "============== MONTHS AND DAYS ==============",
     "month_january": "Январь",

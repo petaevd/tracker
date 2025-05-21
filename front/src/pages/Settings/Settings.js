@@ -8,6 +8,7 @@ import { getAvatarLetter } from '../../utils';
 import './Settings.css';
 import useAssetUrl from '../../hooks/useAssetUrl';
 import { useTranslation } from 'react-i18next';
+import { toast, ToastContainer } from 'react-toastify';
 
 const Settings = () => {
   const getAssetUrl = useAssetUrl();
@@ -202,7 +203,7 @@ const Settings = () => {
       }));
       
       localStorage.setItem('user', JSON.stringify(updatedUser));
-      alert('Профиль успешно обновлён!');
+      toast.success('Профиль успешно обновлён!');
     } catch (error) {
       console.error('Ошибка обновления профиля:', error);
       if (error.response?.data?.conflicts?.username) {
@@ -320,7 +321,7 @@ const Settings = () => {
         currentPassword: passwordData.currentPassword,
         newPassword: passwordData.newPassword,
       });
-      alert('Пароль успешно изменён!');
+      toast.success('Пароль успешно изменён!');
       setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
     } catch (error) {
       console.error('Ошибка смены пароля:', error);
@@ -332,6 +333,9 @@ const Settings = () => {
 
   return (
     <div className="dashboard-container">
+      <div>
+        <ToastContainer/>
+      </div>
       <div className="main-content">
         <div className="breadcrumb">{t('settings_breadcrumb')}</div>
         <h1 className="dashboard-title">{t('settings_title')}</h1>
