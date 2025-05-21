@@ -10,6 +10,7 @@
     "_comment2": "============== HOME ==============",
     "breadcrump_home": "Домашняя",
     "project_view_panel": "Панель просмотра проекта",
+    "home_error_date": "Некорректная дата дедлайна",
     "_comment3": "============== REGISTER ==============",
     "register_title": "Регистрация",
     "register_username_label": "Имя пользователя (обязательно):",
@@ -48,6 +49,8 @@
     "calendar_add_event": "Добавить событие",
     "calendar_loading_events": "Загрузка событий...",
     "calendar_redirecting": "Перенаправление на страницу входа...",
+    "calendar_error_title": "Заполните заголовок",
+    "calendar_error_date": "Дата уже прошла",
     
     "_comment8": "============== MONTHS AND DAYS ==============",
     "month_january": "Январь",
@@ -174,6 +177,7 @@
     "appearance_theme_dark": "Тёмная",
     "appearance_theme_light": "Светлая",
     "appearance_theme_raspberry": "Красная",
+    "appearance_theme_forest": "Зеленая",
     
     "_comment22": "============== LANGUAGE SECTION ==============",
     "language_title": "Язык и регион",

@@ -18,6 +18,7 @@ import { useNavigate } from 'react-router-dom';
 import './Calendar.css';
 
 import { useTranslation } from 'react-i18next';
+import { toast, ToastContainer } from 'react-toastify';
 const Calendar = () => {
 
     
@@ -184,14 +185,14 @@ const Calendar = () => {
     }
   
     if (!newEvent.title.trim()) {
-      alert('Please enter event title');
+      toast.error(`${t('calendar_error_title')}`);
       return;
     }
 
     const now = new Date();
   
     if (new Date(newEvent.date) <= now) {
-      alert('Дата и время события должны быть в будущем');
+      toast.error(`${t('calendar_error_date')}`);
       return;
     }
   
@@ -214,7 +215,6 @@ const Calendar = () => {
       dispatch(fetchEvents(user.id));
     } catch (error) {
       console.error('Event creation failed:', error);
-      alert(`Error: ${error.message}`);
     }
   };
 
@@ -233,7 +233,7 @@ const Calendar = () => {
     const now = new Date();
   
     if (new Date(selectedEvent.date) <= now) {
-      alert('Дата и время события должны быть в будущем');
+      toast.error(`${t('calendar_error_date')}`);
       return;
     }
   
@@ -336,6 +336,9 @@ const Calendar = () => {
 
   return (
     <div className="calendar-page">
+      <div>
+        <ToastContainer />
+      </div>
       <div className="calendar-main-content">
         <div className="calendar-breadcrumb">{t('calendar_breadcrumb')}</div>
         

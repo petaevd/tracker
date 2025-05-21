@@ -3,9 +3,10 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { login } from '../store/slices/authSlice';
 import { registerUser, loginUser } from '../api/authApi';
-import { toast } from 'react-toastify';
 import './auth.css';
 import { useTranslation } from 'react-i18next';
+import { toast, ToastContainer } from 'react-toastify';
+
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -43,7 +44,10 @@ const Register = () => {
 
     try {
       await registerUser(formData);
-      setSuccessMessage(t('register_success'));
+      toast.success(t('register_success'), { autoClose: 5000 })
+      setTimeout(() => {
+        setErrorMessage('')
+      }, 5000);
       navigate('/');
     } catch (error) {
       console.error('Ошибка регистрации:', error);
@@ -53,28 +57,31 @@ const Register = () => {
           const validationErrors = error.response.data.errors
             .map((err) => err.msg)
             .join(', ');
-          setErrorMessage(`${t('register_error_validation')} ${validationErrors}`);
+          toast.error(`${t('register_error_validation')} ${validationErrors}`)
         } else if (error.response.data.error === 'Пользователь уже существует') {
           const conflicts = error.response.data.conflicts;
           let conflictMsg = `${t('register_error_user_exists')} `;
           if (conflicts.username) conflictMsg += t('register_error_username_conflict');
           if (conflicts.email) conflictMsg += `, ${t('register_error_email_conflict')}`;
-          setErrorMessage(conflictMsg);
+          toast.error(conflictMsg)
         } else {
-          setErrorMessage(error.response.data.error || t('register_error_general'));
+          toast.error(error.response.data.error || t('register_error_general'))
         }
       } else {
-        setErrorMessage(t('register_error_connection'));
+        toast.error(t('register_error_connection'))
       }
     }
   };
 
   return (
     <div className="auth-bg">
+      <div>
+        <ToastContainer />
+      </div>
       <div className="auth-container">
         <h2>{t('register_title')}</h2>
-        {errorMessage && <div className="error-message">{errorMessage}</div>}
-        {successMessage && <div className="success-message">{successMessage}</div>}
+        {/* {errorMessage && <div className="error-message">{errorMessage}</div>}
+        {successMessage && <div className="success-message">{successMessage}</div>} */}
 
         <form onSubmit={handleSubmit}>
           <div className="form-group">

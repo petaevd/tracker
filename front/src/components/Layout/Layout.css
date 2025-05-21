@@ -7,7 +7,7 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  background-color: #000000; /* Синхронизировал с --bg-color */
+  background-color: var(--bg-color); /* Синхронизировал с --bg-color */
 }
 
 main {

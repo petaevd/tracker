@@ -128,7 +128,7 @@ const Help = () => {
         
         {/* Анимированный заголовок */}
         <motion.h1 
-          className="dashboard-title"
+          className=""
           initial="hidden"
           animate="visible"
           variants={titleVariants}

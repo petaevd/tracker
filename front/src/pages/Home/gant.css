@@ -127,11 +127,11 @@
 }
 
 ._2dZTy {
-  fill: #fff;
+  fill: var(--secondary-text);
 }
 
 ._2dZTy:nth-child(even) {
-  fill: #f5f5f5;
+  fill: var(--secondary-text);
 }
 
 ._3rUKi {
@@ -169,7 +169,7 @@
 }
 
 ._35nLX {
-  fill: #ffffff;
+  fill: var(--card-bg);
   stroke: #e0e0e0;
   stroke-width: 1.4;
 }

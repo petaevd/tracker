@@ -77,7 +77,7 @@ const Favorites = () => {
         <div className="breadcrumb">
           {t('favorites_breadcrumb_home')} / {t('favorites_breadcrumb')}
         </div>
-        <h1 className="dashboard-title">{t('favorites_title')}</h1>
+        <h1 className="">{t('favorites_title')}</h1>
         
         {/* Фильтры */}
         <div className="favorites-controls">

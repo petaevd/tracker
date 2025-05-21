@@ -5,6 +5,7 @@ import { login } from '../store/slices/authSlice';
 import { loginUser } from '../api/authApi';
 import './auth.css';
 import { useTranslation } from 'react-i18next';
+import { toast, ToastContainer } from 'react-toastify';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -31,6 +32,10 @@ const Login = () => {
     setIsLoading(true);
   
     try {
+      const mockResponse = { // Тестовые данные
+        user: { id: 1, email: "test@test.com", username: "test", role: "user" },
+        token: "fake-token"
+      };
       const response = await loginUser({ email, password });
       dispatch(login({
         userId: response.user.id,
@@ -44,10 +49,11 @@ const Login = () => {
       navigate('/');
     } catch (error) {
       const errorMsg = error.response?.data?.message ||
+                       error.response?.data?.error ||
                        error.response?.statusText ||
                        error.message ||
                        'Неизвестная ошибка';
-      setErrorMessage(errorMsg);
+      toast.error(errorMsg);
     } finally {
       setIsLoading(false);
     }
@@ -55,17 +61,11 @@ const Login = () => {
 
   return (
     <div className="auth-bg">
+      <div>
+        <ToastContainer />
+      </div>
       <div className="auth-container">
         <h2>{t('login_auth')}</h2>
-
-        {errorMessage && (
-          <div className="error-message">
-            <p>{errorMessage}</p>
-            <p className="error-hint">
-            {t('login_error_hint')}
-            </p>
-          </div>
-        )}
 
         <form onSubmit={handleSubmit}>
           <div className="form-group">

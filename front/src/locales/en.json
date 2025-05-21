@@ -10,6 +10,7 @@
     "_comment2": "============== HOME ==============",
     "breadcrump_home": "Home",
     "project_view_panel": "Project Dashboard",
+    "home_error_date": "Due date is invalid",
     "_comment3": "============== REGISTER ==============",
     "register_title": "Registration",
     "register_username_label": "Username (required):",
@@ -48,6 +49,8 @@
     "calendar_add_event": "Add event",
     "calendar_loading_events": "Loading events...",
     "calendar_redirecting": "Redirecting to login page...",
+    "calendar_error_title": "Fill in the title",
+    "calendar_error_date": "The date must be in the future",
     
     "_comment8": "============== MONTHS AND DAYS ==============",
     "month_january": "January",
@@ -173,7 +176,8 @@
     "appearance_theme": "Color theme",
     "appearance_theme_dark": "Dark",
     "appearance_theme_light": "Light",
-    "appearance_theme_raspberry": "Red",
+    "appearance_theme_raspberry": "Raspberry",
+    "appearance_theme_forest": "Forest",
     
     "_comment22": "============== LANGUAGE SECTION ==============",
     "language_title": "Language & Region",

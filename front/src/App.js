@@ -15,6 +15,7 @@ import Register from './pages/Register';
 import TaskListPage from './components/TaskList/TaskList';
 import ProtectedRoute from './components/shared/ProtectedRoute';
 import Layout from './components/Layout/Layout';
+import ConfirmEmail from './pages/Email/ConfirmEmail';
 import './index.css';
 
 const App = () => {
@@ -39,7 +40,7 @@ const App = () => {
       const token = localStorage.getItem('token');
 
       if (!storedUser || !token) {
-        dispatch(logout());
+        // dispatch(logout());
         setIsLoading(false);
         return;
       }
@@ -77,6 +78,7 @@ const App = () => {
   return (
     <Router>
       <Routes>
+        <Route path="/confirm-email/:token" element={<ConfirmEmail />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route
@@ -102,11 +104,11 @@ const App = () => {
         <Route
           path="/project"
           element={
-            <ProtectedRoute>
+            //<ProtectedRoute>
               <Layout>
                 <Project />
               </Layout>
-            </ProtectedRoute>
+            //</ProtectedRoute>
           }
         />
         {/* <Route

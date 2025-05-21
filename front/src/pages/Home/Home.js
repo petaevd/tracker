@@ -157,6 +157,7 @@ const Home = () => {
     priority: "low",
     project_id: "",
     tags: "",
+    createdAt: "",
   });
 
   const resetFormTask = () => {
@@ -167,7 +168,8 @@ const Home = () => {
       due_date: "",
       priority: "low",
       project_id: "",
-    tags: "",
+      createdAt: "",
+      tags: "",
     });
   };
 
@@ -186,6 +188,15 @@ const Home = () => {
   
   const handleCreateTask = async () => {
     const normalizedTags = normalizeTags(formTask.tags);
+    const dueDate = new Date(formTask.due_date);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+  
+    if (dueDate < today) {
+      toast.error(t(`home_error_date`));
+      return;
+    }
+  
     try {
       await dispatch(addTask({ ...formTask, tags: normalizedTags.length === 0 ? null : normalizedTags.join(', '), creator_id: user.id, status: "open" })).unwrap();
       setShowTaskModal(false);
@@ -212,6 +223,13 @@ const Home = () => {
 
   const handleUpdateTask = async () => {
     const normalizedTags = normalizeTags(formTask.tags);
+    const createdAt = new Date(formTask.createdAt);
+    const dueDate = new Date(formTask.due_date);
+  
+    if (dueDate < createdAt) {
+      toast.error(t(`home_error_date`));
+      return;
+    }
   
     try {
       await dispatch(updateExistingTask({
@@ -282,28 +300,34 @@ const Home = () => {
   };
   
   const ganttTasks = tasks
-    .filter(task => {
-      const valid = task &&
-        task.id &&
-        task.title &&
-        isValidDate(task.createdAt) &&
-        isValidDate(task.due_date);
-      
-      if (!valid) {
-        console.warn('❌ Invalid task skipped:', task);
-      }
-      return valid;
-    })
-    .map(task => ({
-      id: task.id.toString(),
-      name: task.title,
-      start: new Date(task.createdAt),
-      end: new Date(task.due_date),
-      type: 'task',
-      className: `task-${task.priority}`,
-      progress: 100,
-      isDisabled: false,
-    }));
+  .filter(task => {
+    const createdAt = new Date(task.createdAt);
+    const dueDate = new Date(task.due_date);
+
+    const valid = task &&
+      task.id &&
+      task.title &&
+      isValidDate(createdAt) &&
+      isValidDate(dueDate) &&
+      dueDate >= createdAt;
+
+    if (!valid) {
+      console.warn('❌ Invalid or logically incorrect task skipped:', task);
+    }
+
+    return valid;
+  })
+  .map(task => ({
+    id: task.id.toString(),
+    name: task.title,
+    start: new Date(task.createdAt),
+    end: new Date(task.due_date),
+    type: 'task',
+    className: `task-${task.priority}`,
+    progress: 100,
+    isDisabled: false,
+  }));
+
   
 
 
@@ -478,9 +502,9 @@ const getEventsForDay = (day, month, year) => {
         {/* First row of cards */}
         <nav className="cards-row">
           {/* Progress card */}
-          <nav className="dashboard-card progress-card" style={{ backgroundColor: "rgba(255, 255, 255, 0.1)" }}>
+          <nav className="dashboard-card-v2 progress-card">
             <nav className="progress-header">
-              <h3 className="card-title">{t('progress_card_title')}</h3>
+              <h3 className="">{t('progress_card_title')}</h3>
             </nav>
   
             <nav className="circular-progress-wrapper">
@@ -550,13 +574,14 @@ const getEventsForDay = (day, month, year) => {
           </nav>
           
           {/* Tasks card */}
-          <nav className="dashboard-card tasks-card" style={{ backgroundColor: "rgba(255, 255, 255, 0.1)" }}>
-            <nav className="tasks-header">
+          <nav className="dashboard-card-v2 tasks-card">
+            
+            {/* <nav className="tasks-header"> */}
               <nav className="tasks-header-content">
-                <h3 className="card-title">{t('tasks_card_title')}</h3>
+                <h3 className="">{t('tasks_card_title')}</h3>
                 <span className="tasks-count">{tasks.length}</span>
               </nav>
-            </nav>
+            {/* </nav> */}
   
             <select
               value={filterTask}
@@ -656,10 +681,10 @@ const getEventsForDay = (day, month, year) => {
           </nav>
           
           {/* Calendar card */}
-          <nav className="dashboard-card calendar-card" style={{ backgroundColor: "rgba(255, 255, 255, 0.1)" }}>
+          <nav className="dashboard-card-v2 calendar-card" style={{ backgroundColor: "rgba(255, 255, 255, 0.1)" }}>
             <nav className="calendar-header">
-              <nav className="calendar-title-container">
-                <h3 className="card-title">{t('calendar_card_title')}</h3>
+              <nav className="calendar-title-container ">
+                <h3 className="">{t('calendar_card_title')}</h3>
                 <nav className="month-selector">
                   <span 
                     className="current-month"

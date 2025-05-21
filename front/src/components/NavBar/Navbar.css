@@ -2,44 +2,143 @@
   position: fixed;
   left: 0;
   top: 0;
-  height: 100vh; /* Адаптивная высота */
+  height: 100vh;
   width: 90px;
-  background-color: #000000;
+  background-color: var(--bg-color);
   display: flex;
   flex-direction: column;
   align-items: center;
   padding-top: 120px;
-  border-right: 1px solid rgba(255, 255, 255, 0.2);
-  z-index: 1000; /* Ниже TopBar */
+  border-right: 1px solid var(--border-color);
+  z-index: 1000;
+  transition: all 0.3s ease;
 }
 
 .navbar-icons {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
+  gap: 25px; /* Увеличенный отступ между иконками */
+  width: 100%;
+}
+
+.nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  position: relative;
 }
 
 .icon-circle {
-  width: 40px;
-  height: 40px;
+  width: 50px; /* Немного увеличен размер */
+  height: 50px;
   border-radius: 50%;
-  border: 0.1px solid #e0c1ff7f;
+  border: 1px solid rgba(var(--accent-color), 0.3);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   transition: all 0.3s ease;
+  background-color: var(--card-bg);
 }
 
 .icon-circle svg {
-  color: white;
+  color: var(--text-color);
+  font-size: 1.2rem; /* Увеличен размер иконок */
+  transition: all 0.3s ease;
 }
 
 .icon-circle.active {
-  background-color: #9A48EA;
+  background-color: var(--accent-color);
+  border-color: var(--accent-color);
+  box-shadow: 0 0 15px rgba(var(--accent-color), 0.4);
+}
+
+.icon-circle.active svg {
+  color: white;
+}
+
+.icon-circle:hover:not(.active) {
+  transform: translateY(-3px);
+  background-color: rgba(var(--accent-color), 0.2);
+  border-color: var(--accent-color);
+}
+
+.nav-label {
+  position: absolute;
+  left: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: var(--card-bg);
+  color: var(--text-color);
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.2s ease;
+  pointer-events: none;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--border-color);
+  margin-left: 15px;
+}
+
+.nav-item:hover .nav-label {
+  opacity: 1;
+  visibility: visible;
+  margin-left: 20px;
+}
+
+/* Индикатор активной страницы */
+.nav-item::before {
+  content: '';
+  position: absolute;
+  right: -1px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 0;
+  background-color: var(--accent-color);
+  border-radius: 3px 0 0 3px;
+  transition: all 0.3s ease;
+}
+
+.nav-item.active::before {
+  height: 30px;
+}
+
+/* Адаптация для мобильных устройств */
+@media (max-width: 768px) {
+  .navbar-container {
+    width: 70px;
+    padding-top: 100px;
+  }
+  
+  .icon-circle {
+    width: 45px;
+    height: 45px;
+  }
+  
+  .navbar-icons {
+    gap: 20px;
+  }
+}
+
+/* Анимация при наведении */
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(var(--accent-color), 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(var(--accent-color), 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(var(--accent-color), 0);
+  }
 }
 
 .icon-circle:hover {
-  transform: scale(1.1);
+  animation: pulse 1.5s infinite;
 }
