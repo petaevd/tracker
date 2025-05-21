@@ -11,3 +11,13 @@ export const registerUser = async (userData) => {
   const response = await api.post('/auth/register', userData);
   return response.data;
 };
+
+export const verifyEmailToken = async (token) => {
+  const response = await api.get(`/auth/confirm-email?token=${token}`);
+  return response.data;
+};
+
+// export const resendConfirmationEmail = async (email) => {
+//   const response = await api.post('/auth/resend-confirmation', { email });
+//   return response.data;
+// };

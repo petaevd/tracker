@@ -5,6 +5,7 @@ import { login } from '../store/slices/authSlice';
 import { loginUser } from '../api/authApi';
 import './auth.css';
 import { useTranslation } from 'react-i18next';
+import { toast, ToastContainer } from 'react-toastify';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -26,10 +27,7 @@ const Login = () => {
   const dispatch = useDispatch();
 
   const handleSubmit = async (e) => {
-    console.log("Form submitted!");
-    console.log(e);
     e.preventDefault();
-    e.stopPropagation();
     setErrorMessage('');
     setIsLoading(true);
   
@@ -48,15 +46,14 @@ const Login = () => {
       }));
       localStorage.setItem('user', JSON.stringify(response.user));
       localStorage.setItem('token', response.token);
-      console.log(localStorage.getItem('token'))
-      // navigate('/');
+      navigate('/');
     } catch (error) {
       const errorMsg = error.response?.data?.message ||
+                       error.response?.data?.error ||
                        error.response?.statusText ||
                        error.message ||
                        'Неизвестная ошибка';
-      setErrorMessage(errorMsg);
-      console.log(localStorage.getItem('token'))
+      toast.error(errorMsg);
     } finally {
       setIsLoading(false);
     }
@@ -64,17 +61,11 @@ const Login = () => {
 
   return (
     <div className="auth-bg">
+      <div>
+        <ToastContainer />
+      </div>
       <div className="auth-container">
         <h2>{t('login_auth')}</h2>
-
-        {errorMessage && (
-          <div className="error-message">
-            <p>{errorMessage}</p>
-            <p className="error-hint">
-            {t('login_error_hint')}
-            </p>
-          </div>
-        )}
 
         <form onSubmit={handleSubmit}>
           <div className="form-group">
