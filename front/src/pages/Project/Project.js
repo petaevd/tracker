@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { getProjects, addProject, editProject, removeProject } from '../../store/slices/projectSlice';
 import { getTeams, addTeam, editTeam, removeTeam, searchUsers, clearSearchResults } from '../../store/slices/teamSlice';
-import { toast } from 'react-toastify';
+import { toast, ToastContainer } from 'react-toastify';
 import './Project.css';
 import {  FaTimes, } from "react-icons/fa";
 import { useTranslation } from 'react-i18next';
@@ -220,6 +220,9 @@ const Project = () => {
 
   return (
     <div className="project-container">
+      <div>
+        <ToastContainer />
+      </div>
       <div className="main-content">
         <div className="breadcrumb">
           {t('project_breadcrumb_home')} / {activeTab === 'activeProjects' 

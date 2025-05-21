@@ -18,6 +18,48 @@ body {
   --success-color: #34c759;
   --warning-color: #ffcc00;
   --info-color: #007aff;
+  --toastify-toast-bg: var(--secondary-text);
+  --toastify-text-color: var(--text-color);
+  --toastify-accent: var(--accent-color);
+  --toastify-border: var(--border-color);
+  --toastify-error-bg: var(--error-color);
+  --toastify-success-bg: var(--bg-color);
+}
+
+/* Стилизация контейнера */
+.Toastify__toast-container {
+  z-index: 9999;
+}
+
+/* Базовый тост */
+.Toastify__toast {
+  background: var(--toastify-toast-bg);
+  color: var(--toastify-text-color);
+  border: 1px solid var(--toastify-border);
+  border-radius: 8px;
+  padding: 10px 15px;
+  font-size: 0.9rem;
+}
+
+/* Иконка */
+.Toastify__toast-icon {
+  color: var(--toastify-accent);
+}
+
+/* Тосты по типу */
+.Toastify__toast--success {
+  background: var(--toastify-success-bg);
+  /* color: #fff; */
+}
+
+.Toastify__toast--error {
+  background: var(--toastify-error-bg);
+  color: #fff;
+}
+
+/* Прогресс-бар */
+.Toastify__progress-bar {
+  background: var(--toastify-accent);
 }
 
 /* Темная тема (по умолчанию) */
@@ -29,7 +71,7 @@ body {
   --card-bg: rgba(255, 255, 255, 0.05);
   --border-color: rgba(255, 255, 255, 0.1);
   --error-color: #cf6679;
-  --success-color: #03dac6;
+  --success-color: #4a7773;
 }
 
 /* Светлая тема */
@@ -41,7 +83,7 @@ body {
   --card-bg: rgba(0, 0, 0, 0.05);
   --border-color: rgba(0, 0, 0, 0.1);
   --error-color: #b00020;
-  --success-color: #018786;
+  --success-color: #a8c3c3;
 }
 
 /* Raspberry тема */
@@ -79,3 +121,4 @@ body {
   --error-color: #ff7043;
   --success-color: #a5d6a7;
 }
+
