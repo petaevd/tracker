@@ -464,27 +464,27 @@ const getEventsForDay = (day, month, year) => {
   const dates = generateCalendar();
 
   return (
-    <div className="home-container">
-      <div>
+    <nav className="home-container">
+      <nav>
         <ToastContainer />
-      </div>
-      <div className="main-content">
-        <div className="breadcrumb">{t('breadcrump_home')}</div>
+      </nav>
+      <nav className="main-content">
+        <nav className="breadcrumb">{t('breadcrump_home')}</nav>
         <h1 className="dashboard-title">{t('project_view_panel')}</h1>
         
-        {error && <div className="error-message">{error}</div>}
-        {loading && <div className="loading-message">{t('loading_events')}</div>}
+        {error && <nav className="error-message">{error}</nav>}
+        {loading && <nav className="loading-message">{t('loading_events')}</nav>}
         
         {/* First row of cards */}
-        <div className="cards-row">
+        <nav className="cards-row">
           {/* Progress card */}
-          <div className="dashboard-card progress-card" style={{ backgroundColor: "rgba(255, 255, 255, 0.1)" }}>
-            <div className="progress-header">
+          <nav className="dashboard-card progress-card" style={{ backgroundColor: "rgba(255, 255, 255, 0.1)" }}>
+            <nav className="progress-header">
               <h3 className="card-title">{t('progress_card_title')}</h3>
-            </div>
+            </nav>
   
-            <div className="circular-progress-wrapper">
-              <div className="circular-progress">
+            <nav className="circular-progress-wrapper">
+              <nav className="circular-progress">
                 <svg viewBox="0 0 100 100">
                   <circle 
                     cx="50" 
@@ -520,43 +520,43 @@ const getEventsForDay = (day, month, year) => {
                     fill="none"
                   />
                 </svg>
-                <div className="progress-percent">{percent}%</div>
-              </div>
+                <nav className="progress-percent">{percent}%</nav>
+              </nav>
   
-              <div className="progress-stats-row">
-                <div className="stat-item">
-                  <div className="stat-color" style={{backgroundColor: '#59b25c'}}></div>
-                  <div>
-                    <div className="stat-value">{completedCount}</div>
-                    <div className="stat-label">{t('progress_completed')}</div>
-                  </div>
-                </div>
-                <div className="stat-item">
-                  <div className="stat-color" style={{backgroundColor: '#9A48EA'}}></div>
-                  <div>
-                    <div className="stat-value">{inProgressCount}</div>
-                    <div className="stat-label">{t('progress_in_work')}</div>
-                  </div>
-                </div>
-                <div className="stat-item">
-                  <div className="stat-color" style={{backgroundColor: '#db163a'}}></div>
-                  <div>
-                    <div className="stat-value">{notStartedCount}</div>
-                    <div className="stat-label">{t('progress_not_started')}</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+              <nav className="progress-stats-row">
+                <nav className="stat-item">
+                  <nav className="stat-color" style={{backgroundColor: '#59b25c'}}></nav>
+                  <nav>
+                    <nav className="stat-value">{completedCount}</nav>
+                    <nav className="stat-label">{t('progress_completed')}</nav>
+                  </nav>
+                </nav>
+                <nav className="stat-item">
+                  <nav className="stat-color" style={{backgroundColor: '#9A48EA'}}></nav>
+                  <nav>
+                    <nav className="stat-value">{inProgressCount}</nav>
+                    <nav className="stat-label">{t('progress_in_work')}</nav>
+                  </nav>
+                </nav>
+                <nav className="stat-item">
+                  <nav className="stat-color" style={{backgroundColor: '#db163a'}}></nav>
+                  <nav>
+                    <nav className="stat-value">{notStartedCount}</nav>
+                    <nav className="stat-label">{t('progress_not_started')}</nav>
+                  </nav>
+                </nav>
+              </nav>
+            </nav>
+          </nav>
           
           {/* Tasks card */}
-          <div className="dashboard-card tasks-card" style={{ backgroundColor: "rgba(255, 255, 255, 0.1)" }}>
-            <div className="tasks-header">
-              <div className="tasks-header-content">
+          <nav className="dashboard-card tasks-card" style={{ backgroundColor: "rgba(255, 255, 255, 0.1)" }}>
+            <nav className="tasks-header">
+              <nav className="tasks-header-content">
                 <h3 className="card-title">{t('tasks_card_title')}</h3>
                 <span className="tasks-count">{tasks.length}</span>
-              </div>
-            </div>
+              </nav>
+            </nav>
   
             <select
               value={filterTask}
@@ -575,7 +575,7 @@ const getEventsForDay = (day, month, year) => {
               <option value="high-priority">{t('tasks_filter_high_priority')}</option>
             </select>
             
-            <div className="add-task-container">
+            <nav className="add-task-container">
               <button
                 className="add-task-btn"
                 onClick={() => {
@@ -586,14 +586,14 @@ const getEventsForDay = (day, month, year) => {
                 <FiPlus className="plus-icon" />
                 <span className="add-task-text">{t('tasks_add_button')}</span>
               </button>
-            </div>
+            </nav>
   
-            <div className="tasks-list">
+            <nav className="tasks-list">
               {filterTasks(tasks)
                 .slice((currentPage - 1) * 2, currentPage * 2)
                 .map(task => task && (
-                  <div key={task.id} className={`task-item ${task.status === 'closed' ? 'completed' : ''}`}>
-                    <div className="task-content">
+                  <nav key={task.id} className={`task-item ${task.status === 'closed' ? 'completed' : ''}`}>
+                    <nav className="task-content">
                       <input
                         type="checkbox"
                         checked={task.status === 'closed'}
@@ -601,14 +601,14 @@ const getEventsForDay = (day, month, year) => {
                         className="task-checkbox"
                         data-testid={`status-checkbox-${task.id}`}
                       />
-                      <div className="task-text-container">
-                        <div className="task-title">{task.title}</div>
+                      <nav className="task-text-container">
+                        <nav className="task-title">{task.title}</nav>
                         {task.description && (
-                          <div className="task-description">{task.description}</div>
+                          <nav className="task-description">{task.description}</nav>
                         )}
-                      </div>
-                    </div>
-                    <div className="task-actions">
+                      </nav>
+                    </nav>
+                    <nav className="task-actions">
                       {favoriteTasks.some(fav => fav.id === task.id) ? (
                         <FaStar
                           className="task-action-icon"
@@ -630,13 +630,13 @@ const getEventsForDay = (day, month, year) => {
                         }}
                         title={t('task_edit')}
                       />
-                    </div>
-                  </div>
+                    </nav>
+                  </nav>
                 ))}
-            </div>
+            </nav>
   
             {filterTasks(tasks).length > 2 && (
-              <div className="pagination">
+              <nav className="pagination">
                 <button
                   onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
                   disabled={currentPage === 1}
@@ -651,16 +651,16 @@ const getEventsForDay = (day, month, year) => {
                 >
                   &gt;
                 </button>
-              </div>
+              </nav>
             )}
-          </div>
+          </nav>
           
           {/* Calendar card */}
-          <div className="dashboard-card calendar-card" style={{ backgroundColor: "rgba(255, 255, 255, 0.1)" }}>
-            <div className="calendar-header">
-              <div className="calendar-title-container">
+          <nav className="dashboard-card calendar-card" style={{ backgroundColor: "rgba(255, 255, 255, 0.1)" }}>
+            <nav className="calendar-header">
+              <nav className="calendar-title-container">
                 <h3 className="card-title">{t('calendar_card_title')}</h3>
-                <div className="month-selector">
+                <nav className="month-selector">
                   <span 
                     className="current-month"
                     onClick={() => setShowMonthDropdown(!showMonthDropdown)}
@@ -669,39 +669,39 @@ const getEventsForDay = (day, month, year) => {
                     <FaChevronDown className="dropdown-icon" />
                   </span>
                   {showMonthDropdown && (
-                    <div className="month-dropdown-menu">
+                    <nav className="month-dropdown-menu">
                       {monthNames.map((month, index) => (
-                        <div 
+                        <nav 
                           key={index}
                           className={`month-dropdown-item ${currentDate.getMonth() === index ? 'selected' : ''}`}
                           onClick={() => changeMonth(index)}
                         >
                           {month}
-                        </div>
+                        </nav>
                       ))}
-                    </div>
+                    </nav>
                   )}
-                </div>
-              </div>
-            </div>
+                </nav>
+              </nav>
+            </nav>
             
-            <div className="calendar-grid-mini">
-              <div className="calendar-days-container">
-                <div className="calendar-week-days">
+            <nav className="calendar-grid-mini">
+              <nav className="calendar-days-container">
+                <nav className="calendar-week-days">
                   {days.map((day, index) => (
-                    <div key={index} className="calendar-day-label">{day}</div>
+                    <nav key={index} className="calendar-day-label">{day}</nav>
                   ))}
-                </div>
-                <div className="calendar-days-grid">
+                </nav>
+                <nav className="calendar-days-grid">
                   {dates.map((date, index) => (
-                    <div 
+                    <nav 
                       key={index} 
                       className="calendar-day-cell"
                       onMouseEnter={(e) => handleMouseEnter(date, e)}
                       onMouseLeave={() => setHoveredDate(null)}
                     >
                       {date.day ? (
-                        <div 
+                        <nav 
                           className={`calendar-day-number ${date.isToday ? 'today' : ''}`}
                           style={{
                             backgroundColor: date.hasEvents ? date.events[0].color : 'rgba(255, 255, 255, 0.1)',
@@ -710,40 +710,40 @@ const getEventsForDay = (day, month, year) => {
                         >
                           {date.day}
                           {date.isToday && !date.hasEvents && (
-                            <div className="today-dot"></div>
+                            <nav className="today-dot"></nav>
                           )}
                           {date.hasEvents && date.events.length > 1 && (
-                            <div className="multiple-events-indicator">
+                            <nav className="multiple-events-indicator">
                               +{date.events.length - 1}
-                            </div>
+                            </nav>
                           )}
-                        </div>
+                        </nav>
                       ) : (
-                        <div className="calendar-empty-cell"></div>
+                        <nav className="calendar-empty-cell"></nav>
                       )}
-                    </div>
+                    </nav>
                   ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+                </nav>
+              </nav>
+            </nav>
+          </nav>
+        </nav>
   
-        <div>
+        <nav>
           <h2 className='mb-5'>{t('gantt_chart_title')}</h2>
           {ganttTasks.length === 0 ? (
             <p>{t('gantt_loading')}</p>
           ) : (
             <Gantt tasks={ganttTasks} viewMode={ViewMode.Day} listCellWidth='' />
           )}
-        </div>
-      </div>
+        </nav>
+      </nav>
   
       {/* Task modal */}
       {showTaskModal && (
-        <div className="event-modal-overlay">
-          <div className="event-modal">
-            <div className="event-modal-header">
+        <nav className="event-modal-overlay">
+          <nav className="event-modal">
+            <nav className="event-modal-header">
               <h3>{formTask.id ? t('task_modal_title_edit') : t('task_modal_title_create')}</h3>
               <button
                 className="close-modal"
@@ -754,29 +754,30 @@ const getEventsForDay = (day, month, year) => {
               >
                 <FaTimes />
               </button>
-            </div>
+            </nav>
   
-            <div className="event-form">
-              <div className="form-group">
-                <label>{t('task_label_title')}</label>
+            <nav className="event-form">
+              <nav className="form-group">
+                <label htmlFor="task-title">{t('task_label_title')}</label>
                 <input
+                  id="task-title"
                   type="text"
                   className="form-control"
                   value={formTask.title}
                   onChange={(e) => setFormTask({ ...formTask, title: e.target.value })}
                 />
-              </div>
+              </nav>
   
-              <div className="form-group">
+              <nav className="form-group">
                 <label>{t('task_label_description')}</label>
                 <textarea
                   className="form-control"
                   value={formTask.description}
                   onChange={(e) => setFormTask({ ...formTask, description: e.target.value })}
                 />
-              </div>
+              </nav>
   
-              <div className="form-group">
+              <nav className="form-group">
                 <label>{t('task_label_due_date')}</label>
                 <input
                   type="date"
@@ -784,9 +785,9 @@ const getEventsForDay = (day, month, year) => {
                   value={formTask.due_date}
                   onChange={(e) => setFormTask({ ...formTask, due_date: e.target.value })}
                 />
-              </div>
+              </nav>
   
-              <div className="form-group">
+              <nav className="form-group">
                 <label>{t('task_label_priority')}</label>
                 <select
                   className="form-select"
@@ -797,9 +798,9 @@ const getEventsForDay = (day, month, year) => {
                   <option value="medium">{t('task_priority_medium')}</option>
                   <option value="high">{t('task_priority_high')}</option>
                 </select>
-              </div>
+              </nav>
   
-              <div className="form-group">
+              <nav className="form-group">
                 <label>{t('task_label_project')}</label>
                 <select
                   className="form-select"
@@ -813,19 +814,19 @@ const getEventsForDay = (day, month, year) => {
                     </option>
                   ))}
                 </select>
-              </div>
+              </nav>
   
-              <div className="form-group">
+              <nav className="form-group">
                 <label>{t('task_label_tags')}</label>
                 <textarea
                   className="form-control"
                   value={formTask.tags}
                   onChange={(e) => setFormTask({ ...formTask, tags: e.target.value })}
                 />
-              </div>
+              </nav>
   
               {formTask.id && (
-                <div className="form-group">
+                <nav className="form-group">
                   <label>{t('task_label_status')}</label>
                   <select
                     className="form-select"
@@ -837,10 +838,10 @@ const getEventsForDay = (day, month, year) => {
                     <option value="in_test">{t('task_status_in_test')}</option>
                     <option value="closed">{t('task_status_closed')}</option>
                   </select>
-                </div>
+                </nav>
               )}
   
-              <div className="form-actions">
+              <nav className="form-actions">
                 <button
                   className="save-event-button"
                   onClick={formTask.id ? handleUpdateTask : handleCreateTask}
@@ -854,47 +855,47 @@ const getEventsForDay = (day, month, year) => {
                 >
                   {formTask.id ? t('task_button_save') : t('task_button_create')}
                 </button>
-              </div>
-            </div>
-          </div>
-        </div>
+              </nav>
+            </nav>
+          </nav>
+        </nav>
       )}
   
       {/* Event tooltip */}
       {hoveredDate?.events?.[0] && (
-        <div 
+        <nav 
           className="event-tooltip" 
           style={{ 
             left: `${tooltipPosition.x}px`, 
             top: `${tooltipPosition.y}px` 
           }}
         >
-          <div className="event-tooltip-header">
-            <div 
+          <nav className="event-tooltip-header">
+            <nav 
               className="event-color" 
               style={{ backgroundColor: hoveredDate.events[0].color }}
-            ></div>
-            <div className="event-title">{hoveredDate.events[0].title}</div>
-          </div>
-          <div className="event-time">
+            ></nav>
+            <nav className="event-title">{hoveredDate.events[0].title}</nav>
+          </nav>
+          <nav className="event-time">
             <FiClock size={14} />
             {hoveredDate.events[0].event_time}
-          </div>
-          <div className="event-date">
+          </nav>
+          <nav className="event-date">
             {new Date(hoveredDate.events[0].event_date).toLocaleDateString('ru-RU', {
               day: 'numeric', 
               month: 'long', 
               weekday: 'long'
             })}
-          </div>
+          </nav>
           {hoveredDate.events[0].description && (
-            <div className="event-description">
+            <nav className="event-description">
               {hoveredDate.events[0].description}
-            </div>
+            </nav>
           )}
-        </div>
+        </nav>
       )}
-    </div>
+    </nav>
   );
 };
 
