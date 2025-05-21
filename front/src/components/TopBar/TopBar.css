@@ -4,8 +4,8 @@
   align-items: center;
   padding: 10px 20px;
   padding-left: 90px; /* Учитываем ширину Navbar */
-  background-color: #000000; /* Синхронизировал с --bg-color */
-  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  background-color: var(--bg-color); /* Синхронизировал с --bg-color */
+  border-bottom: 1px solid var(--border-color);
   position: fixed;
   top: 0;
   width: 100%;
@@ -19,7 +19,7 @@
 }
 
 .share-button {
-  background-color: rgba(255, 255, 255, 0.18);
+  background-color: var(--accent-color);
   border: none;
   width: 40px;
   height: 40px;
@@ -33,7 +33,7 @@
 }
 
 .share-button:hover {
-  background-color: rgba(255, 255, 255, 0.2);
+  background-color: var(--secondary-text);
 }
 
 .user-controls {
@@ -47,7 +47,7 @@
   height: 40px;
   border-radius: 50%;
   overflow: hidden;
-  background-color: #9A48EA; /* --accent-color */
+  background-color: var(--accent-color);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -57,7 +57,7 @@
 }
 
 .logout-button {
-  background-color: rgba(255, 255, 255, 0.18);
+  background-color: var(--accent-color);
   border: none;
   width: 40px;
   height: 40px;
@@ -71,11 +71,11 @@
 }
 
 .logout-button:hover {
-  background-color: rgba(255, 255, 255, 0.2);
+  background-color: var(--secondary-text);
 }
 
 .login-btn {
-  background-color: rgba(255, 255, 255, 0.18);
+  background-color: var(--secondary-text);
   border: none;
   width: 40px;
   height: 40px;
@@ -89,5 +89,5 @@
 }
 
 .login-btn:hover {
-  background-color: rgba(255, 255, 255, 0.2);
+  background-color: var(--secondary-text);
 }

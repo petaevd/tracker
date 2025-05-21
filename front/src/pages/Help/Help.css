@@ -3,15 +3,6 @@
   overflow: hidden;
 }
 
-.dashboard-title {
-  font-size: 2.5rem;
-  margin-bottom: 2rem;
-  color: #ffffff;
-  text-shadow: 0 0 10px rgba(154, 72, 234, 0.5);
-  position: relative;
-  display: inline-block;
-}
-
 .help-sections {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
@@ -24,14 +15,14 @@
   border-radius: 16px;
   padding: 25px;
   backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--border-color);
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
   transform-origin: center;
   will-change: transform, box-shadow;
 }
 
 .help-section-title {
-  color: #9A48EA;
+  color: var(--text-color);
   font-size: 1.3rem;
   margin-bottom: 20px;
   padding-bottom: 12px;
@@ -48,9 +39,9 @@
   display: inline-block;
   width: 8px;
   height: 8px;
-  background-color: #9A48EA;
+  background-color:  var(--text-color);
   border-radius: 50%;
-  box-shadow: 0 0 10px #9A48EA;
+  box-shadow: 0 0 10px var(--text-color);
 }
 
 .help-item {
@@ -73,7 +64,7 @@
 }
 
 .help-question {
-  color: white;
+  color:  var(--text-color);
   font-size: 1.05rem;
   margin-bottom: 10px;
   font-weight: 500;
@@ -96,7 +87,7 @@
 }
 
 .help-answer {
-  color: rgba(255, 255, 255, 0.75);
+  color: var(--secondary-text);
   font-size: 0.95rem;
   line-height: 1.6;
   padding-left: 5px;

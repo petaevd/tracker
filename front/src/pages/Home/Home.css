@@ -1,6 +1,6 @@
 .home-container {
-  background-color: #000000;
-  color: white;
+  background-color: var(--bg-color);
+  color: var(--text-color);
   padding: 20px;
   min-height: 100vh;
   margin-left: 90px;
@@ -16,7 +16,7 @@
   font-size: 2.5rem;
   margin-bottom: 30px;
   text-align: left;
-  color: white;
+  color: var(--text-color);
   padding-left: 5px;
 }
 
@@ -26,28 +26,31 @@
   margin-bottom: 20px;
 }
 
-.dashboard-card {
-  background-color: rgba(255, 255, 255, 0.1);
+.dashboard-card-v2 {
+  color: var(--accent-color);
+  background-color: var(--card-bg);
   border-radius: 15px;
   padding: 20px;
   flex: 1;
   min-height: 150px;
   transition: all 0.3s ease;
+  border: 1px solid var(--border-color);
 }
 
-.dashboard-card:hover {
+.dashboard-card-v2:hover {
   transform: translateY(-5px);
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+  border-color: var(--accent-color);
 }
 
 .card-title {
-  color: white;
+  color: var(--text-color);
   font-size: 1.2rem;
   margin-bottom: 15px;
 }
 
 .breadcrumb {
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--secondary-text);
   font-size: 0.8rem;
   margin-bottom: 5px;
   padding-left: 5px;
@@ -57,8 +60,9 @@
 
 /* Календарь */
 .calendar-card {
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: var(--card-bg);
   border-radius: 15px;
+  border: 1px solid var(--border-color);
 }
 
 .calendar-header {
@@ -66,21 +70,24 @@
   align-items: center;
   justify-content: space-between;
   margin-bottom: 10px;
+  padding: 15px 40px 0;
 }
 
 .calendar-title-container {
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 10px 15px;
 }
+
 
 .month-selector {
   position: relative;
-  top: -5px;
-  margin-left: 220px;
 }
 
 .current-month {
-  color: #9A48EA;
+  color: var(--accent-color);
   font-size: 1rem;
   font-weight: 500;
   display: flex;
@@ -91,33 +98,35 @@
 
 .dropdown-icon {
   font-size: 0.8rem;
-  color: #9A48EA;
+  color: var(--accent-color);
 }
 
 .month-dropdown-menu {
   position: absolute;
   top: 100%;
   right: 0;
-  background: #2a2a2a;
+  background: var(--card-bg);
   border-radius: 8px;
   padding: 8px 0;
   min-width: 150px;
   z-index: 10;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--border-color);
 }
 
 .month-dropdown-item {
   padding: 8px 16px;
   cursor: pointer;
   font-size: 0.9rem;
+  color: var(--text-color);
 }
 
 .month-dropdown-item:hover {
-  background: rgba(154, 72, 234, 0.2);
+  background: rgba(var(--accent-color), 0.2);
 }
 
 .month-dropdown-item.selected {
-  color: #9A48EA;
+  color: var(--accent-color);
 }
 
 .calendar-grid-mini {
@@ -130,6 +139,7 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
+  padding: 0 20px 20px;
 }
 
 .calendar-week-days {
@@ -141,7 +151,7 @@
   width: 32px;
   text-align: center;
   font-size: 0.8rem;
-  color: rgba(255, 255, 255, 0.7);
+  color: var(--secondary-text);
 }
 
 .calendar-days-grid {
@@ -153,6 +163,7 @@
 .calendar-day-cell {
   aspect-ratio: 1;
   display: flex;
+  color: var(--secondary-text);
   justify-content: center;
   align-items: center;
 }
@@ -170,22 +181,19 @@
   transition: all 0.2s ease;
   border: 1px solid transparent;
   cursor: pointer;
+  color: var(--text-color);
 }
 
 .calendar-day-number:hover {
   transform: scale(1.1);
-}
-
-.calendar-day-number.today {
-  font-weight: bold;
-  background-color: rgba(255, 255, 255, 0.2);
+  background-color: rgba(var(--accent-color), 0.1);
 }
 
 .calendar-empty-cell {
   width: 32px;
   height: 32px;
   opacity: 0.1;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  border-bottom: 1px solid var(--border-color);
 }
 
 /* Стили для точек событий и сегодняшнего дня */
@@ -195,6 +203,7 @@
   width: 6px;
   height: 4px;
   border-radius: 50%;
+  background-color: var(--accent-color);
 }
 
 .today-dot {
@@ -203,11 +212,11 @@
   width: 4px;
   height: 4px;
   border-radius: 50%;
-  background-color: white;
+  background-color: var(--text-color);
 }
 
 .calendar-day-number.today {
-  background: #9A48EA;
+  background: var(--accent-color);
   color: white;
   font-weight: bold;
 }
@@ -215,14 +224,14 @@
 /* Стили для тултипа */
 .event-tooltip {
   position: absolute;
-  background: #1E1E1E;
+  background: var(--card-bg);
   border-radius: 8px;
   padding: 12px;
   width: 220px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
   z-index: 1000;
   pointer-events: none;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--border-color);
   animation: fadeIn 0.2s ease-out;
 }
 
@@ -242,12 +251,13 @@
   width: 12px;
   height: 12px;
   border-radius: 3px;
+  background-color: var(--accent-color);
 }
 
 .event-title {
   font-weight: 600;
   font-size: 14px;
-  color: white;
+  color: var(--text-color);
 }
 
 .event-time {
@@ -255,22 +265,22 @@
   align-items: center;
   gap: 6px;
   font-size: 13px;
-  color: rgba(255, 255, 255, 0.8);
+  color: var(--secondary-text);
   margin-bottom: 4px;
 }
 
 .event-date {
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--secondary-text);
   margin-bottom: 8px;
 }
 
 .event-description {
   font-size: 13px;
   line-height: 1.4;
-  color: rgba(255, 255, 255, 0.8);
+  color: var(--secondary-text);
   padding-top: 8px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-top: 1px solid var(--border-color);
 }
 
 .multiple-events-indicator {
@@ -305,7 +315,7 @@
 .manage-btn {
   background: none;
   border: none;
-  color: #9A48EA;
+  color: var(--accent-color);
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
@@ -339,7 +349,7 @@
   transform: translate(-50%, -50%);
   font-size: 32px;
   font-weight: bold;
-  color: white;
+  color: var(--text-color);
 }
 
 .progress-stats-row {
@@ -367,21 +377,22 @@
 .stat-value {
   font-size: 20px;
   font-weight: bold;
-  color: white;
+  color: var(--text-color);
 }
 
 .stat-label {
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.7);
+  color: var(--secondary-text);
   margin-top: 2px;
 }
 
 /* Стили для плашки заданий */
 .tasks-card {
-  background: #1E1E1E;
+  background: var(--card-bg);
   border-radius: 12px;
   padding: 20px;
-  color: white;
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
 }
 
 .task-item {
@@ -410,7 +421,7 @@
   width: 18px;
   height: 18px;
   margin-top: 14px;
-  accent-color: #9A48EA;
+  accent-color: var(--accent-color);
   cursor: pointer;
 }
 
@@ -422,11 +433,12 @@
   font-weight: 600;
   font-size: 16px;
   margin-bottom: 4px;
+  color: var(--text-color);
 }
 
 .task-description {
   font-size: 14px;
-  color: rgba(255, 255, 255, 0.7);
+  color: var(--secondary-text);
   line-height: 1.4;
 }
 
@@ -443,13 +455,13 @@
 
 .task-action-icon {
   font-size: 18px;
-  color: #BDBAC1;
+  color: var(--secondary-text);
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .task-action-icon:hover {
-  color: #9A48EA;
+  color: var(--accent-color);
   transform: scale(1.1);
 }
 
@@ -462,9 +474,9 @@
 }
 
 .pagination button {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--card-bg);
   border: none;
-  color: white;
+  color: var(--text-color);
   padding: 6px 12px;
   border-radius: 4px;
   cursor: pointer;
@@ -472,7 +484,7 @@
 }
 
 .pagination button:hover:not(:disabled) {
-  background: rgba(154, 72, 234, 0.2);
+  background: rgba(var(--accent-color), 0.2);
 }
 
 .pagination button:disabled {
@@ -482,7 +494,7 @@
 
 .pagination span {
   font-size: 14px;
-  color: rgba(255, 255, 255, 0.7);
+  color: var(--secondary-text);
 }
 
 .tasks-header {
@@ -492,13 +504,13 @@
 }
 
 .tasks-header-content {
+  color: var(--accent-color);
   display: flex;
   align-items: center;
   gap: 10px;
 }
 
 .tasks-count {
-  background: rgba(255, 255, 255, 0.3);
   border-radius: 10px;
   padding: 3px 8px;
   font-size: 12px;
@@ -509,7 +521,7 @@
 .manage-btn {
   background: none;
   border: none;
-  color: #9A48EA;
+  color: var(--accent-color);
   font-size: 15px;
   font-weight: 500;
   margin-bottom: 10px;
@@ -528,8 +540,8 @@
   justify-content: center;
   gap: 10px;
   background: none;
-  border: 1px dashed #9A48EA;
-  color: #9A48EA;
+  border: 1px dashed var(--accent-color);
+  color: var(--accent-color);
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
@@ -540,7 +552,7 @@
 }
 
 .add-task-btn:hover {
-  background: rgba(126, 87, 194, 0.1);
+  background: rgba(var(--accent-color), 0.1);
   border-style: solid;
 }
 
@@ -554,7 +566,7 @@
   align-items: center;
   gap: 16px;
   padding: 12px;
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--card-bg);
   border-radius: 8px;
 }
 
@@ -562,45 +574,46 @@
   font-size: 18px;
   font-weight: bold;
   line-height: 1.4;
-  color: #ffffff;
+  color: var(--text-color);
   flex-grow: 1;
 }
-.form-group{
-margin-bottom: 10px;
+
+.form-group {
+  margin-bottom: 10px;
 }
 
 .check-icon {
-  color: #5e35b1;
+  color: var(--accent-color);
   font-size: 10px;
 }
+
 .tasks-list {
   display: flex;
   flex-direction: column;
-  gap: px;
+  gap: 8px;
 }
+
 .tasks-icon {
-  color: #bdbac1;
+  color: var(--secondary-text);
   font-size: 32px;
   cursor: pointer;
   padding: 6px;
-  border: 1px solid #bdbac1;
+  border: 1px solid var(--secondary-text);
   border-radius: 50%;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  /* width: 24px;
-  height: 24px; 
-  */
 }
 
 .tasks-icon:hover {
   background: rgba(255, 255, 255, 0.167);
-  border-style: solid;
+  border-color: var(--accent-color);
+  color: var(--accent-color);
 }
 
 .task-item.completed .task-text {
   text-decoration: line-through;
-  color: rgba(255, 255, 255, 0.29);
+  color: var(--secondary-text);
 }
 
 .difficulty-badge.low {
@@ -628,8 +641,8 @@ margin-bottom: 10px;
   width: 36px;
   height: 36px;
   padding: 0;
-  background-color: #222222;
-  color: white;
+  background-color: var(--card-bg);
+  color: var(--text-color);
   border: none;
   border-radius: 4px;
   cursor: pointer;
@@ -638,21 +651,21 @@ margin-bottom: 10px;
 }
 
 .pagination button.active {
-  background-color: #5e35b1;
+  background-color: var(--accent-color);
   color: white;
 }
 
 .pagination .dots {
-  color: white;
-  background-color: #222222;
+  color: var(--text-color);
+  background-color: var(--card-bg);
   border-radius: 4px;
   padding: 6px 10px;
 }
 
 .filter-select {
-  background-color: #2a2a2a;
-  color: white;
-  border: 1px solid #5e35b1;
+  background-color: var(--card-bg);
+  color: var(--text-color);
+  border: 1px solid var(--accent-color);
   padding: 8px 12px;
   border-radius: 6px;
   font-size: 14px;
@@ -666,8 +679,8 @@ margin-bottom: 10px;
 }
 
 .filter-select option {
-  background-color: #2a2a2a;
-  color: white;
+  background-color: var(--card-bg);
+  color: var(--text-color);
 }
 
 .text-line-through {
@@ -688,16 +701,18 @@ margin-bottom: 10px;
 }
 
 .modal-content {
-  background: #fff;
+  background: var(--card-bg);
   padding: 2rem;
   border-radius: 12px;
   width: 400px;
   max-width: 90%;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--border-color);
 }
 
 .modal-content h2 {
   margin-top: 0;
+  color: var(--text-color);
 }
 
 .modal-content input,
@@ -706,7 +721,9 @@ margin-bottom: 10px;
   margin-bottom: 1rem;
   padding: 0.75rem;
   border-radius: 6px;
-  border: 1px solid #ccc;
+  border: 1px solid var(--border-color);
+  background: var(--card-bg);
+  color: var(--text-color);
 }
 
 .modal-actions {
@@ -716,7 +733,7 @@ margin-bottom: 10px;
 }
 
 .submit-btn {
-  background-color: #1b8df7;
+  background-color: var(--accent-color);
   color: white;
   border: none;
   padding: 0.6rem 1rem;
@@ -726,5 +743,5 @@ margin-bottom: 10px;
 .cancel-btn {
   background: none;
   border: none;
-  color: #555;
+  color: var(--secondary-text);
 }

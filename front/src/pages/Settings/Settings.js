@@ -338,7 +338,7 @@ const Settings = () => {
       </div>
       <div className="main-content">
         <div className="breadcrumb">{t('settings_breadcrumb')}</div>
-        <h1 className="dashboard-title">{t('settings_title')}</h1>
+        <h1 className="">{t('settings_title')}</h1>
         <p className="dashboard-subtitle">{t('settings_subtitle')}</p>
   
         {error && <div className="error-message">{error}</div>}
@@ -637,6 +637,15 @@ const Settings = () => {
                         <FaPalette />
                       </div>
                       <span>{t('appearance_theme_raspberry')}</span>
+                    </div>
+                    <div
+                      className={`theme-option ${theme == 'forest' ? 'active' : ''}`}
+                      onClick={() => {changeTheme('forest')}}
+                    >
+                      <div className="theme-preview forest-theme">
+                        <FaPalette />
+                      </div>
+                      <span>{t('appearance_theme_forest')}</span>
                     </div>
                   </div>
                 </div>

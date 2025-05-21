@@ -175,7 +175,8 @@
     "appearance_theme": "Color theme",
     "appearance_theme_dark": "Dark",
     "appearance_theme_light": "Light",
-    "appearance_theme_raspberry": "Red",
+    "appearance_theme_raspberry": "Raspberry",
+    "appearance_theme_forest": "Forest",
     
     "_comment22": "============== LANGUAGE SECTION ==============",
     "language_title": "Language & Region",

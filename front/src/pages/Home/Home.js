@@ -478,9 +478,9 @@ const getEventsForDay = (day, month, year) => {
         {/* First row of cards */}
         <nav className="cards-row">
           {/* Progress card */}
-          <nav className="dashboard-card progress-card" style={{ backgroundColor: "rgba(255, 255, 255, 0.1)" }}>
+          <nav className="dashboard-card-v2 progress-card">
             <nav className="progress-header">
-              <h3 className="card-title">{t('progress_card_title')}</h3>
+              <h3 className="">{t('progress_card_title')}</h3>
             </nav>
   
             <nav className="circular-progress-wrapper">
@@ -550,13 +550,14 @@ const getEventsForDay = (day, month, year) => {
           </nav>
           
           {/* Tasks card */}
-          <nav className="dashboard-card tasks-card" style={{ backgroundColor: "rgba(255, 255, 255, 0.1)" }}>
-            <nav className="tasks-header">
+          <nav className="dashboard-card-v2 tasks-card">
+            
+            {/* <nav className="tasks-header"> */}
               <nav className="tasks-header-content">
-                <h3 className="card-title">{t('tasks_card_title')}</h3>
+                <h3 className="">{t('tasks_card_title')}</h3>
                 <span className="tasks-count">{tasks.length}</span>
               </nav>
-            </nav>
+            {/* </nav> */}
   
             <select
               value={filterTask}
@@ -656,10 +657,10 @@ const getEventsForDay = (day, month, year) => {
           </nav>
           
           {/* Calendar card */}
-          <nav className="dashboard-card calendar-card" style={{ backgroundColor: "rgba(255, 255, 255, 0.1)" }}>
+          <nav className="dashboard-card-v2 calendar-card" style={{ backgroundColor: "rgba(255, 255, 255, 0.1)" }}>
             <nav className="calendar-header">
-              <nav className="calendar-title-container">
-                <h3 className="card-title">{t('calendar_card_title')}</h3>
+              <nav className="calendar-title-container ">
+                <h3 className="">{t('calendar_card_title')}</h3>
                 <nav className="month-selector">
                   <span 
                     className="current-month"
