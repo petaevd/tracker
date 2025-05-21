@@ -282,28 +282,34 @@ const Home = () => {
   };
   
   const ganttTasks = tasks
-    .filter(task => {
-      const valid = task &&
-        task.id &&
-        task.title &&
-        isValidDate(task.createdAt) &&
-        isValidDate(task.due_date);
-      
-      if (!valid) {
-        console.warn('❌ Invalid task skipped:', task);
-      }
-      return valid;
-    })
-    .map(task => ({
-      id: task.id.toString(),
-      name: task.title,
-      start: new Date(task.createdAt),
-      end: new Date(task.due_date),
-      type: 'task',
-      className: `task-${task.priority}`,
-      progress: 100,
-      isDisabled: false,
-    }));
+  .filter(task => {
+    const createdAt = new Date(task.createdAt);
+    const dueDate = new Date(task.due_date);
+
+    const valid = task &&
+      task.id &&
+      task.title &&
+      isValidDate(createdAt) &&
+      isValidDate(dueDate) &&
+      dueDate >= createdAt;
+
+    if (!valid) {
+      console.warn('❌ Invalid or logically incorrect task skipped:', task);
+    }
+
+    return valid;
+  })
+  .map(task => ({
+    id: task.id.toString(),
+    name: task.title,
+    start: new Date(task.createdAt),
+    end: new Date(task.due_date),
+    type: 'task',
+    className: `task-${task.priority}`,
+    progress: 100,
+    isDisabled: false,
+  }));
+
   
 
 
