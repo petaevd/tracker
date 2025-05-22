@@ -601,8 +601,9 @@ const Settings = () => {
                       ? t('accessibility_voice_unavailable')
                       : t('accessibility_voice_hint')}
                   </p>
-                </div> */}
-              {/* </div> */}
+                </div>
+              </div>
+            )} */}
   
             {activeTab === 'appearance' && (
               <div className="settings-section">
@@ -637,7 +638,7 @@ const Settings = () => {
                       </div>
                       <span>{t('appearance_theme_raspberry')}</span>
                     </div>
-                    <div
+                    {/* <div
                       className={`theme-option ${theme == 'forest' ? 'active' : ''}`}
                       onClick={() => {changeTheme('forest')}}
                     >
@@ -645,7 +646,7 @@ const Settings = () => {
                         <FaPalette />
                       </div>
                       <span>{t('appearance_theme_forest')}</span>
-                    </div>
+                    </div> */}
                   </div>
                 </div>
               </div>

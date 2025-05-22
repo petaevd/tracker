@@ -277,6 +277,7 @@
 
 /* Dropdown styles */
 .month-view-dropdown {
+  background-color: var(--bg-color);
   position: relative;
   display: inline-block;
 }
@@ -285,7 +286,7 @@
   position: absolute;
   top: 100%;
   left: 0;
-  background-color: var(--card-bg);
+  background-color: var(--card-bg-rgb);
   border-radius: 8px;
   padding: 8px 0;
   min-width: 160px;
@@ -302,7 +303,6 @@
   font-size: 0.9rem;
   transition: background-color 0.2s;
 }
-
 .month-dropdown-item:hover {
   background-color: rgba(255, 255, 255, 0.1);
 }
@@ -562,14 +562,25 @@
 
 
 .calendar-date-search-input {
-  background: transparent;
-  border: 1px;
-  color: var(--accent-color);
-  flex-grow: 1;
-  outline: none;
+  background-color: var(--card-bg);
+  padding: 10px 14px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  color: var(--text-color);
   font-size: 1rem;
+  outline: none;
+  transition: all 0.2s ease;
+  margin-left: 20px;
+  /* width: 100%; */
 }
 
 .calendar-date-search-input::placeholder {
-  color: rgba(var(--accent-color), 0.5);
+  color: var(--secondary-text);
+  opacity: 0.7;
+}
+
+.calendar-date-search-input:focus {
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 2px rgba(154, 72, 234, 0.3); /* акцентный цвет с прозрачностью */
+  background-color: var(--bg-color);
 }

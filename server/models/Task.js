@@ -48,6 +48,16 @@ const Task = sequelize.define('Task', {
     type: DataTypes.DATEONLY,
     allowNull: false,
   },
+  assignee_id: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    references: {
+      model: 'users',
+      key: 'id',
+    },
+    onUpdate: 'CASCADE',
+    onDelete: 'SET NULL',
+  },
 }, {
   tableName: 'tasks',
   timestamps: true,

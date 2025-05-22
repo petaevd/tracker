@@ -22,6 +22,7 @@
     "register_submit_button": "Register",
     "register_login_text": "Already have an account?",
     "register_login_link": "Sign in",
+    "email_placeholder": "Enter email",
     
     "_comment4": "============== REGISTER MESSAGES ==============",
     "register_success": "Registration successful!",

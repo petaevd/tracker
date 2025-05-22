@@ -29,6 +29,9 @@ const setupAssociations = () => {
   // User -> Event
   User.hasMany(Event, { foreignKey: 'user_id', as: 'events' });
   Event.belongsTo(User, { foreignKey: 'user_id', as: 'user' });
+
+  User.hasMany(Task, { foreignKey: 'assignee_id', as: 'tasksAssigned' });
+  Task.belongsTo(User, { foreignKey: 'assignee_id', as: 'assignee' });
 };
 
 export default setupAssociations;
