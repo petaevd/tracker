@@ -563,7 +563,7 @@
 
 .calendar-date-search-input {
   background: transparent;
-  border: none;
+  border: 1px;
   color: var(--accent-color);
   flex-grow: 1;
   outline: none;
