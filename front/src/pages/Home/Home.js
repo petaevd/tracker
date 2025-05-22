@@ -890,9 +890,9 @@ const getEventsForDay = (day, month, year) => {
                 </nav>
               )}
             
-              {user.role === 'manager' && (
+              {user.role === 'manager' && formTask.id && (
                 // <SearchField teamID={formTask.project_id}></SearchField>
-                <TaskTeam projectID={formTask.project_id}/>
+                <TaskTeam projectID={formTask.project_id} taskID={formTask.id}/>
               )}
   
               <nav className="form-actions">
