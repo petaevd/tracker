@@ -20,17 +20,20 @@ const getAllTasks = async (user) => {
   const projects = await projectService.getAllProjects(user);
   const projectIds = projects.map(p => p.id);
 
+  const whereCondition = {
+    project_id: projectIds,
+  };
+
+  if (user.role === 'employee') {
+    whereCondition.assignee_id = user.id;
+  }
+
   return await Task.findAll({
-    where: {
-      project_id: projectIds,
-    },
+    where: whereCondition,
     include: [
       { model: Project, as: 'project', attributes: ['name'] },
       { model: User, as: 'creator', attributes: ['username'] },
     ],
-    // order: [ MySQL
-    //   [Sequelize.literal(`FIELD(priority, 'low', 'medium', 'high')`)]
-    // ]
     order: [
       [Sequelize.literal(`
         CASE
@@ -43,6 +46,7 @@ const getAllTasks = async (user) => {
     ]
   });
 };
+
 
 const createTask = async ({ title, project_id, status, priority, due_date, description, tags }, user) => {
   const projects = await projectService.getAllProjects(user);
@@ -129,6 +133,8 @@ const deleteTask = async (user, taskId) => {
 async function assignUserToTask(taskId, userId) {
   const task = await Task.findByPk(taskId);
   if (!task) throw new Error('Task not found');
+  const user = await User.findByPk(userId);
+  if (!user) throw new Error('User not found');
 
   task.assignee_id = userId;
   await task.save();
@@ -142,4 +148,17 @@ async function removeUserFromTask(taskId) {
   await task.save();
 }
 
-export default { getAllTasks, createTask, getTasksByCreator, updateTask, deleteTask, assignUserToTask, removeUserFromTask};
+async function getUserFromTask(taskId) {
+  const task = await Task.findByPk(taskId, {
+    include: [
+      { model: User, as: 'assignee', attributes: ['id', 'username', 'email'] }
+    ]
+  });
+
+  if (!task) throw new Error('Task not found');
+
+  return task.assignee || null;
+}
+
+
+export default { getAllTasks, createTask, getTasksByCreator, updateTask, deleteTask, assignUserToTask, removeUserFromTask, getUserFromTask};

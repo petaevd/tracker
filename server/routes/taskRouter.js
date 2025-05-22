@@ -11,6 +11,7 @@ router.get('/', authMiddleware, taskController.getAllTasks);
 router.post('/', authMiddleware, roleMiddleware(['admin','manager']), validate(taskSchema.create), taskController.createTask);
 router.put('/:id', authMiddleware, roleMiddleware(['admin', 'manager', 'employee']), validate(taskSchema.update), taskController.updateTask);
 router.delete('/:id', authMiddleware, roleMiddleware(['admin', 'manager', 'employee']), validate(taskSchema.id), taskController.deleteTask);
+router.get('/:id/assignee', authMiddleware, roleMiddleware(['admin','manager']), taskController.getAssignee);
 router.post('/:id/assignee', authMiddleware, roleMiddleware(['admin','manager']), taskController.addAssignee);
 router.delete('/:id/assignee', authMiddleware, roleMiddleware(['admin', 'manager']), taskController.deleteAssignee);
 

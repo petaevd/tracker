@@ -76,4 +76,18 @@ const deleteAssignee = async (req, res, next) => {
   }
 };
 
-export default { getAllTasks, createTask, updateTask, deleteTask, getTasksByCreator, addAssignee, deleteAssignee };
+const getAssignee = async (req, res, next) => {
+  try {
+    const taskId = req.params.id;
+    const assignee = await taskService.getUserFromTask(taskId);
+
+    res.status(200).json(assignee);
+  } catch (err) {
+    if (err.message === 'Task not found') {
+      return res.status(404).json({ message: 'Task not found' });
+    }
+    next(err);
+  }
+};
+
+export default { getAllTasks, createTask, updateTask, deleteTask, getTasksByCreator, addAssignee, deleteAssignee, getAssignee };
