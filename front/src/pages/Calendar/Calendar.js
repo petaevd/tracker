@@ -149,7 +149,7 @@ const Calendar = () => {
   
   const eventColors = [
     { name: t('color_green'), value: '#59b25c' },
-    { name: t('color_white'), value: '#E0C1FF' },
+    { name: t('color_white'), value: '#e91e63' },
     { name: t('color_blue'), value: '#1b8df7' },
     { name: t('color_purple'), value: '#9A48EA' },
   ];

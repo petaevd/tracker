@@ -325,3 +325,28 @@
       align-self: flex-end;
   }
 }
+
+.task-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.badge {
+  background-color: var(--card-bg);
+  color: var(--accent-color);
+  font-size: 0.75rem;
+  padding: 4px 10px;
+  border-radius: 20px;
+  border: 1px solid var(--accent-color);
+  white-space: nowrap;
+  transition: background-color 0.2s, color 0.2s, transform 0.2s;
+}
+
+.badge:hover {
+  background-color: var(--accent-color);
+  color: var(--bg-color);
+  transform: scale(1.05);
+  cursor: default;
+}

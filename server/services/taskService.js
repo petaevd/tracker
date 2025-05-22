@@ -91,6 +91,7 @@ const updateTask = async ({ title, project_id, status, priority, due_date, descr
   if (priority) updatableFields.priority = priority;
   if (due_date) updatableFields.due_date = due_date;
   if (description) updatableFields.description = description;
+  if (project_id) updatableFields.project_id = project_id;
   updatableFields.tags = tags;
 
   await task.update(updatableFields);
@@ -125,4 +126,20 @@ const deleteTask = async (user, taskId) => {
   await task.destroy();
 };
 
-export default { getAllTasks, createTask, getTasksByCreator, updateTask, deleteTask};
+async function assignUserToTask(taskId, userId) {
+  const task = await Task.findByPk(taskId);
+  if (!task) throw new Error('Task not found');
+
+  task.assignee_id = userId;
+  await task.save();
+}
+
+async function removeUserFromTask(taskId) {
+  const task = await Task.findByPk(taskId);
+  if (!task) throw new Error('Task not found');
+
+  task.assignee_id = null;
+  await task.save();
+}
+
+export default { getAllTasks, createTask, getTasksByCreator, updateTask, deleteTask, assignUserToTask, removeUserFromTask};

@@ -358,12 +358,12 @@ const Settings = () => {
             >
               {t('settings_tab_security')}
             </button>
-            <button
+            {/* <button
               className={`settings-tab ${activeTab === 'accessibility' ? 'active' : ''}`}
               onClick={() => setActiveTab('accessibility')}
             >
               {t('settings_tab_accessibility')}
-            </button>
+            </button> */}
             <button
               className={`settings-tab ${activeTab === 'appearance' ? 'active' : ''}`}
               onClick={() => setActiveTab('appearance')}
@@ -538,7 +538,7 @@ const Settings = () => {
               </div>
             )}
   
-            {activeTab === 'accessibility' && (
+            {/* {activeTab === 'accessibility' && (
               <div className="settings-section">
                 <h2 className="section-title">{t('accessibility_title')}</h2>
                 <div className="accessibility-item">
@@ -603,7 +603,7 @@ const Settings = () => {
                   </p>
                 </div>
               </div>
-            )}
+            )} */}
   
             {activeTab === 'appearance' && (
               <div className="settings-section">
@@ -638,7 +638,7 @@ const Settings = () => {
                       </div>
                       <span>{t('appearance_theme_raspberry')}</span>
                     </div>
-                    <div
+                    {/* <div
                       className={`theme-option ${theme == 'forest' ? 'active' : ''}`}
                       onClick={() => {changeTheme('forest')}}
                     >
@@ -646,7 +646,7 @@ const Settings = () => {
                         <FaPalette />
                       </div>
                       <span>{t('appearance_theme_forest')}</span>
-                    </div>
+                    </div> */}
                   </div>
                 </div>
               </div>

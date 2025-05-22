@@ -22,6 +22,7 @@
     "register_submit_button": "Зарегистрироваться",
     "register_login_text": "Уже есть аккаунт?",
     "register_login_link": "Войти",
+    "email_placeholder": "Введите почту",
     
     "_comment4": "============== REGISTER MESSAGES ==============",
     "register_success": "Регистрация прошла успешно!",
@@ -213,7 +214,7 @@
     "project_creator": "Создатель",
     "sf_current_member": "Текущие участники",
     "sf_remove_member": "Удалить",
-    "sf_add_member": "Удалить",
+    "sf_add_member": "Добавить",
     "sf_not_found": "Не найдено",
     "sf_search": "Поиск участников",
     

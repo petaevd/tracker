@@ -71,6 +71,14 @@ const Project = () => {
 
   // Хендлеры форм
   const handleCreateProject = async () => {
+    const dueDate = new Date(formProject.deadline);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+  
+    if (dueDate < today) {
+      toast.error(t(`home_error_date`));
+      return;
+    }
     try {
       await dispatch(addProject({ ...formProject, creator_id: user.id})).unwrap();
       setShowProjectModal(false);
@@ -82,7 +90,14 @@ const Project = () => {
     }
   };
   const handleUpdateProject = async () => {
-    console.log(formProject)
+    const dueDate = new Date(formProject.deadline);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+  
+    if (dueDate < today) {
+      toast.error(t(`home_error_date`));
+      return;
+    }
     try {
       await dispatch(editProject({ id: formProject.id, projectData: { ...formProject, creator_id: user.id } })).unwrap();
   

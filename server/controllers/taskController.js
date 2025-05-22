@@ -46,4 +46,34 @@ const deleteTask = async (req, res, next) => {
   }
 };
 
-export default { getAllTasks, createTask, updateTask, deleteTask, getTasksByCreator };
+
+const addAssignee = async (req, res, next) => {
+  try {
+    const taskId = req.params.id;
+    const { assigneeId } = req.body;
+
+    if (!assigneeId) {
+      return res.status(400).json({ message: 'Assignee ID is required' });
+    }
+
+    await taskService.assignUserToTask(taskId, assigneeId);
+
+    res.status(200).json({ message: 'Ответственный назначен' });
+  } catch (err) {
+    next(err);
+  }
+};
+
+const deleteAssignee = async (req, res, next) => {
+  try {
+    const taskId = req.params.id;
+
+    await taskService.removeUserFromTask(taskId);
+
+    res.status(200).json({ message: 'Ответственный удалён' });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export default { getAllTasks, createTask, updateTask, deleteTask, getTasksByCreator, addAssignee, deleteAssignee };

@@ -12,6 +12,8 @@ import { Gantt, Task, ViewMode } from 'gantt-task-react';
 import './Home.css';
 import './gant.css';
 import { useTranslation } from 'react-i18next';
+// import SearchField from '../../components/Members/SearchField';
+import TaskTeam from '../../components/Members/TaskTeam';
 
 const Home = () => {
   const dispatch = useDispatch();
@@ -29,6 +31,7 @@ const Home = () => {
   }, [i18n]);
   // ================ Перевод ================
   // ================ Задачи ================
+  const isReadOnly = user.role === 'employee';
   const { tasks = [], loadingTask, errorTask } = useSelector((state) => state.tasks);
   const { projects = [], loadingProjects, errorProjects } = useSelector(state => state.projects)
   const [filterTask, setFilterTask] = useState('all');
@@ -187,6 +190,7 @@ const Home = () => {
   };
   
   const handleCreateTask = async () => {
+
     const normalizedTags = normalizeTags(formTask.tags);
     const dueDate = new Date(formTask.due_date);
     const today = new Date();
@@ -199,6 +203,7 @@ const Home = () => {
   
     try {
       await dispatch(addTask({ ...formTask, tags: normalizedTags.length === 0 ? null : normalizedTags.join(', '), creator_id: user.id, status: "open" })).unwrap();
+      await dispatch(getTasks());
       setShowTaskModal(false);
       resetFormTask();
       toast.success('Задача создана');
@@ -225,6 +230,7 @@ const Home = () => {
     const normalizedTags = normalizeTags(formTask.tags);
     const createdAt = new Date(formTask.createdAt);
     const dueDate = new Date(formTask.due_date);
+    console.log(formTask)
   
     if (dueDate < createdAt) {
       toast.error(t(`home_error_date`));
@@ -301,6 +307,16 @@ const Home = () => {
   
   const ganttTasks = tasks
   .filter(task => {
+    if (
+      !task ||
+      !task.id ||
+      !task.title ||
+      !task.createdAt ||
+      !task.due_date
+    ) {
+      console.warn('❌ Invalid task structure:', task);
+      return false;
+    }
     const createdAt = new Date(task.createdAt);
     const dueDate = new Date(task.due_date);
 
@@ -600,6 +616,7 @@ const getEventsForDay = (day, month, year) => {
               <option value="high-priority">{t('tasks_filter_high_priority')}</option>
             </select>
             
+            {user.role === 'manager' && (
             <nav className="add-task-container">
               <button
                 className="add-task-btn"
@@ -612,8 +629,9 @@ const getEventsForDay = (day, month, year) => {
                 <span className="add-task-text">{t('tasks_add_button')}</span>
               </button>
             </nav>
+            )}
   
-            <nav className="tasks-list">
+            <nav className="tasks-list mt-2">
               {filterTasks(tasks)
                 .slice((currentPage - 1) * 2, currentPage * 2)
                 .map(task => task && (
@@ -647,14 +665,14 @@ const getEventsForDay = (day, month, year) => {
                           title={t('task_add_favorite')}
                         />
                       )}
-                      <FaWhmcs
-                        className="task-action-icon"
-                        onClick={() => {
-                          setFormTask(task);
-                          setShowTaskModal(true);
-                        }}
-                        title={t('task_edit')}
-                      />
+                        <FaWhmcs
+                          className="task-action-icon"
+                          onClick={() => {
+                            setFormTask(task);
+                            setShowTaskModal(true);
+                          }}
+                          title={t('task_edit')}
+                        />
                     </nav>
                   </nav>
                 ))}
@@ -790,6 +808,7 @@ const getEventsForDay = (day, month, year) => {
                   className="form-control"
                   value={formTask.title}
                   onChange={(e) => setFormTask({ ...formTask, title: e.target.value })}
+                  readOnly={isReadOnly}
                 />
               </nav>
   
@@ -799,6 +818,7 @@ const getEventsForDay = (day, month, year) => {
                   className="form-control"
                   value={formTask.description}
                   onChange={(e) => setFormTask({ ...formTask, description: e.target.value })}
+                  readOnly={isReadOnly}
                 />
               </nav>
   
@@ -809,6 +829,7 @@ const getEventsForDay = (day, month, year) => {
                   className="form-control"
                   value={formTask.due_date}
                   onChange={(e) => setFormTask({ ...formTask, due_date: e.target.value })}
+                  readOnly={isReadOnly}
                 />
               </nav>
   
@@ -818,6 +839,7 @@ const getEventsForDay = (day, month, year) => {
                   className="form-select"
                   value={formTask.priority}
                   onChange={(e) => setFormTask({ ...formTask, priority: e.target.value })}
+                  disabled={isReadOnly}
                 >
                   <option value="low">{t('task_priority_low')}</option>
                   <option value="medium">{t('task_priority_medium')}</option>
@@ -831,6 +853,7 @@ const getEventsForDay = (day, month, year) => {
                   className="form-select"
                   value={formTask.project_id}
                   onChange={(e) => setFormTask({ ...formTask, project_id: e.target.value })}
+                  disabled={isReadOnly}
                 >
                   <option value="">{t('task_select_project')}</option>
                   {projects.map((project) => (
@@ -847,6 +870,7 @@ const getEventsForDay = (day, month, year) => {
                   className="form-control"
                   value={formTask.tags}
                   onChange={(e) => setFormTask({ ...formTask, tags: e.target.value })}
+                  readOnly={isReadOnly}
                 />
               </nav>
   
@@ -865,6 +889,11 @@ const getEventsForDay = (day, month, year) => {
                   </select>
                 </nav>
               )}
+            
+              {user.role === 'manager' && (
+                // <SearchField teamID={formTask.project_id}></SearchField>
+                <TaskTeam projectID={formTask.project_id}/>
+              )}
   
               <nav className="form-actions">
                 <button
@@ -881,6 +910,9 @@ const getEventsForDay = (day, month, year) => {
                   {formTask.id ? t('task_button_save') : t('task_button_create')}
                 </button>
               </nav>
+
+
+              
             </nav>
           </nav>
         </nav>
