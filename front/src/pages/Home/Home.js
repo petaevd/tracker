@@ -699,7 +699,7 @@ const getEventsForDay = (day, month, year) => {
           </nav>
           
           {/* Calendar card */}
-          <nav className="dashboard-card-v2 calendar-card" style={{ backgroundColor: "rgba(255, 255, 255, 0.1)" }}>
+          <nav className="dashboard-card-v2 calendar-card">
             <nav className="calendar-header">
               <nav className="calendar-title-container ">
                 <h3 className="">{t('calendar_card_title')}</h3>

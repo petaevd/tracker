@@ -541,7 +541,7 @@ const Settings = () => {
             {/* {activeTab === 'accessibility' && (
               <div className="settings-section">
                 <h2 className="section-title">{t('accessibility_title')}</h2>
-                <div className="accessibility-item">
+                {/* <div className="accessibility-item">
                   <h3>{t('accessibility_contrast')}</h3>
                   <div className="toggle-switch">
                     <input
@@ -556,9 +556,9 @@ const Settings = () => {
                     <span>{settings.highContrast ? t('toggle_on') : t('toggle_off')}</span>
                   </div>
                   <p className="hint-text">{t('accessibility_contrast_hint')}</p>
-                </div>
+                </div> */}
   
-                <div className="accessibility-item">
+                {/* <div className="accessibility-item">
                   <h3>{t('accessibility_font')}</h3>
                   <div className="range-slider">
                     <input
@@ -577,9 +577,9 @@ const Settings = () => {
                     <div className="slider-value">{settings.fontSize}px</div>
                   </div>
                   <p className="hint-text">{t('accessibility_font_hint')}</p>
-                </div>
+                </div> */}
   
-                <div className="accessibility-item">
+                {/* <div className="accessibility-item">
                   <h3>{t('accessibility_voice')}</h3>
                   <div className="toggle-switch">
                     <input

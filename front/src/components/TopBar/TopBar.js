@@ -48,6 +48,9 @@ const TopBar = ({ onLogout }) => {
   return (
     <div className="top-bar">
       <div className="top-bar-actions">
+        {/* <button className="share-button">
+          <FaShareAlt />
+        </button> */}
         {user ? (
           <div className="user-controls">
             <div className="user-avatar">
