@@ -563,14 +563,15 @@
 
 .calendar-date-search-input {
   background-color: var(--card-bg);
-  padding: 10px 14px;
+  padding: 10px 18px;
   border: 1px solid var(--border-color);
   border-radius: 8px;
   color: var(--text-color);
   font-size: 1rem;
   outline: none;
   transition: all 0.2s ease;
-  margin-left: 20px;
+  margin-left: 10px;
+  margin-bottom: 10px;
   /* width: 100%; */
 }
 
