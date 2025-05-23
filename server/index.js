@@ -6,6 +6,7 @@ import router from './routes/index.js';
 import errorHandler from './middleware/errorHandler.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import compression from 'compression';
 import setupAssociations from './config/associations.js';
 
 configDotenv();
@@ -14,13 +15,14 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
+app.use(compression());
 const PORT = process.env.PORT || 8080;
 
 // Middleware
 app.use(express.json());
 app.use(cors);
 app.use('/avatars', express.static(path.join(__dirname, 'public/avatars')));
-
+console.log('Serving static files from:', path.join(__dirname, 'public/avatars'));
 app.use('/api', router);
 app.use((req, res) => res.status(404).json({ error: 'Endpoint not found' }));
 app.use(errorHandler);
@@ -36,7 +38,7 @@ const start = async () => {
     await sequelize.sync({ force: false });
     console.log('Database synced successfully');
 
-    app.listen(PORT, () => {
+    app.listen(PORT, '0.0.0.0', () => {
       console.log(`Server is running on port ${PORT}`);
     });
   } catch (err) {

@@ -2,4 +2,126 @@
 
 body {
   font-family: 'Inter', sans-serif;
+  background-color: var(--bg-color);
+  color: var(--text-color);
 }
+
+:root {
+  --accent-color: #9A48EA;
+  --font-size: 16px;
+  --bg-color: #000000;
+  --text-color: #ffffff;
+  --secondary-text: rgba(255, 255, 255, 0.7);
+  --card-bg: rgba(255, 255, 255, 0.05);
+  --card-bg-rgb: #000000;
+  --border-color: rgba(255, 255, 255, 0.1);
+  --error-color: #ff3b30;
+  --success-color: #34c759;
+  --warning-color: #ffcc00;
+  --info-color: #007aff;
+  --toastify-toast-bg: var(--secondary-text);
+  --toastify-text-color: var(--text-color);
+  --toastify-accent: var(--accent-color);
+  --toastify-border: var(--border-color);
+  --toastify-error-bg: var(--bg-color);
+  --toastify-success-bg: var(--bg-color);
+}
+
+/* Стилизация контейнера */
+.Toastify__toast-container {
+  z-index: 9999;
+}
+
+/* Базовый тост */
+.Toastify__toast {
+  background: var(--toastify-toast-bg);
+  color: var(--toastify-text-color);
+  border: 1px solid var(--toastify-border);
+  border-radius: 8px;
+  padding: 10px 15px;
+  font-size: 0.9rem;
+}
+
+/* Иконка */
+.Toastify__toast-icon {
+  color: var(--toastify-accent);
+}
+
+/* Тосты по типу */
+.Toastify__toast--success {
+  background: var(--toastify-success-bg);
+  /* color: #fff; */
+}
+
+.Toastify__toast--error {
+  background: var(--toastify-error-bg);
+}
+
+/* Прогресс-бар */
+.Toastify__progress-bar {
+  background: var(--toastify-accent);
+}
+
+/* Темная тема (по умолчанию) */
+[data-theme='dark'] {
+  --bg-color: #121212;
+  --text-color: #ffffff;
+  --accent-color: #bb86fc;
+  --secondary-text: rgba(255, 255, 255, 0.7);
+  --card-bg: rgba(255, 255, 255, 0.05);
+  --card-bg-rgb: rgba(0, 0, 0, 0.9);
+  --border-color: rgba(255, 255, 255, 0.1);
+  --error-color: #cf6679;
+  --success-color: #4a7773;
+}
+
+/* Светлая тема */
+[data-theme='light'] {
+  --bg-color: #f5f5f5;
+  --text-color: #333333;
+  --accent-color: #6200ee;
+  --secondary-text: rgba(0, 0, 0, 0.7);
+  --card-bg: rgba(0, 0, 0, 0.05);
+  --card-bg-rgb: rgba(239, 239, 239, 0.9);
+  --border-color: rgba(0, 0, 0, 0.1);
+  --error-color: #b00020;
+  --success-color: #a8c3c3;
+}
+
+/* Raspberry тема */
+[data-theme='raspberry'] {
+  --bg-color: #ffe6f0;
+  --text-color: #490028;
+  --accent-color: #e91e63;
+  --secondary-text: rgba(73, 0, 40, 0.7);
+  --card-bg: rgba(255, 0, 125, 0.05);
+  --card-bg-rgb: rgba(255, 133, 192, 0.679);
+  --border-color: rgba(255, 0, 125, 0.1);
+  --error-color: #c2185b;
+  --success-color: #e91e63;
+}
+
+/* Ocean тема */
+[data-theme='ocean'] {
+  --bg-color: #001f3f;
+  --text-color: #e0f7fa;
+  --accent-color: #00bcd4;
+  --secondary-text: rgba(224, 247, 250, 0.7);
+  --card-bg: rgba(0, 188, 212, 0.05);
+  --border-color: rgba(0, 188, 212, 0.1);
+  --error-color: #ff5252;
+  --success-color: #69f0ae;
+}
+
+/* Forest тема */
+[data-theme='forest'] {
+  --bg-color: #1b5e20;
+  --text-color: #e8f5e9;
+  --accent-color: #4caf50;
+  --secondary-text: rgba(232, 245, 233, 0.7);
+  --card-bg: rgba(76, 175, 80, 0.05);
+  --border-color: rgba(76, 175, 80, 0.1);
+  --error-color: #ff7043;
+  --success-color: #a5d6a7;
+}
+

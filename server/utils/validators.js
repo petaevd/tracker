@@ -70,8 +70,7 @@ const taskSchema = {
   create: [
     body('title').isString().trim().isLength({ min: 3 }).withMessage('Название задачи должно содержать минимум 3 символа'),
     body('project_id').isInt().withMessage('ID проекта должен быть целым числом'),
-    body('status_id').isInt().withMessage('ID статуса должен быть целым числом'),
-    body('creator_id').isInt().withMessage('ID создателя должен быть целым числом'),
+    body('status').isIn(['open', 'closed', 'in_test', 'in_development']).withMessage('Статус должен быть "open", "closed", "in_test" или "in_development"'),
     body('priority').isIn(['low', 'medium', 'high']).withMessage('Приоритет должен быть "low", "medium" или "high"'),
     body('due_date').optional().isISO8601().withMessage('Дата выполнения должна быть в формате ISO8601'),
     body('description').optional().isString().withMessage('Описание должно быть строкой'),
@@ -80,8 +79,7 @@ const taskSchema = {
     param('id').isInt().withMessage('ID задачи должен быть целым числом'),
     body('title').optional().isString().trim().isLength({ min: 3 }).withMessage('Название задачи должно содержать минимум 3 символа'),
     body('project_id').optional().isInt().withMessage('ID проекта должен быть целым числом'),
-    body('status_id').optional().isInt().withMessage('ID статуса должен быть целым числом'),
-    body('creator_id').optional().isInt().withMessage('ID создателя должен быть целым числом'),
+    body('status').isIn(['open', 'closed', 'in_test', 'in_development']).withMessage('Статус должен быть "open", "closed", "in_test" или "in_development"'),
     body('priority').optional().isIn(['low', 'medium', 'high']).withMessage('Приоритет должен быть "low", "medium" или "high"'),
     body('due_date').optional().isISO8601().withMessage('Дата выполнения должна быть в формате ISO8601'),
     body('description').optional().isString().withMessage('Описание должно быть строкой'),
@@ -148,7 +146,7 @@ const authSchema = {
     body('username').isString().trim().isLength({ min: 3 }).withMessage('Имя пользователя должно содержать минимум 3 символа'),
     body('email').isEmail().normalizeEmail().withMessage('Некорректный email'),
     body('password').isLength({ min: 6 }).withMessage('Пароль должен содержать минимум 6 символов'),
-    body('role').optional().isIn(['manager', 'employee', 'admin']).withMessage('Недопустимая роль'),
+    body('role').optional().isIn(['manager', 'employee', 'admin']).withMessage('Недопустимая роsль'),
   ],
   login: [
     body('email').isEmail().normalizeEmail().withMessage('Некорректный email'),

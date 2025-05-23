@@ -96,6 +96,7 @@ const updateProfile = async (id, { username, email }) => {
 };
 
 const updateAvatar = async (id, avatarUrl) => {
+  
   const user = await User.findByPk(id);
   if (!user) {
     const err = new Error('Пользователь не найден');

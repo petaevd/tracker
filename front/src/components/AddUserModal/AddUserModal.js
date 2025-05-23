@@ -4,7 +4,7 @@ import { addUser } from '../../store/slices/projectSlice';
 import { fetchUsers } from '../../api/userApi';
 import { toast } from 'react-toastify';
 import api from '../../api/api';
-import './AddUserModal.css';
+// import './AddUserModal.css';
 
 const AddUserModal = ({ users, setUsers, project, setTeamMembers, setShowAddUserModal }) => {
   const dispatch = useDispatch();

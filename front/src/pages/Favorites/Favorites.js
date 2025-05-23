@@ -1,132 +1,110 @@
 import React, { useState, useEffect } from 'react';
-import { FaSearch, FaShareAlt, FaUser, FaSignOutAlt, FaBookmark, FaTrash } from 'react-icons/fa';
-import { useNavigate } from 'react-router-dom';
+import { FaBookmark, FaTrash } from 'react-icons/fa';
 import './Favorites.css';
+import { useTranslation } from 'react-i18next';
 
-const Favorites = ({ user, onLogout }) => {
-  const [favorites, setFavorites] = useState([
-    { id: 1, title: 'Задача по математике', subject: 'Математика', difficulty: 'Средняя', isBookmarked: true },
-    { id: 2, title: 'Лабораторная по физике', subject: 'Физика', difficulty: 'Высокая', isBookmarked: true },
-    { id: 3, title: 'Эссе по литературе', subject: 'Литература', difficulty: 'Низкая', isBookmarked: true },
-  ]);
-  const [searchQuery, setSearchQuery] = useState('');
+const Favorites = () => {
+
+  // ================ Избранные задачи ================
+
+  const FAVORITES_KEY = 'favoriteTasks';
+
+  const priorityMap = {
+    low: 'Низкая',
+    medium: 'Средняя',
+    high: 'Высокая',
+  };
+
+  const getFavoriteTasks = () => {
+    const data = localStorage.getItem(FAVORITES_KEY);
+    try {
+      const parsed = JSON.parse(data);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  };
+
+  const setFavoriteTasks = (favorites) => {
+    localStorage.setItem(FAVORITES_KEY, JSON.stringify(favorites));
+  };
+
+  const toggleFavoriteTask = (task) => {
+    let favorites = getFavoriteTasks();
+    const exists = favorites.some(t => t.id === task.id);
+  
+    if (exists) {
+      favorites = favorites.filter(t => t.id !== task.id);
+    } else {
+      favorites.push(task);
+    }
+  
+    setFavoriteTasks(favorites);
+    return favorites;
+  };
+
+  const [favoriteTasks, setFavoriteTasksState] = useState(getFavoriteTasks());
+
+  const handleToggleFavorite = (task) => {
+    const updated = toggleFavoriteTask(task);
+    setFavoriteTasksState(updated);
+  };
+
+  // ================ Избранные задачи ================
+
   const [filter, setFilter] = useState('all');
 
-  // Обработчик нажатия Command+F
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'f') {
-        e.preventDefault();
-        document.getElementById('search-input').focus();
-      }
-    };
 
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
-
-  const getAvatarLetter = () => {
-    if (user?.username) {
-      return user.username.charAt(0).toUpperCase();
-    }
-    if (user?.email) {
-      return user.email.charAt(0).toUpperCase();
-    }
-    return '?';
-  };
-
-  const navigate = useNavigate();
-
-  const removeFromFavorites = (id) => {
-    setFavorites(favorites.filter(item => item.id !== id));
-  };
-
-  const filteredFavorites = favorites.filter(item => {
-    const matchesSearch = item.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                         item.subject.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesFilter = filter === 'all' || item.difficulty.toLowerCase() === filter.toLowerCase();
-    return matchesSearch && matchesFilter;
+  const filteredFavorites = favoriteTasks.filter(item => {
+    return filter === 'all' || item.priority === filter;
   });
+
+
+  
+  // ================ Перевод ================
+  const { t, i18n } = useTranslation();
+  useEffect(() => {
+    const savedLanguage = localStorage.getItem('language');
+    if (savedLanguage && savedLanguage !== i18n.language) {
+      i18n.changeLanguage(savedLanguage);
+    }
+  }, [i18n]);
+  // ================ Перевод ================
 
   return (
     <div className="dashboard-container">
-      {/* Верхняя панель с поиском */}
-      <div className="top-bar">
-        <div className="search-container">
-          <div className="search-wrapper">
-            <FaSearch className="search-icon" />
-            <input 
-              id="search-input" 
-              type="text" 
-              placeholder="Поиск" 
-              className="search-input"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-            <div className="shortcut-box">
-              <span className="shortcut-key">⌘</span>
-              <span className="shortcut-key">F</span>
-            </div>
-          </div>
-        </div>
-        <div className="top-bar-actions">
-          <button className="share-button"><FaShareAlt /></button>
-          {user ? (
-            <div className="user-controls">
-              <div className="user-avatar">
-                {getAvatarLetter()}
-              </div>
-              <button 
-                className="logout-btn"
-                onClick={onLogout}
-                title="Выйти"
-              >
-                <FaSignOutAlt />
-              </button>
-            </div>
-          ) : (
-            <button 
-              className="login-btn"
-              onClick={() => navigate('/login')}
-            >
-              <FaUser />
-            </button>
-          )}
-        </div>
-      </div>
-
-      {/* Основной контент */}
       <div className="main-content">
-        <div className="breadcrumb">Домашняя / Избранное</div>
-        <h1 className="dashboard-title">Избранное</h1>
-        <p className="dashboard-subtitle">Ваши сохраненные элементы и закладки</p>
+        <div className="breadcrumb">
+          {t('favorites_breadcrumb_home')} / {t('favorites_breadcrumb')}
+        </div>
+        <h1 className="">{t('favorites_title')}</h1>
         
-        {/* Фильтры и управление */}
+        {/* Фильтры */}
         <div className="favorites-controls">
           <div className="filter-controls">
             <button 
               className={`filter-btn ${filter === 'all' ? 'active' : ''}`}
               onClick={() => setFilter('all')}
             >
-              Все
+              {t('favorites_filter_all')}
             </button>
             <button 
-              className={`filter-btn ${filter === 'низкая' ? 'active' : ''}`}
-              onClick={() => setFilter('низкая')}
+              className={`filter-btn ${filter === 'low' ? 'active' : ''}`}
+              onClick={() => setFilter('low')}
             >
-              Легкие
+              {t('favorites_filter_low')}
             </button>
             <button 
-              className={`filter-btn ${filter === 'средняя' ? 'active' : ''}`}
-              onClick={() => setFilter('средняя')}
+              className={`filter-btn ${filter === 'medium' ? 'active' : ''}`}
+              onClick={() => setFilter('medium')}
             >
-              Средние
+              {t('favorites_filter_medium')}
             </button>
             <button 
-              className={`filter-btn ${filter === 'высокая' ? 'active' : ''}`}
-              onClick={() => setFilter('высокая')}
+              className={`filter-btn ${filter === 'high' ? 'active' : ''}`}
+              onClick={() => setFilter('high')}
             >
-              Сложные
+              {t('favorites_filter_high')}
             </button>
           </div>
         </div>
@@ -142,18 +120,28 @@ const Favorites = ({ user, onLogout }) => {
                   </div>
                   <div className="favorite-details">
                     <h3 className="favorite-title">{item.title}</h3>
+                    {typeof item.tags === 'string' && item.tags.trim() && (
+                      <div className="task-tags my-1">
+                        {item.tags.split(',').map((tag, index) => (
+                          <span key={index} className="badge mx-1">
+                            {tag.trim()}
+                          </span>
+                        ))}
+                      </div>
+                    )}
                     <div className="favorite-meta">
-                      <span className={`difficulty-badge ${item.difficulty.toLowerCase()}`}>
-                        {item.difficulty}
+                      <span className={`difficulty-badge ${item.priority}`}>
+                        {priorityMap[item.priority]}
                       </span>
-                      <span className="subject-tag">{item.subject}</span>
+                      <span className="category-tag">{item.category}</span>
+                      <span className="tech-tag">{item.tech}</span>
                     </div>
                   </div>
                 </div>
                 <button 
                   className="remove-favorite-btn"
-                  onClick={() => removeFromFavorites(item.id)}
-                  title="Удалить из избранного"
+                  onClick={() => handleToggleFavorite(item)}
+                  title={t('favorites_remove_tooltip')}
                 >
                   <FaTrash />
                 </button>
@@ -161,15 +149,7 @@ const Favorites = ({ user, onLogout }) => {
             ))
           ) : (
             <div className="empty-state">
-              <p>Нет избранных задач</p>
-              {searchQuery && (
-                <button 
-                  className="clear-search-btn"
-                  onClick={() => setSearchQuery('')}
-                >
-                  Очистить поиск
-                </button>
-              )}
+              <p>{t('favorites_empty_state')}</p>
             </div>
           )}
         </div>

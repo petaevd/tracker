@@ -7,78 +7,127 @@ import {
   FaEdit,
   FaTrash,
 } from 'react-icons/fa';
+import { useSelector, useDispatch } from 'react-redux';
+import { 
+  getEvents as fetchEvents,
+  addEvent as createEvent,
+  updateExistingEvent as updateEvent,
+  removeEvent as deleteEvent
+} from '../../store/slices/eventSlice';
+import { useNavigate } from 'react-router-dom';
 import './Calendar.css';
 
-const Calendar = ({ events = [], user, setEvents }) => {
+import { useTranslation } from 'react-i18next';
+import { toast, ToastContainer } from 'react-toastify';
+const Calendar = () => {
+
+    
+  // ================ Перевод ================
+  const { t, i18n } = useTranslation();
+  useEffect(() => {
+    const savedLanguage = localStorage.getItem('language');
+    if (savedLanguage && savedLanguage !== i18n.language) {
+      i18n.changeLanguage(savedLanguage);
+    }
+  }, [i18n]);
+  // ================ Перевод ================
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const user = useSelector((state) => state.auth.user);
+  const { eventsByUser = {}, loading, error } = useSelector((state) => state.events);
   const [searchQuery, setSearchQuery] = useState('');
 
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'f') {
-        e.preventDefault();
-        document.getElementById('calendar-date-search-input').focus();
-      }
-    };
+  // Get events for current user
+  const events = useMemo(() => {
+    return user?.id ? eventsByUser[user.id] || [] : [];
+  }, [user?.id, eventsByUser]);
 
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
+  // Redirect if not authenticated
+  useEffect(() => {
+    if (!user) {
+      navigate('/login');
+    }
+  }, [user, navigate]);
+
+  // Load events for current user
+  useEffect(() => {
+    if (user?.id) {
+      dispatch(fetchEvents(user.id));
+    }
+  }, [dispatch, user?.id]);
 
   const [currentDate, setCurrentDate] = useState(new Date());
   const [showMonthDropdown, setShowMonthDropdown] = useState(false);
   
-  const monthNames = ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь",
-    "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"];
-  const days = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
+  const monthNames = [
+    t('month_january'), t('month_february'), t('month_march'),
+    t('month_april'), t('month_may'), t('month_june'),
+    t('month_july'), t('month_august'), t('month_september'),
+    t('month_october'), t('month_november'), t('month_december')
+  ];
+  const days = [
+    t('day_monday'), t('day_tuesday'), t('day_wednesday'),
+    t('day_thursday'), t('day_friday'), t('day_saturday'), t('day_sunday')
+  ];
   
-  const firstDayOfMonth = new Date(
-    currentDate.getFullYear(), 
-    currentDate.getMonth(), 
-    1
-  ).getDay();
-  
-  const daysInMonth = new Date(
-    currentDate.getFullYear(), 
-    currentDate.getMonth() + 1, 
-    0
-  ).getDate();
-  
-  const daysInPrevMonth = new Date(
-    currentDate.getFullYear(), 
-    currentDate.getMonth(), 
-    0
-  ).getDate();
-  
-  const dates = [];
-  
-  for (let i = firstDayOfMonth - 1; i >= 0; i--) {
-    dates.push({
-      day: daysInPrevMonth - i,
-      isCurrentMonth: false,
-      isToday: false
-    });
-  }
-  
-  const today = new Date();
-  for (let i = 1; i <= daysInMonth; i++) {
-    dates.push({
-      day: i,
-      isCurrentMonth: true,
-      isToday: i === today.getDate() && 
-               currentDate.getMonth() === today.getMonth() && 
-               currentDate.getFullYear() === today.getFullYear()
-    });
-  }
-  
-  const totalCells = Math.ceil(dates.length / 7) * 7;
-  for (let i = dates.length; i < totalCells; i++) {
-    dates.push({
-      day: i - dates.length + 1,
-      isCurrentMonth: false,
-      isToday: false
-    });
-  }
-  
+  // Generate calendar dates
+  const generateCalendarDates = () => {
+    const firstDayOfMonth = new Date(
+      currentDate.getFullYear(), 
+      currentDate.getMonth(), 
+      1
+    ).getDay();
+    
+    const daysInMonth = new Date(
+      currentDate.getFullYear(), 
+      currentDate.getMonth() + 1, 
+      0
+    ).getDate();
+    
+    const daysInPrevMonth = new Date(
+      currentDate.getFullYear(), 
+      currentDate.getMonth(), 
+      0
+    ).getDate();
+    
+    const today = new Date();
+    const dates = [];
+    
+    // Previous month days
+    for (let i = firstDayOfMonth - 1; i >= 0; i--) {
+      dates.push({
+        day: daysInPrevMonth - i,
+        isCurrentMonth: false,
+        isToday: false
+      });
+    }
+    
+    // Current month days
+    for (let i = 1; i <= daysInMonth; i++) {
+      dates.push({
+        day: i,
+        isCurrentMonth: true,
+        isToday: i === today.getDate() && 
+                 currentDate.getMonth() === today.getMonth() && 
+                 currentDate.getFullYear() === today.getFullYear()
+      });
+    }
+    
+    // Next month days
+    const totalCells = Math.ceil(dates.length / 7) * 7;
+    for (let i = dates.length; i < totalCells; i++) {
+      dates.push({
+        day: i - dates.length + 1,
+        isCurrentMonth: false,
+        isToday: false
+      });
+    }
+    
+    return dates;
+  };
+
+  const dates = useMemo(generateCalendarDates, [currentDate]);
+
   const changeMonth = (monthIndex) => {
     setCurrentDate(new Date(
       currentDate.getFullYear(), 
@@ -93,15 +142,16 @@ const Calendar = ({ events = [], user, setEvents }) => {
     return date.toLocaleDateString('ru-RU', options);
   };
 
+  // Event modals and management
   const [showEventModal, setShowEventModal] = useState(false);
   const [showEventDetailsModal, setShowEventDetailsModal] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState(null);
   
   const eventColors = [
-    { name: 'Green', value: '#59b25c' },
-    { name: 'white', value: '#E0C1FF' },
-    { name: 'Blue', value: '#1b8df7' },
-    { name: 'Purple', value: '#9A48EA' },
+    { name: t('color_green'), value: '#59b25c' },
+    { name: t('color_white'), value: '#e91e63' },
+    { name: t('color_blue'), value: '#1b8df7' },
+    { name: t('color_purple'), value: '#9A48EA' },
   ];
 
   const [newEvent, setNewEvent] = useState({
@@ -112,48 +162,93 @@ const Calendar = ({ events = [], user, setEvents }) => {
     color: eventColors[0].value
   });
 
+  // Filter events
   const filteredEvents = useMemo(() => {
     if (!searchQuery.trim()) return [];
     
     const query = searchQuery.toLowerCase();
     return events.filter(event => {
+      if (!event) return false;
       return (
-        event.title.toLowerCase().includes(query) ||
-        event.description.toLowerCase().includes(query) ||
-        event.dateTime.toLowerCase().includes(query)
+        (event.title && event.title.toLowerCase().includes(query)) ||
+        (event.description && event.description.toLowerCase().includes(query)) ||
+        (event.event_date && event.event_date.toLowerCase().includes(query))
       );
     });
   }, [events, searchQuery]);
 
-  const handleAddEvent = () => {
-    if (newEvent.title.trim() === '') return;
-    
-    const eventToAdd = {
-      ...newEvent,
-      id: Date.now(),
-      dateTime: `${newEvent.date}T${newEvent.time}`,
-      color: newEvent.color 
-    };
-    
-    setEvents([...events, eventToAdd]);
-    setShowEventModal(false);
-    resetNewEvent();
+  // Event handlers
+  const handleAddEvent = async () => {
+    if (!user?.id) {
+      console.error('User not authenticated');
+      return;
+    }
+  
+    if (!newEvent.title.trim()) {
+      toast.error(`${t('calendar_error_title')}`);
+      return;
+    }
+
+    const now = new Date();
+  
+    if (new Date(newEvent.date) <= now) {
+      toast.error(`${t('calendar_error_date')}`);
+      return;
+    }
+  
+    try {
+      const eventData = {
+        userId: user.id,
+        title: newEvent.title.trim(),
+        description: newEvent.description,
+        eventDate: newEvent.date,  // используем правильное имя поля
+        eventTime: newEvent.time,  // используем правильное имя поля
+        color: newEvent.color
+      };
+      
+      await dispatch(createEvent(eventData)).unwrap();
+      
+      setShowEventModal(false);
+      resetNewEvent();
+      
+      // Обновляем список событий
+      dispatch(fetchEvents(user.id));
+    } catch (error) {
+      console.error('Event creation failed:', error);
+    }
   };
 
-  const handleUpdateEvent = () => {
-    if (!selectedEvent || selectedEvent.title.trim() === '') return;
-    
-    setEvents(events.map(event => 
-      event.id === selectedEvent.id ? {
-        ...selectedEvent,
-        dateTime: `${selectedEvent.date}T${selectedEvent.time}`
-      } : event
-    ));
-    setShowEventDetailsModal(false);
+  const handleUpdateEvent = async () => {
+    if (!selectedEvent || !selectedEvent.title.trim()) return;
+  
+    const eventData = {
+      userId: user.id,
+      title: selectedEvent.title.trim(),
+      description: selectedEvent.description,
+      eventDate: selectedEvent.date,
+      eventTime: selectedEvent.time,
+      color: selectedEvent.color,
+    };
+
+    const now = new Date();
+  
+    if (new Date(selectedEvent.date) <= now) {
+      toast.error(`${t('calendar_error_date')}`);
+      return;
+    }
+  
+    try {
+      await dispatch(updateEvent({ eventId: selectedEvent.id, eventData })).unwrap();
+      setShowEventDetailsModal(false);
+      dispatch(fetchEvents(user.id));
+    } catch (error) {
+      console.error('Ошибка при обновлении события:', error);
+    }
   };
 
   const handleDeleteEvent = (id) => {
-    setEvents(events.filter(event => event.id !== id));
+    if (!id) return;
+    dispatch(deleteEvent(id));
     setShowEventDetailsModal(false);
   };
 
@@ -168,58 +263,93 @@ const Calendar = ({ events = [], user, setEvents }) => {
   };
 
   const openEventDetails = (event) => {
+    if (!event) return;
+    
     setSelectedEvent({
       ...event,
-      date: event.dateTime.split('T')[0],
-      time: event.dateTime.split('T')[1].substring(0, 5)
+      id: event.id,
+      title: event.title || '',
+      date: event.event_date || new Date().toISOString().split('T')[0],
+      time: event.event_time || '10:00',
+      description: event.description || '',
+      color: event.color || eventColors[0].value
     });
     setShowEventDetailsModal(true);
   };
 
+  // Get events for specific day
   const getEventsForDay = (day) => {
-    if (!day.isCurrentMonth) return null;
+    if (!day?.isCurrentMonth || !Array.isArray(events)) return null;
     
     const dayEvents = events.filter(event => {
-      const eventDate = new Date(event.dateTime);
-      return eventDate.getDate() === day.day && 
-             eventDate.getMonth() === currentDate.getMonth() && 
-             eventDate.getFullYear() === currentDate.getFullYear();
+      if (!event?.event_date) return false;
+      
+      try {
+        const eventDate = new Date(event.event_date);
+        if (isNaN(eventDate)) return false;
+        
+        return (
+          eventDate.getDate() === day.day && 
+          eventDate.getMonth() === currentDate.getMonth() && 
+          eventDate.getFullYear() === currentDate.getFullYear()
+        );
+      } catch (e) {
+        console.error('Error processing event date:', e, event);
+        return false;
+      }
     });
     
     return dayEvents.map(event => {
-      const isHighlighted = filteredEvents.some(e => e.id === event.id);
+      if (!event) return null;
+      
+      const isHighlighted = filteredEvents.some(e => e?.id === event?.id);
       
       return (
         <div 
           key={event.id} 
           className={`calendar-event ${isHighlighted ? 'highlighted-event' : ''}`}
           style={{
-            backgroundColor: `${event.color}20`,
-            color: event.color,
-            border: `1px solid ${event.color}80`,
-            boxShadow: isHighlighted ? `0 0 15px 5px ${event.color}` : 'none'
+            backgroundColor: `${event.color || '#9A48EA'}20`,
+            color: event.color || '#9A48EA',
+            border: `1px solid ${event.color || '#9A48EA'}80`,
+            boxShadow: isHighlighted ? `0 0 15px 5px ${event.color || '#9A48EA'}` : 'none'
           }}
           onClick={() => openEventDetails(event)}
         >
-          {event.title} {event.time}
+          {event.title} {event.event_time || ''}
         </div>
       );
     });
   };
 
+  if (!user) {
+    return <div className="loading-message">{t('calendar_redirecting')}</div>;
+  }
+
+  if (loading) return <div className="loading-message">{t('calendar_loading_events')}</div>;
+  if (error) {
+    const errorMessage = typeof error === 'object' 
+      ? error.message || JSON.stringify(error)
+      : error;
+    return <div className="error-message">{errorMessage}</div>;
+  }
+
   return (
     <div className="calendar-page">
+      <div>
+        <ToastContainer />
+      </div>
       <div className="calendar-main-content">
-        <div className="calendar-breadcrumb">Домашняя/Календарь</div>
+        <div className="calendar-breadcrumb">{t('calendar_breadcrumb')}</div>
         
         <div className="calendar-header-with-search">
-          <h1 className="calendar-title">Календарь</h1>
+          <h1 className="calendar-title">{t('calendar_title')}</h1>
           <div className="calendar-date-search">
             <FaSearch className="calendar-date-search-icon" />
             <input
               id="calendar-date-search-input"
               type="text"
-              placeholder="Поиск дат, мероприятий, встреч и тд"
+              placeholder={t('calendar_search_placeholder')}
               className="calendar-date-search-input"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -240,32 +370,44 @@ const Calendar = ({ events = [], user, setEvents }) => {
             
             <div className="calendar-actions">
               <div className="month-view-dropdown">
-                <button 
-                  className="calendar-view-button"
-                  onClick={() => setShowMonthDropdown(!showMonthDropdown)}
-                >
-                  Выбрать месяц<FaCaretDown />
-                </button>
-                {showMonthDropdown && (
-                  <div className="month-dropdown-menu">
-                    {monthNames.map((month, index) => (
-                      <div 
-                        key={month}
-                        className={`month-dropdown-item ${currentDate.getMonth() === index ? 'selected' : ''}`}
-                        onClick={() => changeMonth(index)}
-                      >
-                        {month}
-                      </div>
-                    ))}
-                  </div>
-                )}
+                {/* Кнопка выбора месяца */}
+                  <button 
+                    className="calendar-view-button"
+                    onClick={() => setShowMonthDropdown(!showMonthDropdown)}
+                    aria-haspopup="true"
+                    aria-expanded={showMonthDropdown}
+                    aria-label={t('calendar_select_month')}
+                  >
+                    {t('calendar_select_month')} <FaCaretDown />
+                  </button>
+                  {/* Выпадающий список месяцев */}
+                  {showMonthDropdown && (
+                    <div 
+                      className="month-dropdown-menu"
+                      role="menu"
+                      aria-labelledby="month-dropdown-button"
+                    >
+                      {monthNames.map((month, index) => (
+                        <div 
+                          key={month}
+                          role="menuitem"
+                          tabIndex="0"
+                          className={`month-dropdown-item ${currentDate.getMonth() === index ? 'selected' : ''}`}
+                          onClick={() => changeMonth(index)}
+                          onKeyDown={(e) => e.key === 'Enter' && changeMonth(index)}
+                        >
+                          {month}
+                        </div>
+                      ))}
+                    </div>
+                  )}
               </div>
               
               <button 
                 className="calendar-add-button"
                 onClick={() => setShowEventModal(true)}
               >
-                <FaPlus /> Добавить событие
+                <FaPlus /> {t('calendar_add_event')}
               </button>
             </div>
           </div>
@@ -290,11 +432,12 @@ const Calendar = ({ events = [], user, setEvents }) => {
         </div>
       </div>
 
+      {/* Модальное окно добавления события */}
       {showEventModal && (
         <div className="event-modal-overlay">
           <div className="event-modal">
             <div className="event-modal-header">
-              <h3>Добавить новое событие</h3>
+              <h3>{t('event_add_title')}</h3>
               <button 
                 className="close-modal"
                 onClick={() => {
@@ -308,35 +451,40 @@ const Calendar = ({ events = [], user, setEvents }) => {
             
             <div className="event-form">
               <div className="form-group">
-                <label>Название</label>
+                <label>{t('event_title_label')}</label>
                 <input
                   type="text"
                   value={newEvent.title}
                   onChange={(e) => setNewEvent({...newEvent, title: e.target.value})}
-                  placeholder="Встреча с командой"
+                  placeholder={t('event_title_placeholder')}
+                  required
                 />
               </div>
               
-              <div className="form-group">
-                <label>Дата</label>
-                <input
-                  type="date"
-                  value={newEvent.date}
-                  onChange={(e) => setNewEvent({...newEvent, date: e.target.value})}
-                />
+              <div className="form-row">
+                <div className="form-group">
+                  <label>{t('event_date_label')}</label>
+                  <input
+                    type="date"
+                    value={newEvent.date}
+                    onChange={(e) => setNewEvent({...newEvent, date: e.target.value})}
+                    required
+                  />
+                </div>
+                
+                <div className="form-group">
+                  <label>{t('event_time_label')}</label>
+                  <input
+                    type="time"
+                    value={newEvent.time}
+                    onChange={(e) => setNewEvent({...newEvent, time: e.target.value})}
+                    required
+                  />
+                </div>
               </div>
               
               <div className="form-group">
-                <label>Время</label>
-                <input
-                  type="time"
-                  value={newEvent.time}
-                  onChange={(e) => setNewEvent({...newEvent, time: e.target.value})}
-                />
-              </div>
-              
-              <div className="form-group">
-                <label>Цвет события</label>
+                <label>{t('event_color_label')}</label>
                 <div className="color-picker">
                   {eventColors.map(color => (
                     <div 
@@ -350,30 +498,35 @@ const Calendar = ({ events = [], user, setEvents }) => {
               </div>
               
               <div className="form-group">
-                <label>Описание</label>
+                <label>{t('event_description_label')}</label>
                 <textarea
                   value={newEvent.description}
                   onChange={(e) => setNewEvent({...newEvent, description: e.target.value})}
-                  placeholder="Добавьте подробную информацию о мероприятии"
+                  placeholder={t('event_description_placeholder')}
+                  rows="3"
                 />
               </div>
               
-              <button 
-                className="save-event-button"
-                onClick={handleAddEvent}
-              >
-                Сохранить
-              </button>
+              <div className="form-actions">
+                <button 
+                  className="save-event-button"
+                  onClick={handleAddEvent}
+                  disabled={!newEvent.title.trim()}
+                >
+                  {t('event_save_button')}
+                </button>
+              </div>
             </div>
           </div>
         </div>
       )}
 
+      {/* Модальное окно просмотра/редактирования события */}
       {showEventDetailsModal && selectedEvent && (
         <div className="event-modal-overlay">
           <div className="event-modal">
             <div className="event-modal-header">
-              <h3>Детали события</h3>
+              <h3>{t('event_edit_title')}</h3>
               <button 
                 className="close-modal"
                 onClick={() => setShowEventDetailsModal(false)}
@@ -384,34 +537,39 @@ const Calendar = ({ events = [], user, setEvents }) => {
             
             <div className="event-form">
               <div className="form-group">
-                <label>Название</label>
+                <label>{t('event_title_label')}</label>
                 <input
                   type="text"
                   value={selectedEvent.title}
                   onChange={(e) => setSelectedEvent({...selectedEvent, title: e.target.value})}
+                  required
                 />
               </div>
               
-              <div className="form-group">
-                <label>Дата</label>
-                <input
-                  type="date"
-                  value={selectedEvent.date}
-                  onChange={(e) => setSelectedEvent({...selectedEvent, date: e.target.value})}
-                />
+              <div className="form-row">
+                <div className="form-group">
+                  <label>{t('event_date_label')}</label>
+                  <input
+                    type="date"
+                    value={selectedEvent.date}
+                    onChange={(e) => setSelectedEvent({...selectedEvent, date: e.target.value})}
+                    required
+                  />
+                </div>
+                
+                <div className="form-group">
+                  <label>{t('event_time_label')}</label>
+                  <input
+                    type="time"
+                    value={selectedEvent.time}
+                    onChange={(e) => setSelectedEvent({...selectedEvent, time: e.target.value})}
+                    required
+                  />
+                </div>
               </div>
               
               <div className="form-group">
-                <label>Время</label>
-                <input
-                  type="time"
-                  value={selectedEvent.time}
-                  onChange={(e) => setSelectedEvent({...selectedEvent, time: e.target.value})}
-                />
-              </div>
-              
-              <div className="form-group">
-                <label>Цвет события</label>
+                <label>{t('event_color_label')}</label>
                 <div className="color-picker">
                   {eventColors.map(color => (
                     <div 
@@ -425,24 +583,30 @@ const Calendar = ({ events = [], user, setEvents }) => {
               </div>
               
               <div className="form-group">
-                <label>Описание</label>
+                <label>{t('event_description_label')}</label>
                 <textarea
                   value={selectedEvent.description}
                   onChange={(e) => setSelectedEvent({...selectedEvent, description: e.target.value})}
+                  rows="3"
                 />
               </div>
               
               <div className="event-actions">
                 <button 
                   className="delete-event-button"
-                  onClick={() => handleDeleteEvent(selectedEvent.id)}>
-                  <FaTrash /> Удалить
+                  onClick={() => handleDeleteEvent(selectedEvent.id)}
+                >
+                  <FaTrash /> {t('event_delete_button')}
                 </button>
-                <button 
-                  className="update-event-button"
-                  onClick={handleUpdateEvent}>
-                  <FaEdit /> Редактировать
-                </button>
+                <div className="right-actions">
+                  <button 
+                    className="update-event-button"
+                    onClick={handleUpdateEvent}
+                    disabled={!selectedEvent.title.trim()}
+                  >
+                    <FaEdit /> {t('event_update_button')}
+                  </button>
+                </div>
               </div>
             </div>
           </div>

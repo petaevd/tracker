@@ -2,12 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { getProjects } from '../../store/slices/projectSlice';
-import { logout } from '../../store/slices/authSlice';
 import ProjectInfo from '../../components/ProjectInfo/ProjectInfo';
 import TaskList from '../../components//TaskList/TaskList';
 import TeamMembers from '../../components/TeamMembers/TeamMembers';
 import AddUserModal from '../../components/AddUserModal/AddUserModal';
 import './Dashboard.css';
+import { useTranslation } from 'react-i18next';
 
 const Dashboard = () => {
   const dispatch = useDispatch();
@@ -20,6 +20,17 @@ const Dashboard = () => {
   const [users, setUsers] = useState([]);
   const [showAddUserModal, setShowAddUserModal] = useState(false);
 
+    
+  // ================ Перевод ================
+  const { t, i18n } = useTranslation();
+  useEffect(() => {
+    const savedLanguage = localStorage.getItem('language');
+    if (savedLanguage && savedLanguage !== i18n.language) {
+      i18n.changeLanguage(savedLanguage);
+    }
+  }, [i18n]);
+  // ================ Перевод ================
+
   useEffect(() => {
     if (!user) {
       navigate('/login');
@@ -27,7 +38,7 @@ const Dashboard = () => {
     }
 
     if (!projects.length) {
-      dispatch(getProjects());
+      dispatch(getProjects(user.id));
     }
   }, [dispatch, projects.length, user, navigate]);
 
@@ -36,6 +47,8 @@ const Dashboard = () => {
   if (!user) {
     return <div className="loading-message">Загрузка...</div>;
   }
+
+
 
   return (
     <div className="dashboard-container">

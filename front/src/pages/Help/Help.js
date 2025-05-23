@@ -1,117 +1,240 @@
 import React, { useEffect } from 'react';
-import { FaSearch, FaShareAlt, FaUser, FaSignOutAlt, FaQuestionCircle } from 'react-icons/fa';
-import { useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
+import { motion, useAnimation } from 'framer-motion';
+import { useInView } from 'react-intersection-observer';
 import './Help.css';
+import { useTranslation } from 'react-i18next';
 
-const Help = ({ user, onLogout }) => {
+// Анимации для заголовка
+const titleVariants = {
+  hidden: { opacity: 0, y: -20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.8,
+      ease: [0.6, -0.05, 0.01, 0.99],
+      when: "beforeChildren"
+    }
+  }
+};
+
+// Анимации для секций помощи
+const sectionVariants = {
+  hidden: { opacity: 0, scale: 0.95 },
+  visible: {
+    opacity: 1,
+    scale: 1,
+    transition: {
+      duration: 0.6,
+      ease: [0.6, -0.05, 0.01, 0.99]
+    }
+  },
+  hover: {
+    y: -10,
+    scale: 1.02,
+    boxShadow: "0 20px 25px -5px rgba(154, 72, 234, 0.3), 0 10px 10px -5px rgba(154, 72, 234, 0.1)",
+    transition: {
+      duration: 0.3,
+      ease: "easeOut"
+    }
+  },
+  tap: {
+    scale: 0.98
+  }
+};
+
+// Анимации для вопросов
+const questionVariants = {
+  hidden: { x: -30, opacity: 0 },
+  visible: {
+    x: 0,
+    opacity: 1,
+    transition: {
+      duration: 0.5,
+      ease: "backOut"
+    }
+  },
+  hover: {
+    color: "#ffffff",
+    textShadow: "0 0 8px rgba(154, 72, 234, 0.7)",
+    transition: {
+      duration: 0.2
+    }
+  }
+};
+
+// Анимации для ответов
+const answerVariants = {
+  hidden: { height: 0, opacity: 0 },
+  visible: {
+    height: "auto",
+    opacity: 1,
+    transition: {
+      delay: 0.3,
+      duration: 0.5,
+      ease: "easeOut"
+    }
+  }
+};
+
+// Компонент с наблюдателем за видимостью
+const AnimatedSection = ({ children, delay = 0 }) => {
+  const controls = useAnimation();
+  const [ref, inView] = useInView({
+    threshold: 0.1,
+    triggerOnce: true
+  });
+
+  React.useEffect(() => {
+    if (inView) {
+      controls.start("visible");
+    }
+  }, [controls, inView]);
+
+  return (
+    <motion.div
+      ref={ref}
+      initial="hidden"
+      animate={controls}
+      variants={sectionVariants}
+      whileHover="hover"
+      whileTap="tap"
+      transition={{ delay }}
+    >
+      {children}
+    </motion.div>
+  );
+};
+
+const Help = () => {
+
+
+  // ================ Перевод ================
+  const { t, i18n } = useTranslation();
   useEffect(() => {
-    const handleKeyDown = (e) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'f') {
-        e.preventDefault();
-        document.getElementById('search-input').focus();
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
-
-  const getAvatarLetter = () => {
-    if (user?.username) {
-      return user.username.charAt(0).toUpperCase();
+    const savedLanguage = localStorage.getItem('language');
+    if (savedLanguage && savedLanguage !== i18n.language) {
+      i18n.changeLanguage(savedLanguage);
     }
-    if (user?.email) {
-      return user.email.charAt(0).toUpperCase();
-    }
-    return '?';
-  };
-
-  const navigate = useNavigate();
+  }, [i18n]);
+  // ================ Перевод ================
+  const user = useSelector((state) => state.auth.user);
   
   return (
     <div className="dashboard-container">
-      {/* Верхняя панель с поиском */}
-      <div className="top-bar">
-        <div className="search-container">
-          <div className="search-wrapper">
-            <FaSearch className="search-icon" />
-            <input id="search-input" type="text" placeholder="Поиск" className="search-input"/>
-            <div className="shortcut-box">
-              <span className="shortcut-key">⌘</span>
-              <span className="shortcut-key">F</span>
-            </div>
-          </div>
-        </div>
-        <div className="top-bar-actions">
-          <button className="share-button"><FaShareAlt /></button>
-          {user ? (
-            <div className="user-controls">
-              <div className="user-avatar">
-                {getAvatarLetter()}
-              </div>
-              <button 
-                className="logout-btn"
-                onClick={onLogout}
-                title="Выйти"
-              >
-                <FaSignOutAlt />
-              </button>
-            </div>
-          ) : (
-            <button 
-              className="login-btn"
-              onClick={() => navigate('/login')}
-            >
-              <FaUser />
-            </button>
-          )}
-        </div>
-      </div>
-
-      {/* Основной контент */}
       <div className="main-content">
-        <div className="breadcrumb">Домашняя/Помощь</div>
-        <h1 className="dashboard-title"> Помощь</h1>
-
-        <p className="dashboard-subtitle">Найдите ответы на ваши вопросы</p>
+        <div className="breadcrumb">{t('help_breadcrumb')}</div>
+        
+        {/* Анимированный заголовок */}
+        <motion.h1 
+          className=""
+          initial="hidden"
+          animate="visible"
+          variants={titleVariants}
+        >
+          <motion.span
+            style={{ display: 'inline-block' }}
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            {t('help_title')}
+          </motion.span>
+        </motion.h1>
         
         {/* Секции помощи */}
         <div className="help-sections">
-          <div className="help-section">
-            <h2 className="help-section-title">Основные вопросы</h2>
-            <div className="help-item">
-              <h3 className="help-question">Как создать новый проект?</h3>
-              <p className="help-answer">Перейдите в раздел "Проекты" и нажмите кнопку "Создать проект". Заполните необходимые поля и сохраните.</p>
-            </div>
-            <div className="help-item">
-              <h3 className="help-question">Как пригласить участников?</h3>
-              <p className="help-answer">В настройках проекта есть раздел "Участники", где вы можете отправить приглашения по email.</p>
-            </div>
-          </div>
+          <AnimatedSection delay={0.1}>
+            <h2 className="help-section-title">
+              <motion.span 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.4 }}
+              >
+                {t('help_section_projects')}
+              </motion.span>
+            </h2>
+            <motion.div className="help-item" variants={questionVariants}>
+              <motion.h3 className="help-question" whileHover="hover">
+                {t('help_question_create_project')}
+              </motion.h3>
+              <motion.p className="help-answer" variants={answerVariants}>
+                {t('help_answer_create_project').split('\n').map((line, i) => (
+                  <React.Fragment key={i}>{line}<br /></React.Fragment>
+                ))}
+              </motion.p>
+            </motion.div>
+            <motion.div className="help-item" variants={questionVariants}>
+              <motion.h3 className="help-question" whileHover="hover">
+                {t('help_question_create_task')}
+              </motion.h3>
+              <motion.p className="help-answer" variants={answerVariants}>
+              {t('help_answer_create_task').split('\n').map((line, i) => (
+                <React.Fragment key={i}>{line}<br /></React.Fragment>
+              ))}
+              </motion.p>
+            </motion.div>
+          </AnimatedSection>
           
-          <div className="help-section">
-            <h2 className="help-section-title">Настройки аккаунта</h2>
-            <div className="help-item">
-              <h3 className="help-question">Как изменить пароль?</h3>
-              <p className="help-answer">В разделе "Настройки" - "Безопасность" вы можете изменить ваш пароль.</p>
-            </div>
-            <div className="help-item">
-              <h3 className="help-question">Как обновить профиль?</h3>
-              <p className="help-answer">Перейдите в "Настройки" - "Профиль" для изменения информации о себе.</p>
-            </div>
-          </div>
+          <AnimatedSection delay={0.2}>
+            <h2 className="help-section-title">
+              <motion.span 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.5 }}
+              >
+                {t('help_section_account')}
+              </motion.span>
+            </h2>
+            <motion.div className="help-item" variants={questionVariants}>
+              <motion.h3 className="help-question" whileHover="hover">
+                {t('help_question_change_password')}
+              </motion.h3>
+              <motion.p className="help-answer" variants={answerVariants}>
+                {t('help_answer_change_password')}
+              </motion.p>
+            </motion.div>
+            <motion.div className="help-item" variants={questionVariants}>
+              <motion.h3 className="help-question" whileHover="hover">
+                {t('help_question_update_profile')}
+              </motion.h3>
+              <motion.p className="help-answer" variants={answerVariants}>
+                {t('help_answer_update_profile')}
+              </motion.p>
+            </motion.div>
+          </AnimatedSection>
           
-          <div className="help-section">
-            <h2 className="help-section-title">Горячие клавиши</h2>
-            <div className="help-item">
-              <h3 className="help-question">Быстрый поиск</h3>
-              <p className="help-answer">Используйте Ctrl+F (Cmd+F на Mac) для быстрого доступа к поиску.</p>
-            </div>
-            <div className="help-item">
-              <h3 className="help-question">Навигация</h3>
-              <p className="help-answer">Alt+Стрелки для быстрой навигации между разделами.</p>
-            </div>
-          </div>
+          <AnimatedSection delay={0.3}>
+            <h2 className="help-section-title">
+              <motion.span 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.6 }}
+              >
+                {t('help_section_visualization')}
+              </motion.span>
+            </h2>
+            <motion.div className="help-item" variants={questionVariants}>
+              <motion.h3 className="help-question" whileHover="hover">
+              {t('help_question_gantt')}
+              </motion.h3>
+              <motion.p className="help-answer" variants={answerVariants}>
+                {t('help_answer_gantt').split('\n').map((line, i) => (
+                  <React.Fragment key={i}>{line}<br /></React.Fragment>
+                ))}
+              </motion.p>
+            </motion.div>
+            <motion.div className="help-item" variants={questionVariants}>
+              <motion.h3 className="help-question" whileHover="hover">
+              {t('help_question_pie_chart')}
+              </motion.h3>
+              <motion.p className="help-answer" variants={answerVariants}>
+                {t('help_answer_pie_chart').split('\n').map((line, i) => (
+                  <React.Fragment key={i}>{line}<br /></React.Fragment>
+                ))}
+              </motion.p>
+            </motion.div>
+          </AnimatedSection>
         </div>
       </div>
     </div>

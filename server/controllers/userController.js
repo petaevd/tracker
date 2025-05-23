@@ -2,6 +2,7 @@ import userService from '../services/userService.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs/promises';
+import fssync from 'fs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -49,6 +50,15 @@ const uploadAvatar = async (req, res, next) => {
       err.status = 400;
       throw err;
     }
+
+    const rootDir = path.resolve(__dirname, '..');
+    const uploadDir = path.join(rootDir, 'public', 'avatars');
+    console.log(uploadDir)
+
+    if (!fssync.existsSync(uploadDir)) {
+      fssync.mkdirSync(uploadDir, { recursive: true });
+    }
+
 
     const avatarUrl = `/avatars/${req.file.filename}`;
     const user = await userService.updateAvatar(req.params.id, avatarUrl);

@@ -1,8 +1,6 @@
-.help-icon {
-  margin-right: 15px;
-  color: #9A48EA;
-  vertical-align: middle;
-  filter: drop-shadow(0 0 5px rgba(154, 72, 234, 0.5));
+/* Основные стили */
+.dashboard-container {
+  overflow: hidden;
 }
 
 .help-sections {
@@ -16,21 +14,15 @@
   background: linear-gradient(145deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.05));
   border-radius: 16px;
   padding: 25px;
-  transition: all 0.3s ease;
   backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--border-color);
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
-}
-
-.help-section:hover {
-  transform: translateY(-5px);
-  background: linear-gradient(145deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.05));
-  box-shadow: 0 12px 25px rgba(0, 0, 0, 0.25);
-  border-color: rgba(154, 72, 234, 0.3);
+  transform-origin: center;
+  will-change: transform, box-shadow;
 }
 
 .help-section-title {
-  color: #9A48EA;
+  color: var(--text-color);
   font-size: 1.3rem;
   margin-bottom: 20px;
   padding-bottom: 12px;
@@ -38,6 +30,8 @@
   display: flex;
   align-items: center;
   gap: 10px;
+  position: relative;
+  overflow: hidden;
 }
 
 .help-section-title::before {
@@ -45,15 +39,16 @@
   display: inline-block;
   width: 8px;
   height: 8px;
-  background-color: #9A48EA;
+  background-color:  var(--text-color);
   border-radius: 50%;
-  box-shadow: 0 0 10px #9A48EA;
+  box-shadow: 0 0 10px var(--text-color);
 }
 
 .help-item {
   margin-bottom: 25px;
   position: relative;
   padding-left: 20px;
+  overflow: hidden;
 }
 
 .help-item::before {
@@ -65,15 +60,19 @@
   height: 8px;
   background-color: rgba(154, 72, 234, 0.5);
   border-radius: 50%;
+  transition: all 0.3s ease;
 }
 
 .help-question {
-  color: white;
+  color:  var(--text-color);
   font-size: 1.05rem;
   margin-bottom: 10px;
   font-weight: 500;
   position: relative;
   display: inline-block;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  transform-origin: left;
 }
 
 .help-question::after {
@@ -87,43 +86,24 @@
   transition: width 0.3s ease;
 }
 
-.help-item:hover .help-question::after {
-  width: 100%;
-}
-
 .help-answer {
-  color: rgba(255, 255, 255, 0.75);
+  color: var(--secondary-text);
   font-size: 0.95rem;
   line-height: 1.6;
   padding-left: 5px;
-  transition: all 0.3s ease;
+  overflow: hidden;
 }
 
-.help-item:hover .help-answer {
-  color: rgba(255, 255, 255, 0.9);
-  padding-left: 10px;
+/* Эффекты при наведении */
+.help-section:hover .help-item::before {
+  transform: scale(1.5);
+  background-color: #9A48EA;
 }
 
-/* Анимация при загрузке */
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.help-item:hover .help-question::after {
+  width: 100%;
+  background-color: #9A48EA;
 }
-
-.help-section {
-  animation: fadeInUp 0.5s ease forwards;
-  opacity: 0;
-}
-
-.help-section:nth-child(1) { animation-delay: 0.1s; }
-.help-section:nth-child(2) { animation-delay: 0.2s; }
-.help-section:nth-child(3) { animation-delay: 0.3s; }
 
 /* Адаптация для мобильных устройств */
 @media (max-width: 768px) {
@@ -134,7 +114,10 @@
   
   .help-section {
     padding: 20px;
-    margin-bottom: 0;
+  }
+  
+  .dashboard-title {
+    font-size: 2rem;
   }
   
   .help-section-title {

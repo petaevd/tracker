@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
-import { setUser, logout } from './store/slices/authSlice';
+import { useDispatch, useSelector } from 'react-redux';
+import { setAuthState, logout } from './store/slices/authSlice';
+import { jwtDecode } from 'jwt-decode';
 import Home from './pages/Home/Home';
 import Calendar from './pages/Calendar/Calendar';
 import Dashboard from './pages/Dashboard/Dashboard';
@@ -11,28 +12,64 @@ import Settings from './pages/Settings/Settings';
 import Help from './pages/Help/Help';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import TaskListPage from './components/TaskList/TaskList';
 import ProtectedRoute from './components/shared/ProtectedRoute';
 import Layout from './components/Layout/Layout';
+import ConfirmEmail from './pages/Email/ConfirmEmail';
+import './index.css';
 
 const App = () => {
   const dispatch = useDispatch();
+  const { isAuthenticated } = useSelector((state) => state.auth);
   const [isLoading, setIsLoading] = useState(true);
 
+  // ================ Темы ================
+  function setTheme(themeName) {
+    document.documentElement.setAttribute('data-theme', themeName);
+    localStorage.setItem('theme', themeName);
+  }
   useEffect(() => {
-    const storedUser = localStorage.getItem('user');
-    const token = localStorage.getItem('token');
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    setTheme(savedTheme);
+  }, []);
+  // ================ Темы ================
 
-    if (storedUser && token) {
-      try {
-        const parsedUser = JSON.parse(storedUser);
-        dispatch(setUser(parsedUser));
-      } catch (e) {
-        console.error('Ошибка при загрузке пользователя:', e);
-        dispatch(logout());
+  useEffect(() => {
+    const checkAuth = () => {
+      const storedUser = localStorage.getItem('user');
+      const token = localStorage.getItem('token');
+
+      if (!storedUser || !token) {
+        // dispatch(logout());
+        setIsLoading(false);
+        return;
       }
+
+      try {
+        // Проверяем срок действия токена
+        const decodedToken = jwtDecode(token);
+        if (decodedToken.exp * 1000 < Date.now()) {
+          throw new Error('Token expired');
+        }
+
+        const parsedUser = JSON.parse(storedUser);
+        dispatch(setAuthState({ user: parsedUser, token }));
+      } catch (error) {
+        console.error('Authentication error:', error);
+        dispatch(logout());
+        localStorage.removeItem('user');
+        localStorage.removeItem('token');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (!isAuthenticated) {
+      checkAuth();
+    } else {
+      setIsLoading(false);
     }
-    setIsLoading(false);
-  }, [dispatch]);
+  }, [dispatch, isAuthenticated]);
 
   if (isLoading) {
     return <div>Загрузка...</div>;
@@ -41,6 +78,7 @@ const App = () => {
   return (
     <Router>
       <Routes>
+        <Route path="/confirm-email/:token" element={<ConfirmEmail />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route
@@ -66,14 +104,14 @@ const App = () => {
         <Route
           path="/project"
           element={
-            <ProtectedRoute>
+            //<ProtectedRoute>
               <Layout>
                 <Project />
               </Layout>
-            </ProtectedRoute>
+            //</ProtectedRoute>
           }
         />
-        <Route
+        {/* <Route
           path="/project/:projectId/dashboard"
           element={
             <ProtectedRoute>
@@ -82,7 +120,7 @@ const App = () => {
               </Layout>
             </ProtectedRoute>
           }
-        />
+        /> */}
         <Route
           path="/favorites"
           element={
@@ -109,6 +147,17 @@ const App = () => {
             <ProtectedRoute>
               <Layout>
                 <Help />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        {/* Добавленный маршрут для страницы задач */}
+        <Route
+          path="/tasks"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <TaskListPage />
               </Layout>
             </ProtectedRoute>
           }
