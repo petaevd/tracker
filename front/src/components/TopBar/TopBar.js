@@ -48,39 +48,49 @@ const TopBar = ({ onLogout }) => {
   return (
     <div className="top-bar">
       <div className="top-bar-actions">
-        {/* <button className="share-button">
-          <FaShareAlt />
-        </button> */}
         {user ? (
           <div className="user-controls">
             <div className="user-avatar">
-                {profileData.avatar ? (
-                  <img
-                    src={getAssetUrl(profileData.avatar)}
-                    alt="Ваш аватар"
-                    className="avatar-image"
-                    onError={(e) => {
-                      e.target.onerror = null; // Предотвращаем бесконечный цикл
-                      e.target.src = ''; // Удаляем нерабочий URL
-                      setProfileData(prev => ({
-                        ...prev,
-                        avatar: prev.avatar || null
-                      }));
-                    }}
-                  />
-                ) : (
-                  <div className="avatar-placeholder">
-                    {getAvatarLetter(user?.username, user?.email)}
-                  </div>
-                )}
+              {profileData.avatar ? (
+                <img
+                  src={getAssetUrl(profileData.avatar)}
+                  alt={`Аватар пользователя ${profileData.name}`}
+                  className="avatar-image"
+                  onError={(e) => {
+                    e.target.onerror = null;
+                    e.target.src = '';
+                    setProfileData(prev => ({
+                      ...prev,
+                      avatar: prev.avatar || null
+                    }));
+                  }}
+                />
+              ) : (
+                <div 
+                  className="avatar-placeholder"
+                  aria-hidden="true"
+                >
+                  {getAvatarLetter(user?.username, user?.email)}
+                </div>
+              )}
             </div>
-            <button onClick={onLogout} className="logout-button">
-              <FaSignOutAlt />
+            <button 
+              onClick={onLogout} 
+              className="logout-button"
+              aria-label="Выйти из системы"
+            >
+              <FaSignOutAlt aria-hidden="true" />
+              <span className="visually-hidden">Выйти</span>
             </button>
           </div>
         ) : (
-          <button className="login-btn" onClick={() => navigate('/login')}>
-            <FaUser />
+          <button 
+            className="login-btn" 
+            onClick={() => navigate('/login')}
+            aria-label="Войти в систему"
+          >
+            <FaUser aria-hidden="true" />
+            <span className="visually-hidden">Войти</span>
           </button>
         )}
       </div>

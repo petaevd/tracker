@@ -222,7 +222,7 @@
 /* Стили для тултипа */
 .event-tooltip {
   position: absolute;
-  background: var(--card-bg);
+  background: var( --card-bg-tooltip);
   border-radius: 8px;
   padding: 12px;
   width: 220px;
@@ -742,4 +742,7 @@
   background: none;
   border: none;
   color: var(--secondary-text);
+}
+.event-modal {
+  padding: 10px;
 }

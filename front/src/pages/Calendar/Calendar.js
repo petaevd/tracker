@@ -344,7 +344,10 @@ const Calendar = () => {
         
         <div className="calendar-header-with-search">
           <h1 className="calendar-title">{t('calendar_title')}</h1>
-          <div className="calendar-date-search">
+         <div className="calendar-date-search">
+            <label htmlFor="calendar-date-search-input" className="visually-hidden">
+              {t('calendar_search_label')}
+            </label>
             <FaSearch className="calendar-date-search-icon" />
             <input
               id="calendar-date-search-input"
@@ -353,6 +356,7 @@ const Calendar = () => {
               className="calendar-date-search-input"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
+              aria-label={t('calendar_search_label')}
             />
           </div>
         </div>

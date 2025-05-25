@@ -7,7 +7,7 @@ body {
 }
 
 :root {
-  --accent-color: #9A48EA;
+  --accent-color: #822dd7;
   --font-size: 16px;
   --bg-color: #000000;
   --text-color: #ffffff;
@@ -66,9 +66,10 @@ body {
 [data-theme='dark'] {
   --bg-color: #121212;
   --text-color: #ffffff;
-  --accent-color: #bb86fc;
+  --accent-color: #9954dd;
   --secondary-text: rgba(255, 255, 255, 0.7);
   --card-bg: rgba(255, 255, 255, 0.05);
+  --card-bg-tooltip: rgba(15, 14, 14, 0.843);
   --card-bg-rgb: rgba(0, 0, 0, 0.9);
   --border-color: rgba(255, 255, 255, 0.1);
   --error-color: #cf6679;
