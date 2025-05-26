@@ -15,6 +15,7 @@
     "sf_remove_assignee": "Remove",
     "sf_remove": "Remove",
     "sf_assign": "Assign",
+    "sf_none_assigned": "Not found",
     "_comment3": "============== REGISTER ==============",
     "register_title": "Registration",
     "register_username_label": "Username (required):",
