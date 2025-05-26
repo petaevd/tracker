@@ -255,10 +255,11 @@ const Home = () => {
     }
   };
 
-  const FAVORITES_KEY = 'favoriteTasks';
+
+  const getFavoritesKey = () => `favoriteTasks_${user.id}`;
 
   const getFavoriteTasks = () => {
-    const data = localStorage.getItem(FAVORITES_KEY);
+    const data = localStorage.getItem(getFavoritesKey());
     try {
       const parsed = JSON.parse(data);
       return Array.isArray(parsed) ? parsed : [];
@@ -268,7 +269,7 @@ const Home = () => {
   };
 
   const setFavoriteTasks = (favorites) => {
-    localStorage.setItem(FAVORITES_KEY, JSON.stringify(favorites));
+    localStorage.setItem(getFavoritesKey(), JSON.stringify(favorites));
   };
 
   const toggleFavoriteTask = (task) => {
@@ -799,80 +800,93 @@ const getEventsForDay = (day, month, year) => {
               </button>
             </nav>
   
-            <nav className="event-form">
-              <nav className="form-group">
-                <label htmlFor="task-title">{t('task_label_title')}</label>
-                <input
-                  id="task-title"
-                  type="text"
-                  className="form-control"
-                  value={formTask.title}
-                  onChange={(e) => setFormTask({ ...formTask, title: e.target.value })}
-                  readOnly={isReadOnly}
-                />
-              </nav>
+              {user.role === 'manager' && (
+                <nav className="event-form">
+                  <nav className="form-group">
+                    <label htmlFor="task-title">{t('task_label_title')}</label>
+                    <input
+                      id="task-title"
+                      type="text"
+                      className="form-control"
+                      value={formTask.title}
+                      onChange={(e) => setFormTask({ ...formTask, title: e.target.value })}
+                      readOnly={isReadOnly}
+                    />
+                  </nav>
+                </nav>
+              )}
   
-              <nav className="form-group">
-                <label>{t('task_label_description')}</label>
-                <textarea
-                  className="form-control"
-                  value={formTask.description}
-                  onChange={(e) => setFormTask({ ...formTask, description: e.target.value })}
-                  readOnly={isReadOnly}
-                />
-              </nav>
+              {user.role === 'manager' && (
+                <nav className="form-group">
+                  <label>{t('task_label_description')}</label>
+                  <textarea
+                    className="form-control"
+                    value={formTask.description}
+                    onChange={(e) => setFormTask({ ...formTask, description: e.target.value })}
+                    readOnly={isReadOnly}
+                  />
+                </nav>
+              )}
   
-              <nav className="form-group">
-                <label>{t('task_label_due_date')}</label>
-                <input
-                  type="date"
-                  className="form-control"
-                  value={formTask.due_date}
-                  onChange={(e) => setFormTask({ ...formTask, due_date: e.target.value })}
-                  readOnly={isReadOnly}
-                />
-              </nav>
+              {user.role === 'manager' && (
+                <nav className="form-group">
+                  <label>{t('task_label_due_date')}</label>
+                  <input
+                    type="date"
+                    className="form-control"
+                    value={formTask.due_date}
+                    onChange={(e) => setFormTask({ ...formTask, due_date: e.target.value })}
+                    readOnly={isReadOnly}
+                  />
+                </nav>
+              )}
   
-              <nav className="form-group">
-                <label>{t('task_label_priority')}</label>
-                <select
-                  className="form-select"
-                  value={formTask.priority}
-                  onChange={(e) => setFormTask({ ...formTask, priority: e.target.value })}
-                  disabled={isReadOnly}
-                >
-                  <option value="low">{t('task_priority_low')}</option>
-                  <option value="medium">{t('task_priority_medium')}</option>
-                  <option value="high">{t('task_priority_high')}</option>
-                </select>
-              </nav>
+              {user.role === 'manager' && (
+                <nav className="form-group">
+                  <label>{t('task_label_priority')}</label>
+                  <select
+                    className="form-select"
+                    value={formTask.priority}
+                    onChange={(e) => setFormTask({ ...formTask, priority: e.target.value })}
+                    disabled={isReadOnly}
+                  >
+                    <option value="low">{t('task_priority_low')}</option>
+                    <option value="medium">{t('task_priority_medium')}</option>
+                    <option value="high">{t('task_priority_high')}</option>
+                  </select>
+                </nav>
+              )}
   
-              <nav className="form-group">
-                <label>{t('task_label_project')}</label>
-                <select
-                  className="form-select"
-                  value={formTask.project_id}
-                  onChange={(e) => setFormTask({ ...formTask, project_id: e.target.value })}
-                  disabled={isReadOnly}
-                >
-                  <option value="">{t('task_select_project')}</option>
-                  {projects.map((project) => (
-                    <option key={project.id} value={project.id}>
-                      {project.name}
-                    </option>
-                  ))}
-                </select>
-              </nav>
-  
-              <nav className="form-group">
-                <label>{t('task_label_tags')}</label>
-                <textarea
-                  className="form-control"
-                  value={formTask.tags}
-                  onChange={(e) => setFormTask({ ...formTask, tags: e.target.value })}
-                  readOnly={isReadOnly}
-                />
-              </nav>
+              {user.role === 'manager' && (
+                <>
+                  <nav className="form-group">
+                    <label>{t('task_label_project')}</label>
+                    <select
+                      className="form-select"
+                      value={formTask.project_id}
+                      onChange={(e) => setFormTask({ ...formTask, project_id: e.target.value })}
+                      disabled={isReadOnly}
+                    >
+                      <option value="">{t('task_select_project')}</option>
+                      {projects.map((project) => (
+                        <option key={project.id} value={project.id}>
+                          {project.name}
+                        </option>
+                      ))}
+                    </select>
+                  </nav>
+      
+                  <nav className="form-group">
+                    <label>{t('task_label_tags')}</label>
+                    <textarea
+                      className="form-control"
+                      value={formTask.tags}
+                      onChange={(e) => setFormTask({ ...formTask, tags: e.target.value })}
+                      readOnly={isReadOnly}
+                    />
+                  </nav>
+                </>
+              )}
   
               {formTask.id && (
                 <nav className="form-group">
@@ -915,7 +929,6 @@ const getEventsForDay = (day, month, year) => {
               
             </nav>
           </nav>
-        </nav>
       )}
   
       {/* Event tooltip */}

@@ -127,11 +127,13 @@
 }
 
 ._2dZTy {
-  fill: var(--secondary-text);
+  fill: var(--bg-color);
+  filter: brightness(0.9);
 }
 
 ._2dZTy:nth-child(even) {
-  fill: var(--secondary-text);
+  fill: var(--bg-color);
+  filter: brightness(0.9);
 }
 
 ._3rUKi {
@@ -144,7 +146,7 @@
 
 ._9w8d5 {
   text-anchor: middle;
-  fill: #333;
+  fill: var(--accent-color);
   -webkit-touch-callout: none;
   -webkit-user-select: none;
   -moz-user-select: none;
@@ -169,6 +171,7 @@
 }
 
 ._35nLX {
+  /* Хедер с числами */
   fill: var(--card-bg);
   stroke: #e0e0e0;
   stroke-width: 1.4;

@@ -2,12 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { FaBookmark, FaTrash } from 'react-icons/fa';
 import './Favorites.css';
 import { useTranslation } from 'react-i18next';
+import { useSelector } from 'react-redux';
 
 const Favorites = () => {
 
+  const user = useSelector((state) => state.auth.user);
   // ================ Избранные задачи ================
 
-  const FAVORITES_KEY = 'favoriteTasks';
+  const getFavoritesKey = () => `favoriteTasks_${user.id}`;
 
   const priorityMap = {
     low: 'Низкая',
@@ -16,7 +18,7 @@ const Favorites = () => {
   };
 
   const getFavoriteTasks = () => {
-    const data = localStorage.getItem(FAVORITES_KEY);
+    const data = localStorage.getItem(getFavoritesKey());
     try {
       const parsed = JSON.parse(data);
       return Array.isArray(parsed) ? parsed : [];
@@ -26,7 +28,7 @@ const Favorites = () => {
   };
 
   const setFavoriteTasks = (favorites) => {
-    localStorage.setItem(FAVORITES_KEY, JSON.stringify(favorites));
+    localStorage.setItem(getFavoritesKey(), JSON.stringify(favorites));
   };
 
   const toggleFavoriteTask = (task) => {
