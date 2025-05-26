@@ -255,10 +255,11 @@ const Home = () => {
     }
   };
 
-  const FAVORITES_KEY = 'favoriteTasks';
+
+  const getFavoritesKey = () => `favoriteTasks_${user.id}`;
 
   const getFavoriteTasks = () => {
-    const data = localStorage.getItem(FAVORITES_KEY);
+    const data = localStorage.getItem(getFavoritesKey());
     try {
       const parsed = JSON.parse(data);
       return Array.isArray(parsed) ? parsed : [];
@@ -268,7 +269,7 @@ const Home = () => {
   };
 
   const setFavoriteTasks = (favorites) => {
-    localStorage.setItem(FAVORITES_KEY, JSON.stringify(favorites));
+    localStorage.setItem(getFavoritesKey(), JSON.stringify(favorites));
   };
 
   const toggleFavoriteTask = (task) => {
